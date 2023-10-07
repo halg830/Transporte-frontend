@@ -1,11 +1,21 @@
 <template>
   <div class="cont">
     <div class="opcionescont">
-  <button class="opcion"><router-link to="/">inicio</router-link></button>
-  <button class="opcion"><router-link to="/buses">buses</router-link></button>
-  <button class="opcion"><router-link to="/usuarios">usuarios</router-link></button>
-  <button class="opcion"><router-link to="/conductores">conductores</router-link></button>
-  <button class="opcion"><router-link to="/rutas">rutas</router-link></button>
+  <router-link to="/" class="opcioncont">
+    <button class="opcion">inicio</button>
+  </router-link>
+  <router-link to="/buses" class="opcioncont">
+    <button class="opcion">buses</button>
+  </router-link>
+  <router-link to="/usuarios" class="opcioncont">
+    <button class="opcion">usuarios</button>
+  </router-link>
+  <router-link to="/conductores" class="opcioncont">
+    <button class="opcion">conductores</button>
+  </router-link>
+  <router-link to="/rutas" class="opcioncont">
+    <button class="opcion">rutas</button>
+  </router-link>
  
   </div>
   <router-view></router-view>
@@ -30,6 +40,10 @@
 
 .opcion{
   padding: 5px;
+  margin: auto;
+}
+
+.opcioncont{
   margin: auto;
 }
 </style>
