@@ -3,6 +3,62 @@
 import axios from "axios";
 import { ref } from "vue";
 
+//esta funcion recoje dos valores, primero la url pricipal 🎯
+//segundo el tipo de accion que deseas realizar 📝
+async function obtener(url, type){
+  //actualizamos la informacion del objeto "informacion"
+  //crearjson()
+
+  let info
+  if (type == 'cargar') {
+    info = await axios.get(url+'/cargar')
+    rows.value = info.data.conductor
+  } 
+  if (type == 'buscar') {
+    info = await axios.get(url+'/buscarID/'+id.value)
+  }
+  if (type == 'agregar') {
+    info = await axios.post(url+'/agregar', informacion)
+  }
+  if (type == 'eliminar') {
+    info = await axios.delete(url+'/eliminar/'+id.value)
+  }
+  if (type == 'editar'){
+    info = await axios.put(url+'/modificar/'+id.value, informacion)
+  }
+  if (type == 'activar') {
+    info = await axios.put(url+'/activar/'+id.value)
+  }
+  if (type == 'desactivar') {
+    info = await axios.put(url+'/desactivar/'+id.value)
+  }
+
+  //aqui muestra la respuesta del server en la consola 🛠
+  console.log(info)
+  console.log(info.data)
+}
+
+let url = 'https://transporte-el2a.onrender.com/api/conductor'
+/* // aqui defino los datos que seran reactivos 🧨
+let id = ref('6522bc173dd6de6d0c2d6dd5')
+let nombre = ref('')
+let cedula = ref('')
+let estado = ref('')
+let casilla = ref('http://localhost:3000/api/conductor')
+
+//IMPORTANTE❗❗ aqui hay que agregar en "informacion"
+//todos los datos que queremos enviar al back-end 🍁
+//la funcion se llamara cada que se ejecute "optener()"
+let informacion
+function crearjson(){
+  informacion = {
+      nombre:nombre.value,
+      cedula:cedula.value
+    }
+} */
+
+
+
 const columns = ref([
   {
     name: "Nombre",
@@ -40,6 +96,8 @@ const email = ref("");
 const estado = ref(1)
 const toolbar = ref(false);
 const cambiar = ref(false);
+
+obtener(url,'cargar')
 
 const agregarcliente = async () => {
   
@@ -80,16 +138,6 @@ const agregarcliente = async () => {
   toolbar.value = false;
 };
 
-async function obtenerClientes() {
-  console.log("Esperando datos");
-  const clientes = await axios.get(
-    "https://transporte-el2a.onrender.com/api/cliente/all"
-  );
-
-  rows.value = clientes.data.cliente;
-}
-obtenerClientes();
-
 const editar = (row) => {
   console.log(row);
   toolbar.value = true;
@@ -122,7 +170,6 @@ export default {
 
 <template>
 	<div>
-		<q-btn label="Añadir" color="primary" @click="toolbar = true" />
 		<q-dialog v-model="toolbar">
 			<q-card>
 				<q-toolbar>
@@ -151,39 +198,50 @@ export default {
 			</q-card>
 		</q-dialog>
 
-		<div class="q-pa-md">
+		
 			<q-markup-table>
 				<thead>
 					<tr>
-						<th>
-							<h4 class="q-ma-xs text-left">Clientes</h4>
+						<th colspan="
+            
+            5">
+							<h4 class="q-ma-xs text-left">conductores
+                <q-btn label="Añadir" color="green" @click="toolbar = true" />
+              </h4>
 						</th>
 					</tr>
-					<tr>
-						<th class="text-left"><b>Nombre</b></th>
-						<th class="text-right"><b>Cedula</b></th>
-						<th class="text-right"><b>Email</b></th>
-						<th class="text-right"><b>Estado</b></th>
-						<th class="text-right"><b>Opciones</b></th>
+					<tr class="cosascont">
+						<th class="text-center">Nombre</th>
+						<th class="text-center">Cedula</th>
+						<th class="text-center">Email</th>
+						<th class="text-center">Estado</th>
+						<th class="text-center">Opciones</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr v-for="row in rows">
-						<td class="text-left">{{ row.nombre }}</td>
-						<td class="text-right">{{ row.cedula }}</td>
-						<td class="text-right">{{ row.email }}</td>
-						<td class="text-right">{{ row.estado }}</td>
-						<td class="text-right">
+						<td class="text-center">{{ row.nombre }}</td>
+						<td class="text-center">{{ row.cedula }}</td>
+						<td class="text-center">{{ row.email }}</td>
+						<td class="text-center">{{ row.estado }}</td>
+						<td class="text-center">
 							<q-btn label="Editar" color="primary" @click="editar(row)" />
 						</td>
 					</tr>
 				</tbody>
 			</q-markup-table>
 		</div>
-	</div>
+
 </template>
 <style scoped>
 *{
-	text-align: center;
+	margin: 0px;
+  padding: 0px;
+}
+
+.cosascont{
+  background-color: black;
+  color: white;
+  text-align: center;
 }
 </style>
