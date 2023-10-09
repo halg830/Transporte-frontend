@@ -1,231 +1,143 @@
 
-<script>
+<script setup>
 import axios from "axios";
 import { ref } from "vue";
 
 //esta funcion recoje dos valores, primero la url pricipal 🎯
 //segundo el tipo de accion que deseas realizar 📝
-async function obtener(url, type){
+async function obtener(url, type, id =''){
   //actualizamos la informacion del objeto "informacion"
   //crearjson()
-
   let info
   if (type == 'cargar') {
     info = await axios.get(url+'/cargar')
     rows.value = info.data.conductor
   } 
   if (type == 'buscar') {
-    info = await axios.get(url+'/buscarID/'+id.value)
+    info = await axios.get(url+'/buscarID/'+id)
   }
   if (type == 'agregar') {
     info = await axios.post(url+'/agregar', informacion)
+    obtener(url,'cargar')
   }
   if (type == 'eliminar') {
-    info = await axios.delete(url+'/eliminar/'+id.value)
+    info = await axios.delete(url+'/eliminar/'+id)
+    obtener(url,'cargar')
   }
   if (type == 'editar'){
-    info = await axios.put(url+'/modificar/'+id.value, informacion)
+    info = await axios.put(url+'/modificar/'+id, informacion)
+    obtener(url,'cargar')
   }
   if (type == 'activar') {
-    info = await axios.put(url+'/activar/'+id.value)
+    info = await axios.put(url+'/activar/'+id)
+    obtener(url,'cargar')
   }
   if (type == 'desactivar') {
-    info = await axios.put(url+'/desactivar/'+id.value)
+    info = await axios.put(url+'/desactivar/'+id)
+    obtener(url,'cargar')
   }
-
   //aqui muestra la respuesta del server en la consola 🛠
-  console.log(info)
   console.log(info.data)
 }
 
 let url = 'https://transporte-el2a.onrender.com/api/conductor'
-/* // aqui defino los datos que seran reactivos 🧨
-let id = ref('6522bc173dd6de6d0c2d6dd5')
-let nombre = ref('')
-let cedula = ref('')
-let estado = ref('')
-let casilla = ref('http://localhost:3000/api/conductor')
+// aqui defino los datos que seran reactivos 🧨
+let nombreform = ref('')
+let cedulaform = ref('')
+let estadoform = ref('')
+let typeform = ref('- - -')
+let rows = ref([]);
 
 //IMPORTANTE❗❗ aqui hay que agregar en "informacion"
 //todos los datos que queremos enviar al back-end 🍁
 //la funcion se llamara cada que se ejecute "optener()"
+
 let informacion
 function crearjson(){
   informacion = {
       nombre:nombre.value,
       cedula:cedula.value
     }
-} */
-
-
-
-const columns = ref([
-  {
-    name: "Nombre",
-    label: "Nombre",
-    align: "left",
-    field: (row) => row.nombre,
-  },
-  {
-    name: "Cedula",
-    label: "Cedula",
-    field: (row) => row.cedula,
-  },
-  {
-    name: "Email",
-    label: "Email",
-    field: (row) => row.email,
-  },
-  {
-    name: "Estado",
-    label: "Estado",
-    field: (row) => row.estado,
-  },
-  {
-    name: "Opciones",
-    label: "Opciones",
-    field: "actions",
-  },
-]);
-
-const rows = ref([]);
-const id=ref("")
-const nombre = ref("");
-const cedula = ref("");
-const email = ref("");
-const estado = ref(1)
-const toolbar = ref(false);
-const cambiar = ref(false);
+} 
+const boxform = ref(true);
 
 obtener(url,'cargar')
 
-const agregarcliente = async () => {
-  
+function form(type, data = ''){
+  typeform.value = type
+  boxform.value = true
+  if (type == 'agregar'){
 
-  if (cambiar.value == true) {
-    const data = {
-    id: id.value,
-    nombre: nombre.value,
-  };
-    const buscar = rows.value.findIndex(r=>r._id==id.value)
-    
-    console.log(data);
-    const cliente = await axios.put(
-      `https://transporte-el2a.onrender.com/api/cliente/editar`,
-      data
-    ).then((response)=>{
-      console.log("r", response);
-      rows.value.splice(buscar, 1,response.data.cliente)
-    }).catch((error)=>{
-      console.log("e", error);
-    })
-
-    
-  } else {
-    const data = {
-    nombre: nombre.value,
-    cedula: cedula.value,
-    email: email.value,
-  };
-    const cliente = await axios.post(
-      "https://transporte-el2a.onrender.com/api/cliente/guardar",
-      data
-    );
-
-    rows.value.push(cliente.data.cliente);
   }
+}
 
-  toolbar.value = false;
-};
-
-const editar = (row) => {
-  console.log(row);
-  toolbar.value = true;
-  id.value=row._id
-  cambiar.value=true
-  nombre.value=row.nombre
-  cedula.value=row.cedula
-  email.value=row.email
-  estado.value=row.estado
-};
-
-export default {
-  setup() {
-    return {
-      toolbar,
-      selected: ref([]),
-      columns,
-      rows,
-      id,
-      nombre,
-      cedula,
-      email,
-      estado,
-      agregarcliente,
-      editar,
-    };
-  },
-};
 </script>
 
 <template>
 	<div>
-		<q-dialog v-model="toolbar">
+
+		<q-dialog v-model="boxform">
 			<q-card>
 				<q-toolbar>
-					<q-avatar>
-						<img src="https://cdn.quasar.dev/logo-v2/svg/logo.svg" />
-					</q-avatar>
-
 					<q-toolbar-title>Agregar cliente</q-toolbar-title>
-
-					<q-btn flat round dense icon="close" v-close-popup />
+					<q-btn class="botonv1" flat round dense icon="close" v-close-popup />
 				</q-toolbar>
 
-				<q-card-section>
-					<label for="">Nombre: </label><br />
-					<input type="text" v-model="nombre" />
-					<br />
-					<label for="">Cedula: </label><br />
-					<input type="number" v-model="cedula" />
-					<br />
-					<label for="">Email: </label><br />
-					<input type="text" v-model="email" /><br />
-					<label for="">Estado: </label><br />
-					<input type="number" v-model="estado" /><br />
-					<button @click="agregarcliente()">Enviar</button>
+				<q-card-section class="q-gutter-md">
+          <q-input outlined v-model="nombreform" label="Nombre"></q-input>
+          <q-input outlined v-model="cedulaform" label="Cedula" :readonly="true"></q-input>
+          <q-input outlined v-model="estadoform" label="Estado" :readonly="true"></q-input>
+					<q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'">{{typeform}}</q-btn>
 				</q-card-section>
 			</q-card>
 		</q-dialog>
 
 		
-			<q-markup-table>
+			<q-markup-table class="tabla">
 				<thead>
 					<tr>
-						<th colspan="
-            
-            5">
-							<h4 class="q-ma-xs text-left">conductores
-                <q-btn label="Añadir" color="green" @click="toolbar = true" />
+						<th colspan="5">
+							<h4 class="q-ma-xs text-left">
+                conductores
+                <q-btn class="q-ml-xs" label="Añadir" color="accent" @click="form('agregar')">
+                  <q-icon name="style" color="white" right/>
+                </q-btn>
               </h4>
 						</th>
 					</tr>
-					<tr class="cosascont">
-						<th class="text-center">Nombre</th>
-						<th class="text-center">Cedula</th>
-						<th class="text-center">Email</th>
-						<th class="text-center">Estado</th>
-						<th class="text-center">Opciones</th>
+					<tr class="cosascont ">
+						<th class="text-center encabezado">Nombre</th>
+						<th class="text-center encabezado">Cedula</th>
+						<th class="text-center encabezado">Estado</th>
+						<th class="text-center encabezado">Opciones</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="row in rows">
+					<tr v-for="row in rows" :key="row.id">
 						<td class="text-center">{{ row.nombre }}</td>
 						<td class="text-center">{{ row.cedula }}</td>
-						<td class="text-center">{{ row.email }}</td>
-						<td class="text-center">{{ row.estado }}</td>
 						<td class="text-center">
-							<q-btn label="Editar" color="primary" @click="editar(row)" />
+              <q-btn class="botonv1" label="activo"
+              color="positive" v-if="row.estado == true"
+              @click="obtener(url,'desactivar',row._id);row.estado = 'load'"/>
+
+              <q-btn class="botonv1" label="no activo"
+              color="negative" v-if="row.estado == false"
+              @click="obtener(url,'activar',row._id);row.estado = 'load'"/>
+
+              <q-btn class="botonv1" label=""
+              color="grey" v-if="row.estado == 'load'">
+                <q-circular-progress indeterminate color="white"/>
+              </q-btn>
+            </td>
+						<td class="text-center">
+              <q-btn-group>
+                <q-btn color="negative" icon="delete" class="botonv1"
+                @click="obtener(url,'eliminar',row._id)"/>
+
+                <q-btn color="warning" icon="edit" class="botonv1"
+                @click="form('editar',row)"/>
+              </q-btn-group>
 						</td>
 					</tr>
 				</tbody>
@@ -234,9 +146,28 @@ export default {
 
 </template>
 <style scoped>
+/* 
+primary: Color principal del tema.
+secondary: Color secundario del tema.
+accent: Color de acento.
+positive: Color para indicar una acción positiva o éxito.
+negative: Color para indicar una acción negativa o error.
+info: Color para información o mensajes neutrales.
+warning: Color para advertencias o mensajes importantes. 
+*/
 *{
 	margin: 0px;
   padding: 0px;
+}
+
+.tabla{
+  margin: 10px;
+  border: 3px solid black;
+}
+
+.encabezado{
+  font-weight: bold;
+  font-size: 15px;
 }
 
 .cosascont{
@@ -244,4 +175,10 @@ export default {
   color: white;
   text-align: center;
 }
+
+.botonv1{
+  font-size: 10px;
+  font-weight: bold;
+}
+
 </style>
