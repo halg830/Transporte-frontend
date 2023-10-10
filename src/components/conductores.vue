@@ -38,30 +38,18 @@ async function obtener(url, type, id =''){
   }
   //aqui muestra la respuesta del server en la consola 🛠
   console.log(info.data)
+  boxform.value = {box:false, estado: true}
 }
 
 let url = 'https://transporte-el2a.onrender.com/api/conductor'
+
 // aqui defino los datos que seran reactivos 🧨
-//let nombreform = ref('')
-//let cedulaform = ref('')
-//let estadoform = ref('')
 let informacion = ref({nombre:'',cedula:'',id:''})
 let typeform = ref('- - -')
 let errorform = ref('')
 let rows = ref([]);
 
-//IMPORTANTE❗❗ aqui hay que agregar en "informacion"
-//todos los datos que queremos enviar al back-end 🍁
-//la funcion se llamara cada que se ejecute "optener()"
-
-
-/* function crearjson(){
-  informacion = {
-      nombre:nombre.value,
-      cedula:cedula.value
-    }
-}  */
-const boxform = ref(false);
+const boxform = ref({box:false, estado: true});
 
 obtener(url,'cargar')
 
@@ -69,7 +57,7 @@ function form(type, data = ''){
   informacion = ref({nombre:'',cedula:''})
   errorform.value = ''
   typeform.value = type
-  boxform.value = true
+  boxform.value.box = true
   if (type == 'editar'){
     informacion.value.id = data._id
     informacion.value.nombre = data.nombre
@@ -85,7 +73,7 @@ function enviarinformacion(type) {
     errorform.value = 'la cedula debe contener 10 caracteres'
   } else {
     obtener(url,type,informacion.value.id)
-    boxform.value = false
+    boxform.value.estado = 'load'
   }
 }
 
@@ -94,7 +82,7 @@ function enviarinformacion(type) {
 <template>
 	<div>
 
-		<q-dialog v-model="boxform">
+		<q-dialog v-model="boxform.box">
 			<q-card>
 				<q-toolbar>
 					<q-toolbar-title>Agregar cliente</q-toolbar-title>
@@ -105,7 +93,12 @@ function enviarinformacion(type) {
           <div class="text-negative">{{errorform}}</div>
           <q-input outlined v-model="informacion.nombre" label="Nombre"></q-input>
           <q-input outlined v-model="informacion.cedula" label="Cedula" :readonly="typeform !== 'agregar'" type="number"></q-input>
-					<q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'" @click="enviarinformacion(typeform)">{{typeform}}</q-btn>
+					<q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'"
+          @click="enviarinformacion(typeform)" v-if="boxform.estado !== 'load'">{{typeform}}</q-btn>
+          
+          <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'" v-if="boxform.estado == 'load'">
+            <q-circular-progress indeterminate color="white"/>
+          </q-btn>
 				</q-card-section>
 			</q-card>
 		</q-dialog>
@@ -150,8 +143,12 @@ function enviarinformacion(type) {
             </td>
 						<td class="text-center">
               <q-btn-group>
+                  <q-btn label="" color="grey" v-if="row.estado == 'load'">
+                  <q-circular-progress indeterminate color="white"/>
+                </q-btn>
+
                 <q-btn color="negative" icon="delete" class="botonv1"
-                @click="obtener(url,'eliminar',row._id)"/>
+                @click="obtener(url,'eliminar',row._id) ;row.estado = 'load'" v-else/>
 
                 <q-btn color="warning" icon="edit" class="botonv1"
                 @click="form('editar',row)"/>
