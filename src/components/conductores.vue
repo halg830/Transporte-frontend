@@ -17,7 +17,7 @@ async function obtener(url, type, id =''){
     info = await axios.get(url+'/buscarID/'+id)
   }
   if (type == 'agregar') {
-    info = await axios.post(url+'/agregar', informacion)
+    info = await axios.post(url+'/agregar', informacion.value)
     obtener(url,'cargar')
   }
   if (type == 'eliminar') {
@@ -25,7 +25,7 @@ async function obtener(url, type, id =''){
     obtener(url,'cargar')
   }
   if (type == 'editar'){
-    info = await axios.put(url+'/modificar/'+id, informacion)
+    info = await axios.put(url+'/modificar/'+id, informacion.value)
     obtener(url,'cargar')
   }
   if (type == 'activar') {
@@ -42,32 +42,52 @@ async function obtener(url, type, id =''){
 
 let url = 'https://transporte-el2a.onrender.com/api/conductor'
 // aqui defino los datos que seran reactivos 🧨
-let nombreform = ref('')
-let cedulaform = ref('')
-let estadoform = ref('')
+//let nombreform = ref('')
+//let cedulaform = ref('')
+//let estadoform = ref('')
+let informacion = ref({nombre:'',cedula:'',id:''})
 let typeform = ref('- - -')
+let errorform = ref('')
 let rows = ref([]);
 
 //IMPORTANTE❗❗ aqui hay que agregar en "informacion"
 //todos los datos que queremos enviar al back-end 🍁
 //la funcion se llamara cada que se ejecute "optener()"
 
-let informacion
-function crearjson(){
+
+/* function crearjson(){
   informacion = {
       nombre:nombre.value,
       cedula:cedula.value
     }
-} 
+}  */
 const boxform = ref(true);
 
 obtener(url,'cargar')
 
 function form(type, data = ''){
+  informacion = ref({nombre:'',cedula:''})
+  errorform.value = ''
   typeform.value = type
   boxform.value = true
   if (type == 'agregar'){
+  }
+  if (type == 'editar'){
+    informacion.value.id = data._id
+    informacion.value.nombre = data.nombre
+    informacion.value.cedula = data.cedula
+  }
+}
 
+function enviarinformacion(type) {
+  errorform.value = ''
+  if (informacion.value.nombre.trim().length < 1) {
+    errorform.value = 'ingrese un nombre valido'
+  }else if (informacion.value.cedula.length !== 10) {
+    errorform.value = 'la cedula debe contener 10 caracteres'
+  } else {
+    obtener(url,type,informacion.value.id)
+    boxform.value = false
   }
 }
 
@@ -81,13 +101,13 @@ function form(type, data = ''){
 				<q-toolbar>
 					<q-toolbar-title>Agregar cliente</q-toolbar-title>
 					<q-btn class="botonv1" flat round dense icon="close" v-close-popup />
-				</q-toolbar>
+        </q-toolbar>
 
 				<q-card-section class="q-gutter-md">
-          <q-input outlined v-model="nombreform" label="Nombre"></q-input>
-          <q-input outlined v-model="cedulaform" label="Cedula" :readonly="true"></q-input>
-          <q-input outlined v-model="estadoform" label="Estado" :readonly="true"></q-input>
-					<q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'">{{typeform}}</q-btn>
+          <div class="text-negative">{{errorform}}</div>
+          <q-input outlined v-model="informacion.nombre" label="Nombre"></q-input>
+          <q-input outlined v-model="informacion.cedula" label="Cedula" :readonly="typeform !== 'agregar'" type="number"></q-input>
+					<q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'" @click="enviarinformacion(typeform)">{{typeform}}</q-btn>
 				</q-card-section>
 			</q-card>
 		</q-dialog>
