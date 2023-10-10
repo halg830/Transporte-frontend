@@ -61,7 +61,7 @@ let rows = ref([]);
       cedula:cedula.value
     }
 }  */
-const boxform = ref(true);
+const boxform = ref(false);
 
 obtener(url,'cargar')
 
@@ -70,8 +70,6 @@ function form(type, data = ''){
   errorform.value = ''
   typeform.value = type
   boxform.value = true
-  if (type == 'agregar'){
-  }
   if (type == 'editar'){
     informacion.value.id = data._id
     informacion.value.nombre = data.nombre
