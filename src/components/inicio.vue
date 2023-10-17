@@ -11,7 +11,7 @@ async function obtener(url, type){
 
   let info
   if (type == 'cargar') {
-    info = await axios.get(url+'/cargar')
+    info = await axios.get(url+'/all')
   } 
   if (type == 'buscar') {
     info = await axios.get(url+'/buscarID/'+id.value)
@@ -34,7 +34,7 @@ async function obtener(url, type){
 
   //aqui muestra la respuesta del server en la consola 🛠
   console.log(info)
-  console.log(info.data)
+  console.log(info.data.busPopulate)
 }
 
 // aqui defino los datos que seran reactivos 🧨
@@ -42,7 +42,7 @@ let id = ref('6522bc173dd6de6d0c2d6dd5')
 let nombre = ref('')
 let cedula = ref('')
 let estado = ref('')
-let casilla = ref('http://localhost:3000/api/conductor')
+let casilla = ref('https://transporte-el2a.onrender.com/api/bus')
 
 //IMPORTANTE❗❗ aqui hay que agregar en "informacion"
 //todos los datos que queremos enviar al back-end 🍁
