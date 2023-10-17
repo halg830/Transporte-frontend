@@ -6,8 +6,6 @@ import { ref } from "vue";
 //esta funcion recoje dos valores, primero la url pricipal 🎯
 //segundo el tipo de accion que deseas realizar 📝
 async function obtener(url, type, id =''){
-  //actualizamos la informacion del objeto "informacion"
-  //crearjson()
   let info
   if (type == 'cargar') {
     info = await axios.get(url+'/cargar')
@@ -38,10 +36,11 @@ async function obtener(url, type, id =''){
   }
   //aqui muestra la respuesta del server en la consola 🛠
   console.log(info.data)
+  //oculta box y el estado ya no es "cargando"
   boxform.value = {box:false, estado: true}
 }
 
-let url = 'https://transporte-el2a.onrender.com/api/conductor'
+let url = 'conductor'
 
 // aqui defino los datos que seran reactivos 🧨
 let informacion = ref({nombre:'',cedula:'',id:''})
