@@ -14,18 +14,18 @@ async function obtener(url, type, id =''){
     rows.value = info.data.busPopulate
   } 
   if (type == 'buscar') {
-    info = await axios.get(url+'/buscarID/'+id)
+    info = await axios.get(url+'/buscarbus/'+ id)
   }
   if (type == 'agregar') {
-    info = await axios.post(url+'/agregar', informacion.value)
+    info = await axios.post(url+'/nuevo', informacion.value)
     obtener(url,'cargar')
   }
   if (type == 'eliminar') {
-    info = await axios.delete(url+'/eliminar/'+id)
+    info = await axios.delete(url+'/borrar/'+id)
     obtener(url,'cargar')
   }
   if (type == 'editar'){
-    info = await axios.put(url+'/modificar/'+id, informacion.value)
+    info = await axios.put(url+'/editar/'+id, informacion.value)
     obtener(url,'cargar')
   }
   if (type == 'activar') {
@@ -33,7 +33,7 @@ async function obtener(url, type, id =''){
     obtener(url,'cargar')
   }
   if (type == 'desactivar') {
-    info = await axios.put(url+'/desactivar/'+id)
+    info = await axios.put(url+'/inactivar/'+id)
     obtener(url,'cargar')
   }
   //aqui muestra la respuesta del server en la consola 🛠
@@ -41,7 +41,7 @@ async function obtener(url, type, id =''){
   boxform.value = {box:false, estado: true}
 }
 
-let url = 'https://transporte-el2a.onrender.com/api/bus'
+let url = 'bus'
 
 // aqui defino los datos que seran reactivos 🧨
 let informacion = ref({empresa:'',asiento:'',placa:"",conductor: "",id:''})
@@ -54,7 +54,7 @@ const boxform = ref({box:false, estado: true});
 obtener(url,'cargar')
 
 function form(type, data = ''){
-  informacion = ref({empresa:'',asiento:'', placa:'', conductor:'' })
+  informacion = ref({empresa:'',asiento:'', placa:'', conductor:'', id:'' })
   errorform.value = ''
   typeform.value = type
   boxform.value.box = true
@@ -87,14 +87,16 @@ function enviarinformacion(type) {
 		<q-dialog v-model="boxform.box">
 			<q-card>
 				<q-toolbar>
-					<q-toolbar-title>Agregar cliente</q-toolbar-title>
+					<q-toolbar-title>Agregar Bus</q-toolbar-title>
 					<q-btn class="botonv1" flat round dense icon="close" v-close-popup />
         </q-toolbar>
 
 				<q-card-section class="q-gutter-md">
           <div class="text-negative">{{errorform}}</div>
           <q-input outlined v-model="informacion.empresa" label="empresa"></q-input>
-          <q-input outlined v-model="informacion.asiento" label="asiento" :readonly="typeform !== 'agregar'" type="number"></q-input>
+          <q-input outlined v-model="informacion.asiento" label="asiento" :readonly="typeform !== 'agregar'" ></q-input>
+          <q-input outlined v-model="informacion.placa" label="placa" :readonly="typeform !== 'agregar'" ></q-input>
+          <q-input outlined v-model="informacion.conductor" label="conductor" :readonly="typeform !== 'agregar'" ></q-input>
 					<q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'"
           @click="enviarinformacion(typeform)" v-if="boxform.estado !== 'load'">{{typeform}}</q-btn>
           
@@ -111,7 +113,7 @@ function enviarinformacion(type) {
 					<tr>
 						<th colspan="5">
 							<h4 class="q-ma-xs text-left">
-                conductores
+                BUSES
                 <q-btn class="q-ml-xs" label="Añadir" color="accent" @click="form('agregar')">
                   <q-icon name="style" color="white" right/>
                 </q-btn>
