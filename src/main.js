@@ -1,17 +1,22 @@
-import App from './App.vue'
-import { createApp } from 'vue'
-import './style.css'
-
+import App from "./App.vue";
+import { createApp } from "vue";
+import "./style.css";
+import { createPinia } from "pinia";
 import { router } from "./routes/routes.js";
-import { Quasar, Dialog } from 'quasar';
-import '@quasar/extras/material-icons/material-icons.css'
-import 'quasar/src/css/index.sass'
+import { Quasar, Dialog } from "quasar";
+import "@quasar/extras/material-icons/material-icons.css";
+import "quasar/src/css/index.sass";
+import axios from "axios";
 
-const app = createApp(App)
+axios.defaults.baseURL = "https://transporte-el2a.onrender.com/api/";
 
-app.use(router)
+const app = createApp(App);
+const pinia = createPinia();
+
+app.use(router);
+app.use(pinia);
 app.use(Quasar, {
-    plugins:{Dialog}
-})
+  plugins: { Dialog },
+});
 
-app.mount('#app')
+app.mount("#app");

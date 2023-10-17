@@ -7,7 +7,7 @@ import { ref } from "vue";
 async function obtener(url, type, id = "") {
   let info;
   if (type == "cargar") {
-    info = await axios.get(url + "/cargar");
+    info = await axios.get(url + "/buscar");
     rows.value = info.data.rutasPopulate;
   }
   if (type == "buscar") {
@@ -40,7 +40,7 @@ async function obtener(url, type, id = "") {
   boxform.value = { box: false, estado: true };
 }
 
-let url = "ruta";
+let url = "tiquete";
 
 // aqui defino los datos que seran reactivos 🧨
 let informacion = ref({ nombre: "", cedula: "", id: "" });
@@ -101,7 +101,7 @@ function convertirHora(cadenaFecha) {
     <q-dialog v-model="boxform.box">
       <q-card>
         <q-toolbar>
-          <q-toolbar-title>Agregar ruta</q-toolbar-title>
+          <q-toolbar-title>Agregar tiquete</q-toolbar-title>
           <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
         </q-toolbar>
 
@@ -141,7 +141,7 @@ function convertirHora(cadenaFecha) {
         <tr>
           <th colspan="5">
             <h4 class="q-ma-xs text-left">
-              Rutas
+              Tiquetes
               <q-btn
                 class="q-ml-xs"
                 label="Añadir"
@@ -154,12 +154,13 @@ function convertirHora(cadenaFecha) {
           </th>
         </tr>
         <tr class="cosascont">
-          <th class="text-center encabezado">Ciudad origen</th>
-          <th class="text-center encabezado">Ciudad destino</th>
+          <th class="text-center encabezado">Cliente</th>
+          <th class="text-center encabezado">Ruta</th>
           <th class="text-center encabezado">Bus</th>
-          <th class="text-center encabezado">Fecha salida</th>
           <th class="text-center encabezado">Hora salida</th>
+          <th class="text-center encabezado">Fecha salida</th>
           <th class="text-center encabezado">Valor</th>
+          <th class="text-center encabezado">Vendedor</th>
           <th class="text-center encabezado">Estado</th>
           <th class="text-center encabezado">Opciones</th>
         </tr>

@@ -3,6 +3,7 @@ import inicio from '../components/inicio.vue'
 import rutas from '../components/rutas.vue'
 import conductores from '../components/conductores.vue'
 import usuarios from '../components/usuarios.vue'
+import tiquete from '../components/tiquete.vue'
 import {createRouter, createWebHashHistory} from 'vue-router'
 
 const routes =[
@@ -10,7 +11,8 @@ const routes =[
     {path: '/buses', component:buses},
     {path: '/rutas', component:rutas},
     {path: '/conductores', component:conductores},
-    {path: '/usuarios', component:usuarios}
+    {path: '/usuarios', component:usuarios},
+    {path: '/tiquete', component:tiquete},
 ]
 
 export const router = createRouter({
