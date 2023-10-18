@@ -171,6 +171,7 @@ function convertirHora(cadenaFecha) {
           <td class="text-center">{{ row.bus?.placa || undefined }}</td>
           <td class="text-center">{{ convertirFecha(row.fecha_salida) }}</td>
           <td class="text-center">{{ convertirHora(row.hora_salida) }}</td>
+          <td class="text-center">{{ row.valor }}</td>
           <td class="text-center">
             <q-btn
               class="botonv1"
