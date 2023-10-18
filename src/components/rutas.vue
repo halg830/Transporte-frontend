@@ -1,6 +1,27 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
+import {useRutasStore} from '../stores/rutas.js'
+
+const useRutas = useRutasStore()
+let rows = ref([]);
+
+const obtenerInfo = async () => {
+  try {
+    const rutas = await useRutas.obtener();
+    if (rutas) {
+      console.log("Datos de rutas obtenidos:", rutas);
+      rows.value = rutas.rutasPopulate
+    } else {
+      console.log("No se pudieron obtener datos de rutas.");
+    }
+  } catch (error) {
+    console.error("Error al obtener datos de rutas:", error);
+  }
+};
+
+obtenerInfo();
+
 
 //esta funcion recoje dos valores, primero la url pricipal 🎯
 //segundo el tipo de accion que deseas realizar 📝
@@ -46,11 +67,11 @@ let url = "ruta";
 let informacion = ref({ nombre: "", cedula: "", id: "" });
 let typeform = ref("- - -");
 let errorform = ref("");
-let rows = ref([]);
+
 
 const boxform = ref({ box: false, estado: true });
 
-obtener(url, "cargar");
+// obtener(url, "cargar");
 
 function form(type, data = "") {
   informacion = ref({ nombre: "", cedula: "" });

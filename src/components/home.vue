@@ -1,64 +1,56 @@
 <script setup>
 import { ref } from "vue";
 
+const opciones = ["buses", "ciudades", "clientes", "conductores", "rutas", "tiquete", "vendedor"]
+const ocultar = ref(true)
+
 const leftDrawerOpen = ref(false);
 
 function toggleLeftDrawer() {
     leftDrawerOpen.value = !leftDrawerOpen.value;
 }
 
+const primeraMayuscula = (cadena) => cadena.charAt(0).toUpperCase() + cadena.slice(1)
+
 </script>
 
 
 <template>
-    <q-layout view="lHr lpR lFr">
-        <q-header elevated class="bg-primary text-white">
-            <q-toolbar>
-                <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+    <div>
+        <q-layout view="lHr lpR lFr">
+            <q-header elevated class="bg-primary text-white">
+                <q-toolbar>
+                    <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
 
-                <q-toolbar-title>
-                    <q-avatar>
-                        <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" />
-                    </q-avatar>
-                    EMPRESA DE BUSES
-                </q-toolbar-title>
-
-
-            </q-toolbar>
-        </q-header>
-
-        <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="mobile" bordered class="menudesplegable">
-            <div class="opcionescont">
-                <p class="menutitle"> = menu desplegable = </p>
-                <router-link to="/inicio" class="opcioncont">
-                    <button class="opcion">inicio</button>
-                </router-link>
-                <router-link to="/buses" class="opcioncont">
-                    <button class="opcion">buses</button>
-                </router-link>
-                <router-link to="/usuarios" class="opcioncont">
-                    <button class="opcion">usuarios</button>
-                </router-link>
-                <router-link to="/conductores" class="opcioncont">
-                    <button class="opcion">conductores</button>
-                </router-link>
-                <router-link to="/rutas" class="opcioncont">
-                    <button class="opcion">rutas</button>
-                </router-link>
-                <router-link to="/tiquete" class="opcioncont">
-                    <button class="opcion">Tiquete</button>
-                </router-link>
-            </div>
-        </q-drawer>
-
-        <q-page-container>
+                    <q-toolbar-title>
+                        <q-avatar>
+                            <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" />
+                        </q-avatar>
+                        EMPRESA DE BUSES
+                    </q-toolbar-title>
 
 
-            <router-view />
+                </q-toolbar>
+            </q-header>
+
+            <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="mobile" bordered class="menudesplegable">
+                <div class="opcionescont">
+                    <p class="menutitle"> = menu desplegable = </p>
+                    <router-link :to="'/' + opcion" class="opcioncont" v-for="(opcion, i) in opciones" :key="i">
+                        <button class="opcion">{{ primeraMayuscula(opcion) }}</button>
+                    </router-link>
+                </div>
+            </q-drawer>
+
+            <q-page-container>
+                
+
+                <router-view />
 
 
-        </q-page-container>
-    </q-layout>
+            </q-page-container>
+        </q-layout>
+    </div>
 </template>
 
 <style scoped>
@@ -99,3 +91,4 @@ function toggleLeftDrawer() {
     margin: 20px;
 }
 </style>
+
