@@ -30,7 +30,7 @@ function toggleLeftDrawer() {
         <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="mobile" bordered class="menudesplegable">
             <div class="opcionescont">
                 <p class="menutitle"> = menu desplegable = </p>
-                <router-link to="/" class="opcioncont">
+                <router-link to="/inicio" class="opcioncont">
                     <button class="opcion">inicio</button>
                 </router-link>
                 <router-link to="/buses" class="opcioncont">
