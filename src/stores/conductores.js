@@ -10,44 +10,45 @@ export const conductoresfunction = defineStore("ruta", () => {
 
     //esta funcion recoje dos valores, primero la url pricipal 🎯
     //segundo el tipo de accion que deseas realizar 📝
+    let info = ref([])
     async function obtener(url, type, id = '') {
-        let info
+        
         if (type == 'cargar') {
-            info = await axios.get(url + '/cargar')
+            info.value = await axios.get(url + '/cargar')
         }
         if (type == 'buscar') {
-            info = await axios.get(url + '/buscarID/' + id)
+            info.value = await axios.get(url + '/buscarID/' + id)
         }
         if (type == 'agregar') {
-            info = await axios.post(url + '/agregar', informacion.value)
+            info.value = await axios.post(url + '/agregar', informacion.value)
             obtener(url, 'cargar')
         }
         if (type == 'eliminar') {
-            info = await axios.delete(url + '/eliminar/' + id)
+            info.value = await axios.delete(url + '/eliminar/' + id)
             obtener(url, 'cargar')
         }
         if (type == 'editar') {
-            info = await axios.put(url + '/modificar/' + id, informacion.value)
+            info.value = await axios.put(url + '/modificar/' + id, informacion.value)
             obtener(url, 'cargar')
         }
         if (type == 'activar') {
-            info = await axios.put(url + '/activar/' + id)
+            info.value = await axios.put(url + '/activar/' + id)
             obtener(url, 'cargar')
         }
         if (type == 'desactivar') {
-            info = await axios.put(url + '/desactivar/' + id)
+            info.value = await axios.put(url + '/desactivar/' + id)
             obtener(url, 'cargar')
         }
         //aqui muestra la respuesta del server en la consola 🛠
-        console.log(info.data)
-        //oculta box y el estado ya no es "cargando"
-        boxform.value = { box: false, estado: true }
+        console.log('========',info.value.data.conductor)
+        
     }
 
     return {
         count,
         increment,
-        obtener
+        obtener,
+        info
     }
 
 })

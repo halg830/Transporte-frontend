@@ -4,21 +4,33 @@ import { conductoresfunction } from '../stores/conductores.js'
 import axios from "axios";
 import { ref } from "vue";
 
-const useConductores=conductoresfunction()
-let increment = ()=>{
+let contador = ref('')
+
+const useConductores = conductoresfunction()
+
+let increment = async ()=>{
   useConductores.increment()
+  contador.value = useConductores.count
+  console.log(useConductores.count)
+
+  useConductores.obtener(url, 'cargar')
+  rows.value = useConductores.info.data.conductor
+  console.log('prueba',useConductores.info.data.conductor)
 }
+
 
 
 /* let obtener = (url, type, id ='')=>{
   useConductores.obtener(url, type, id ='')
-  rows.value = info.data.conductor
-} */
+
+  //oculta box y el estado ya no es "cargando"
+  boxform.value = { box: false, estado: true }
+}  */
 
 
     //esta funcion recoje dos valores, primero la url pricipal 🎯
     //segundo el tipo de accion que deseas realizar 📝
-    async function obtener(url, type, id = '') {
+    async function _obtener(url, type, id = '') {
         let info
         if (type == 'cargar') {
             info = await axios.get(url + '/cargar')
@@ -54,16 +66,20 @@ let increment = ()=>{
     }
 
 let url = 'conductor'
-
 // aqui defino los datos que seran reactivos 🧨
 let informacion = ref({nombre:'',cedula:'',id:''})
 let typeform = ref('- - -')
 let errorform = ref('')
 let rows = ref([]);
-
 const boxform = ref({box:false, estado: true});
 
-obtener(url,'cargar')
+//💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢
+
+/* obtener(url,'cargar')
+  //rows.value = useConductores.info.data.coductor
+  console.log('prueba', useConductores.info.data.coductor) */
+
+//💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢
 
 function form(type, data = ''){
   informacion = ref({nombre:'',cedula:''})
@@ -169,7 +185,7 @@ function enviarinformacion(type) {
 					</tr>
 				</tbody>
 			</q-markup-table>
-    <p>Contador: {{ useConductores.count }}</p>
+    <p>Contador: {{ contador }}</p>
     <button @click="increment()">Incrementar</button>
 		</div>
 
