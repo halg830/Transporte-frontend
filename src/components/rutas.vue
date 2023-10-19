@@ -4,7 +4,48 @@ import { ref } from "vue";
 import { useRutasStore } from "../stores/rutas.js";
 
 const useRutas = useRutasStore();
+const columns = ref([
+  {
+    name: "Ciudad origen",
+    label: "Ciudad origen",
+    align: "left",
+    field: (row) => row.ciudad_origen.nombre,
+  },
+  {
+    name: "Ciudad destino",
+    label: "Ciudad destino",
+    align: "left",
+    field: (row) => row.ciudad_destino.nombre,
+  },
+  {
+    name: "Bus",
+    label: "Bus",
+    align: "left",
+    field: (row) => row.bus.placa,
+  },
+  {
+    name: "Hora salida",
+    label: "Hora salida",
+    field: (row) => convertirHora(row.hora_salida),
+  },
+  {
+    name: "Valor",
+    label: "Valor",
+    field: (row) => row.valor,
+  },
+  {
+    name: "Estado",
+    label: "Estado",
+    field: (row) => row.estado,
+  },
+  {
+    name: "opciones",
+    label: "Opciones",
+    field: "opciones",
+  },
+])
 const rows = ref([]);
+
 const data = ref({
   ciudad_origen: "",
   ciudad_destino: "",
@@ -33,6 +74,22 @@ const obtenerInfo = async () => {
 };
 
 obtenerInfo();
+
+const activar = async(id)=>{
+  const response = await useRutas.activar(id)
+  console.log("r", response);
+  const buscar = rows.value.findIndex(r=>r._id==response.rutasPopulate._id)
+  rows.value.splice(buscar, 1, response.rutasPopulate)
+
+}
+
+const inactivar = async(id)=>{
+  const response = await useRutas.inactivar(id)
+  console.log("r", response);
+  const buscar = rows.value.findIndex(r=>r._id==response.rutasPopulate._id)
+  rows.value.splice(buscar, 1, response.rutasPopulate)
+
+}
 
 //esta funcion recoje dos valores, primero la url pricipal 🎯
 //segundo el tipo de accion que deseas realizar 📝
@@ -126,6 +183,7 @@ function convertirHora(cadenaFecha) {
   return horaFormateada;
 }
 </script>
+
 <template>
   <div>
     <q-dialog v-model="boxform.box">
@@ -137,35 +195,13 @@ function convertirHora(cadenaFecha) {
 
         <q-card-section class="q-gutter-md">
           <div class="text-negative">{{ errorform }}</div>
-          <q-select
-            rounded
-            standout
-            v-model="data.ciudad_origen"
-            :options="options.ciudad"
-            label="Ciudad origen"
-          />
-          <q-select
-            rounded
-            standout
-            v-model="data.ciudad_destino"
-            :options="options.ciudad"
-            label="Ciudad destino"
-          />
-          <q-select
-            rounded
-            standout
-            v-model="data.bus"
-            :options="options.bus"
-            label="Bus"
-          />
+          <q-select rounded standout v-model="data.ciudad_origen" :options="options.ciudad" label="Ciudad origen" />
+          <q-select rounded standout v-model="data.ciudad_destino" :options="options.ciudad" label="Ciudad destino" />
+          <q-select rounded standout v-model="data.bus" :options="options.bus" label="Bus" />
           <q-input filled v-model="data.hora_salida" mask="Hora Salida" :rules="['time']">
             <template v-slot:append>
               <q-icon name="access_time" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
+                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                   <q-time v-model="data.hora_salida">
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
@@ -176,126 +212,34 @@ function convertirHora(cadenaFecha) {
             </template>
           </q-input>
 
-          <q-input
-            outlined
-            v-model="data.valor"
-            label="Valor"
-            :readonly="typeform !== 'agregar'"
-            type="number"
-          ></q-input>
-          <q-btn
-            :color="typeform === 'agregar' ? 'primary' : 'warning'"
-            @click="enviarinformacion(typeform)"
-            v-if="boxform.estado !== 'load'"
-            >{{ typeform }}</q-btn
-          >
+          <q-input outlined v-model="data.valor" label="Valor" :readonly="typeform !== 'agregar'" type="number"></q-input>
+          <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'" @click="enviarinformacion(typeform)"
+            v-if="boxform.estado !== 'load'">{{ typeform }}</q-btn>
 
-          <q-btn
-            :color="typeform === 'agregar' ? 'primary' : 'warning'"
-            v-if="boxform.estado == 'load'"
-          >
+          <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'" v-if="boxform.estado == 'load'">
             <q-circular-progress indeterminate color="white" />
           </q-btn>
         </q-card-section>
       </q-card>
     </q-dialog>
 
-    <q-markup-table class="tabla">
-      <thead>
-        <tr>
-          <th colspan="5">
-            <h4 class="q-ma-xs text-left">
-              Rutas
-              <q-btn
-                class="q-ml-xs"
-                label="Añadir"
-                color="accent"
-                @click="form('agregar')"
-              >
-                <q-icon name="style" color="white" right />
-              </q-btn>
-            </h4>
-          </th>
-        </tr>
-        <tr class="cosascont">
-          <th class="text-center encabezado">Ciudad origen</th>
-          <th class="text-center encabezado">Ciudad destino</th>
-          <th class="text-center encabezado">Bus</th>
-          <th class="text-center encabezado">Fecha salida</th>
-          <th class="text-center encabezado">Hora salida</th>
-          <th class="text-center encabezado">Valor</th>
-          <th class="text-center encabezado">Estado</th>
-          <th class="text-center encabezado">Opciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="row in rows" :key="row.id">
-          <td class="text-center">{{ row.ciudad_origen.nombre }}</td>
-          <td class="text-center">{{ row.ciudad_destino.nombre }}</td>
-          <td class="text-center">{{ row.bus?.placa || undefined }}</td>
-          <td class="text-center">{{ convertirFecha(row.fecha_salida) }}</td>
-          <td class="text-center">{{ convertirHora(row.hora_salida) }}</td>
-          <td class="text-center">{{ row.valor }}</td>
-          <td class="text-center">
-            <q-btn
-              class="botonv1"
-              label="activo"
-              color="positive"
-              v-if="row.estado == true"
-              @click="
-                obtener(url, 'desactivar', row._id);
-                row.estado = 'load';
-              "
-            />
+    <div class="q-pa-md">
 
-            <q-btn
-              class="botonv1"
-              label="no activo"
-              color="negative"
-              v-if="row.estado == false"
-              @click="
-                obtener(url, 'activar', row._id);
-                row.estado = 'load';
-              "
-            />
-
-            <q-btn
-              class="botonv1"
-              label=""
-              color="grey"
-              v-if="row.estado == 'load'"
-            >
-              <q-circular-progress indeterminate color="white" />
-            </q-btn>
-          </td>
-          <td class="text-center">
-            <q-btn-group>
-              <q-btn label="" color="grey" v-if="row.estado == 'load'">
-                <q-circular-progress indeterminate color="white" />
-              </q-btn>
-
-              <q-btn
-                color="negative"
-                icon="delete"
-                class="botonv1"
-                @click="
-                  obtener(url, 'eliminar', row._id);
-                  row.estado = 'load';
-                "
-                v-else
-              />
-
-              <q-btn
-                color="warning"
-                icon="edit"
-                class="botonv1"
-                @click="form('editar', row)"
-              />
-            </q-btn-group>
-          </td>
-        </tr>
-      </tbody>
-    </q-markup-table>
+      <q-table title="Rutas" :rows="rows" :columns="columns" row-key="name">
+        <template v-slot:body-cell-Estado="props">
+          <q-td :props="props" class="botones">
+            <q-btn color="white" text-color="black" label="❌" @click="inactivar(props.row._id)"
+              v-if="props.row.estado == 1" />
+            <q-btn color="white" text-color="black" label="✅" @click="activar(props.row._id)" v-else />
+          </q-td>
+        </template>
+        <template v-slot:body-cell-opciones="props">
+          <q-td :props="props" class="botones">
+            <q-btn color="white" text-color="black" label="🖋️" @click="Editar(props.row._id)" />
+          </q-td>
+        </template>
+      </q-table>
+    </div>
   </div>
 </template>
 <style scoped>

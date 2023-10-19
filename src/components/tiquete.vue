@@ -169,7 +169,7 @@ function convertirHora(cadenaFecha) {
         <tr v-for="row in rows" :key="row.id">
           <td class="text-center">{{ row.ciudad_origen.nombre }}</td>
           <td class="text-center">{{ row.ciudad_destino.nombre }}</td>
-          <td class="text-center">{{ row.bus?.placa || undefined }}</td>
+          <!-- <td class="text-center">{{ row.bus?.placa || undefined }}</td> -->
           <td class="text-center">{{ convertirFecha(row.fecha_salida) }}</td>
           <td class="text-center">{{ convertirHora(row.hora_salida) }}</td>
           <td class="text-center">
@@ -233,6 +233,7 @@ function convertirHora(cadenaFecha) {
       </tbody>
     </q-markup-table>
   </div>
+  
 </template>
 <style scoped>
 .cont {

@@ -20,16 +20,19 @@ async function login(){
 
 <template>
     <div>
-        <h1>Login</h1>
         <div>
-            <h5>Usuario:</h5>
-            <input type="text" v-model="data.usuario">
-            <h5>Contraseña:</h5>
-            <input type="password" v-model="data.password">
-            <router-link to="/home" >
-                <button class="opcion">Ingresar</button>
-            </router-link>
+            <h1>Login</h1>
+            <div>
+                <h5>Usuario:</h5>
+                <input type="text" v-model="data.usuario">
+                <h5>Contraseña:</h5>
+                <input type="password" v-model="data.password">
+                <router-link to="/home" >
+                    <button class="opcion">Ingresar</button>
+                </router-link>
+            </div>
         </div>
+        <router-view />
     </div>
-    <router-view />
+    
 </template>

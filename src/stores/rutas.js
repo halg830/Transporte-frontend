@@ -17,7 +17,7 @@ export const useRutasStore = defineStore("ruta", () => {
 
   const guardar = async (data) => {
     try {
-      const response = await axios.get(`${model}nuevo`, data);
+      const response = await axios.post(`${model}nuevo`, data);
       console.log(response);
       return response.data
     } catch (error) {
@@ -28,7 +28,7 @@ export const useRutasStore = defineStore("ruta", () => {
 
   const editar = async (data) => {
     try {
-      const response = await axios.get(`${model}editar`, data);
+      const response = await axios.put(`${model}editar`, data);
       console.log(response);
       return response.data
     } catch (error) {
@@ -39,7 +39,7 @@ export const useRutasStore = defineStore("ruta", () => {
 
   const activar = async (id) => {
     try {
-      const response = await axios.get(`${model}activar/${id}`);
+      const response = await axios.put(`${model}activar/${id}`);
       console.log(response);
       return response.data
     } catch (error) {
@@ -50,7 +50,7 @@ export const useRutasStore = defineStore("ruta", () => {
   
   const inactivar = async (id) => {
     try {
-      const response = await axios.get(`${model}/${id}`);
+      const response = await axios.put(`${model}inactivar/${id}`);
       console.log(response);
       return response.data
     } catch (error) {
