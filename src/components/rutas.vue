@@ -1,27 +1,38 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
-import {useRutasStore} from '../stores/rutas.js'
+import { useRutasStore } from "../stores/rutas.js";
 
-const useRutas = useRutasStore()
-let rows = ref([]);
+const useRutas = useRutasStore();
+const rows = ref([]);
+const data = ref({
+  ciudad_origen: "",
+  ciudad_destino: "",
+  bus: "",
+  hora_salida: "",
+  valor: ""
+});
+
+const options = ref({
+  ciudad: [],
+  bus: [],
+});
 
 const obtenerInfo = async () => {
   try {
     const rutas = await useRutas.obtener();
     if (rutas) {
-      console.log("Datos de rutas obtenidos:", rutas);
-      rows.value = rutas.rutasPopulate
+      console.log(rutas);
+      rows.value = rutas
     } else {
-      console.log("No se pudieron obtener datos de rutas.");
+      console.log("No se pudieron obtener los datos.");
     }
   } catch (error) {
-    console.error("Error al obtener datos de rutas:", error);
+    console.error(error);
   }
 };
 
 obtenerInfo();
-
 
 //esta funcion recoje dos valores, primero la url pricipal 🎯
 //segundo el tipo de accion que deseas realizar 📝
@@ -68,7 +79,6 @@ let informacion = ref({ nombre: "", cedula: "", id: "" });
 let typeform = ref("- - -");
 let errorform = ref("");
 
-
 const boxform = ref({ box: false, estado: true });
 
 // obtener(url, "cargar");
@@ -100,8 +110,8 @@ function enviarinformacion(type) {
 function convertirFecha(cadenaFecha) {
   const fecha = new Date(cadenaFecha);
   const año = fecha.getFullYear();
-  const mes = (fecha.getMonth() + 1).toString().padStart(2, '0'); 
-  const dia = fecha.getDate().toString().padStart(2, '0'); 
+  const mes = (fecha.getMonth() + 1).toString().padStart(2, "0");
+  const dia = fecha.getDate().toString().padStart(2, "0");
 
   const fechaFormateada = `${año}/${mes}/${dia}`;
   return fechaFormateada;
@@ -109,13 +119,12 @@ function convertirFecha(cadenaFecha) {
 
 function convertirHora(cadenaFecha) {
   const fecha = new Date(cadenaFecha);
-  const horas = fecha.getUTCHours().toString().padStart(2, '0'); 
-  const minutos = fecha.getUTCMinutes().toString().padStart(2, '0'); 
+  const horas = fecha.getUTCHours().toString().padStart(2, "0");
+  const minutos = fecha.getUTCMinutes().toString().padStart(2, "0");
 
   const horaFormateada = `${horas}:${minutos}`;
   return horaFormateada;
 }
-
 </script>
 <template>
   <div>
@@ -128,15 +137,49 @@ function convertirHora(cadenaFecha) {
 
         <q-card-section class="q-gutter-md">
           <div class="text-negative">{{ errorform }}</div>
+          <q-select
+            rounded
+            standout
+            v-model="data.ciudad_origen"
+            :options="options.ciudad"
+            label="Ciudad origen"
+          />
+          <q-select
+            rounded
+            standout
+            v-model="data.ciudad_destino"
+            :options="options.ciudad"
+            label="Ciudad destino"
+          />
+          <q-select
+            rounded
+            standout
+            v-model="data.bus"
+            :options="options.bus"
+            label="Bus"
+          />
+          <q-input filled v-model="data.hora_salida" mask="Hora Salida" :rules="['time']">
+            <template v-slot:append>
+              <q-icon name="access_time" class="cursor-pointer">
+                <q-popup-proxy
+                  cover
+                  transition-show="scale"
+                  transition-hide="scale"
+                >
+                  <q-time v-model="data.hora_salida">
+                    <div class="row items-center justify-end">
+                      <q-btn v-close-popup label="Close" color="primary" flat />
+                    </div>
+                  </q-time>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+
           <q-input
             outlined
-            v-model="informacion.nombre"
-            label="Nombre"
-          ></q-input>
-          <q-input
-            outlined
-            v-model="informacion.cedula"
-            label="Cedula"
+            v-model="data.valor"
+            label="Valor"
             :readonly="typeform !== 'agregar'"
             type="number"
           ></q-input>
