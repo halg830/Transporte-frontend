@@ -2,13 +2,13 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { ref } from "vue";
 
-export const useRutasStore = defineStore("ruta", () => {
-  const model = "ruta/";
+export const useConductorStore = defineStore("conductor", () => {
+  const model = "conductor/";
 
   const obtener = async () => {
     try {
       const response = await axios.get(`${model}all`);
-      return response.data.rutasPopulate;
+      return response.data;
     } catch (error) {
       console.error(error);
       return null;
@@ -26,9 +26,9 @@ export const useRutasStore = defineStore("ruta", () => {
     }
   };
 
-  const editar = async (data) => {
+  const editar = async (data, id) => {
     try {
-      const response = await axios.put(`${model}editar/:id`, data);
+      const response = await axios.put(`${model}editar/${id}`, data);
       console.log(response);
       return response.data
     } catch (error) {
