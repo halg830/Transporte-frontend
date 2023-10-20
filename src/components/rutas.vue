@@ -226,7 +226,7 @@ function convertirHora(cadenaFecha) {
 
     <div class="q-pa-md">
       <q-table title="Rutas" :rows="rows" :columns="columns" row-key="name">
-        <template v-slot:top-right="props">
+        <template v-slot:top-right>
           <q-tr>
             <q-td>
               <q-btn @click="agregar">➕</q-btn>

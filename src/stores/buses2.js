@@ -15,6 +15,15 @@ export const useBusStore = defineStore("bus", () => {
     }
   };
 
+  const buscarId = async(id)=>{
+    try {
+      const bus = await axios.get(`${model}/buscar/${id}`);
+          return bus.data.busPopulate
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   const guardar = async (data) => {
     try {
       const response = await axios.post(`${model}guardar`, data);
@@ -60,6 +69,6 @@ export const useBusStore = defineStore("bus", () => {
   };
 
   return {
-    obtener, guardar, editar, activar, inactivar
+    obtener, buscarId, guardar, editar, activar, inactivar
   };
 });

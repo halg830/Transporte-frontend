@@ -15,6 +15,15 @@ export const useCiudadStore = defineStore("ciudad", () => {
     }
   };
 
+  const buscarId = async(id)=>{
+    try {
+      const ciudad = await axios.get(`${model}/buscar/${id}`);
+          return ciudad.data
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   const guardar = async (data) => {
     try {
       const response = await axios.post(`${model}guardar`, data);
@@ -60,6 +69,6 @@ export const useCiudadStore = defineStore("ciudad", () => {
   };
 
   return {
-    obtener, guardar, editar, activar, inactivar
+    obtener, buscarId, guardar, editar, activar, inactivar
   };
 });
