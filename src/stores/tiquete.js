@@ -1,8 +1,6 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 import { ref } from "vue";
-import { useBusStore } from "./buses2.js";
-import { useCiudadStore } from "./ciudad2.js";
 
 export const useTiqueteStore = defineStore("tiquete", () => {
   const model = "tiquete/";
@@ -10,31 +8,29 @@ export const useTiqueteStore = defineStore("tiquete", () => {
   const obtener = async () => {
     try {
       const response = await axios.get(`${model}all`);
-      
 
-    const responsePromise = response.data.tiquetePopulate.map(async(element) => {
-        const idBus = element.ruta?.bus || undefined;
-      const idCiudad =
-        element.ruta?.ciudad_origen || undefined;
+      const responsePromise = response.data.tiquetePopulate.map(
+        async (element) => {
+          const idBus = element.ruta?.bus || undefined;
+          const idCiudad = element.ruta?.ciudad_origen || undefined;
 
-        console.log(idCiudad);
-        if (idBus) {
-          
-          console.log("b",bus);
+          console.log(idCiudad);
+          if (idBus) {
+            const bus = await axios.get(`bus/buscar/${idBus}`);
+            element.ruta.bus = bus.data.busPopulate;
+          }
+          if (idCiudad) {
+            const ciudad = await axios.get(`ciudad/buscar/${idCiudad}`);
+            element.ruta.ciudad_origen = ciudad.data.ciudad;
+          }
+
+          return element;
         }
-        if (idCiudad) {
-          const ciudad = await axios.get(`ciudad/buscar/${idCiudad}`);
-          return ciudad.data
-          console.log("b",ciudad);
-        }
+      );
 
-        return {idBus, idCiudad}
-    });
+      const res = await Promise.all(responsePromise);
 
-    const res = await Promise.all(responsePromise)
-
-
-      return res
+      return res;
     } catch (error) {
       console.error(error);
       return null;
