@@ -34,11 +34,23 @@ const columns = ref([
     align: "left",
     field: (row) => row.ruta.bus.placa,
   },
-  {
+  /* {
     name: "Asiento",
     label: "Asiento",
     align: "left",
     field: (row) => row.ruta.bus.placa,
+  }, */
+  {
+    name: "Fecha salida",
+    label: "Fecha salida",
+    align: "left",
+    field: (row) => row.fecha_salida,
+  },
+  {
+    name: "Vendedor",
+    label: "Vendedor",
+    align: "left",
+    field: (row) => row.vendedor.nombre,
   },
   {
     name: "Estado",
