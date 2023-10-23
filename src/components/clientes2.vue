@@ -1,39 +1,31 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
-import { useBusStore } from "../stores/buses2.js";
-import { useConductorStore } from "../stores/conductores2.js";
+import {useClienteStore} from '../stores/clientes2.js'
 
-const modelo = "Buses";
-const useBus = useBusStore();
-const useConductor = useConductorStore();
+const modelo = "Clientes"
+const useCliente = useClienteStore();
 
 const columns = ref([
   {
-    name: "Placa",
-    label: "Placa",
+    name: "Nombre",
+    label: "Nombre",
     align: "left",
-    field: (row) => row.placa,
+    field: (row) => row.nombre,
     sort: true,
-    sortOrder: "da",
+    sortOrder: 'da'
   },
   {
-    name: "Conductor",
-    label: "Conductor",
+    name: "Cedula",
+    label: "Cedula",
     align: "left",
-    field: (row) => row.conductor?.nombre || "-",
+    field: (row) => row.cedula,
   },
   {
-    name: "Empresa",
-    label: "Empresa",
+    name: "Email",
+    label: "Email",
     align: "left",
-    field: (row) => row.empresa,
-  },
-  {
-    name: "Asientos",
-    label: "Asientos",
-    align: "left",
-    field: (row) => row.asiento,
+    field: (row) => row.email,
   },
   {
     name: "Estado",
@@ -49,18 +41,17 @@ const columns = ref([
 const rows = ref([]);
 
 const data = ref({
-  placa: "",
-  conductor: "",
-  empresa: "",
-  asiento: 0,
+  nombre: "",
+  cedula: "",
+  email: ""
 });
 
 const obtenerInfo = async () => {
   try {
-    const bus = await useBus.obtener();
-    if (bus) {
-      console.log(bus);
-      rows.value = bus.busPopulate;
+    const cliente = await useCliente.obtener();
+    if (cliente) {
+      console.log(cliente);
+      rows.value = cliente.cliente;
     } else {
       console.log("No se pudieron obtener los datos.");
     }
@@ -71,48 +62,24 @@ const obtenerInfo = async () => {
 
 obtenerInfo();
 
-const options = ref({
-  conductores: [],
-});
-
-const conductores = ref([]);
-
-const obtenerOptions = async () => {
-  const responseConductores = await useConductor.obtener();
-
-  options.value.conductores = responseConductores.map((c) => c.nombre);
-  conductores.value = responseConductores;
-};
-
-obtenerOptions();
-
 const estado = ref("guardar");
 const modal = ref(false);
 const opciones = {
   agregar: () => {
     data.value = {
-      placa: "",
-      conductor: "",
-      empresa: "",
-      asiento: 0,
+      nombre: "",
+      cedula: "",
+      email: ""
     };
     modal.value = true;
     estado.value="guardar";
   },
   editar: (info) => {
     data.value = info;
-    data.value.conductor = info.conductor.nombre;
     modal.value = true;
     estado.value="editar";
   },
 };
-
-function idConductor(nombre) {
-  const buscar = conductores.value.find((c) => c.nombre === nombre);
-  if (buscar) return buscar._id;
-  
-  return nombre
-}
 
 function buscarIndexLocal(id) {
   return rows.value.findIndex((r) => r._id === id);
@@ -121,24 +88,17 @@ function buscarIndexLocal(id) {
 const enviarInfo = {
   guardar: async () => {
     try {
-      data.value.conductor = idConductor(data.value.conductor);
-      console.log(data.value);
-
-      const response = await useBus.guardar(data.value);
+      const response = await useCliente.guardar(data.value);
       console.log(response);
-
-      rows.value.push(response);
-      modal.value = false;
+      rows.value.push(response.cliente)
+      modal.value = false
     } catch (error) {
       console.log(error);
     }
   },
   editar: async () => {
     try {
-      data.value.conductor = idConductor(data.value.conductor);
-      console.log(data.value);
-
-      const response = await useBus.editar(data.value._id, data.value);
+    const response = await useCliente.editar(data.value._id, data.value);
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
@@ -151,12 +111,12 @@ const enviarInfo = {
 
 const in_activar={
   activar: async(id)=>{
-    const response = await useBus.activar(id)
+    const response = await useCliente.activar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   },
   inactivar: async(id)=>{
-    const response = await useBus.inactivar(id)
+    const response = await useCliente.inactivar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   }
@@ -173,32 +133,25 @@ const in_activar={
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <!-- <div class="text-negative">{{ errorform }}</div> -->
+          <div class="text-negative">{{ errorform }}</div>
 
           <q-input
             outlined
-            v-model="data.placa"
-            label="Placa"
-            type="text"
-          ></q-input>
-          <q-select
-            rounded
-            standout
-            v-model="data.conductor"
-            :options="options.conductores"
-            label="Conductor"
-          />
-          <q-input
-            outlined
-            v-model="data.empresa"
-            label="Empresa"
+            v-model="data.nombre"
+            label="Nombre"
             type="text"
           ></q-input>
           <q-input
             outlined
-            v-model="data.asiento"
-            label="Asientos"
+            v-model="data.cedula"
+            label="Cedula"
             type="number"
+          ></q-input>
+          <q-input
+            outlined
+            v-model="data.email"
+            label="Email"
+            type="email"
           ></q-input>
           <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
 
@@ -215,7 +168,7 @@ const in_activar={
         <template v-slot:top-right>
           <q-tr>
             <q-td>
-              <q-btn @click="opciones.agregar()">➕</q-btn>
+              <q-btn @click="opciones.agregar">➕</q-btn>
             </q-td>
           </q-tr>
         </template>

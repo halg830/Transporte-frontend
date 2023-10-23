@@ -2,8 +2,9 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { ref } from "vue";
 
-export const useCiudadStore = defineStore("ciudad", () => {
-  const model = "ciudad/";
+export const useVendedorStore = defineStore("vendedor", () => {
+  const model = "vendedor/";
+  
 
   const obtener = async () => {
     try {
@@ -14,15 +15,6 @@ export const useCiudadStore = defineStore("ciudad", () => {
       return null;
     }
   };
-
-  const buscarId = async(id)=>{
-    try {
-      const ciudad = await axios.get(`${model}/buscar/${id}`);
-          return ciudad.data
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   const guardar = async (data) => {
     try {
@@ -37,9 +29,10 @@ export const useCiudadStore = defineStore("ciudad", () => {
 
   const editar = async (id, data) => {
     try {
+        console.log(id);
       const response = await axios.put(`${model}editar/${id}`, data);
       console.log(response);
-      return response.data
+      return response.data.vendedor
     } catch (error) {
       console.log(error);
       return null
@@ -50,7 +43,7 @@ export const useCiudadStore = defineStore("ciudad", () => {
     try {
       const response = await axios.put(`${model}activar/${id}`);
       console.log(response);
-      return response.data
+      return response.data.vendedor
     } catch (error) {
       console.log(error);
       return null
@@ -61,7 +54,7 @@ export const useCiudadStore = defineStore("ciudad", () => {
     try {
       const response = await axios.put(`${model}inactivar/${id}`);
       console.log(response);
-      return response.data
+      return response.data.vendedor
     } catch (error) {
       console.log(error);
       return null
@@ -69,6 +62,6 @@ export const useCiudadStore = defineStore("ciudad", () => {
   };
 
   return {
-    obtener, buscarId, guardar, editar, activar, inactivar
+    obtener, guardar, editar, activar, inactivar
   };
 });

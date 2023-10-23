@@ -28,18 +28,19 @@ export const useBusStore = defineStore("bus", () => {
     try {
       const response = await axios.post(`${model}guardar`, data);
       console.log(response);
-      return response.data
+      return response.data.busPopulate
     } catch (error) {
       console.log(error);
       return null
     }
   };
 
-  const editar = async (data, id) => {
+  const editar = async (id, data) => {
     try {
+      console.log(id, data);
       const response = await axios.put(`${model}editar/${id}`, data);
       console.log(response);
-      return response.data
+      return response.data.busPopulate
     } catch (error) {
       console.log(error);
       return null
@@ -50,7 +51,7 @@ export const useBusStore = defineStore("bus", () => {
     try {
       const response = await axios.put(`${model}activar/${id}`);
       console.log(response);
-      return response.data
+      return response.data.busPopulate
     } catch (error) {
       console.log(error);
       return null
@@ -61,7 +62,7 @@ export const useBusStore = defineStore("bus", () => {
     try {
       const response = await axios.put(`${model}inactivar/${id}`);
       console.log(response);
-      return response.data
+      return response.data.busPopulate
     } catch (error) {
       console.log(error);
       return null

@@ -2,29 +2,44 @@
 import axios from "axios";
 import { ref } from "vue";
 import {useTiqueteStore} from '../stores/tiquete.js'
+import { useVendedorStore } from "../stores/vendedor2";
 import { useRutasStore } from "../stores/rutas.js";
 import { useCiudadStore } from "../stores/ciudad2.js";
 import { useBusStore } from "../stores/buses2.js";
+import { useClienteStore } from "../stores/clientes2";
 
 const modelo = "Tiquete"
 
 const useTiquete = useTiqueteStore()
+const useVendedor = useVendedorStore()
 const useRutas = useRutasStore();
-const useCiudad = useCiudadStore()
-const useBus = useBusStore()
+const useCliente = useClienteStore()
+
 const columns = ref([
   {
-    name: "Nombre",
-    label: "Nombre",
+    name: "Cedula",
+    label: "Cedula",
     align: "left",
-    field: (row) => row?.cliente || "-",
+    field: (row) => row.cliente.cedula,
   },
-  /* {
+  {
     name: "Ruta",
     label: "Ruta",
     align: "left",
-    field: (row) => row?.rutas?.ciudad_origen?.nombre+"/"+row?.rutas?.ciudad_destino?.nombre || "-",
-  }, */
+    field: (row) => row.ruta.ciudad_origen.nombre+"/"+row.ruta.ciudad_destino.nombre,
+  },
+  {
+    name: "Bus",
+    label: "Bus",
+    align: "left",
+    field: (row) => row.ruta.bus.placa,
+  },
+  {
+    name: "Asiento",
+    label: "Asiento",
+    align: "left",
+    field: (row) => row.ruta.bus.placa,
+  },
   {
     name: "Estado",
     label: "Estado",
@@ -39,17 +54,23 @@ const columns = ref([
 const rows = ref([]);
 
 const data = ref({
-  ciudad_origen: "",
-  ciudad_destino: "",
-  bus: "",
-  hora_salida: "",
-  valor: "",
+  vendedor: "",
+  ruta: "",
+  cliente: "",
+  fecha_salida: "",
 });
 
 const options = ref({
-  ciudad: [],
-  bus: [],
+  vendedor: [],
+  ruta: [],
+  cliente: []
 });
+
+const models = ref({
+  vendedor: [],
+  ruta: [],
+  cliente: []
+})
 
 const obtenerInfo = async () => {
   try {
@@ -68,11 +89,26 @@ const obtenerInfo = async () => {
 obtenerInfo();
 
 const obtenerOptions = async()=>{
-  const responseCiudad = await useCiudad.obtener()
-  const responseBus = await useBus.obtener()
+  const responseVendedor = await useVendedor.obtener()
+  const responseRutas = await useRutas.obtener()
+  const responseCliente = await useCliente.obtener()
+  // const responseCiudad = await useCiudad.obtener()
+  // const responseBus = await useBus.obtener()
 
-  options.value.ciudad = responseCiudad.map(c=>c.nombre)
-  options.value.bus = responseBus.busPopulate.map(b=>b.placa)
+  options.value.vendedor = responseVendedor.map(c=>c.nombre)
+  models.value.vendedor = responseVendedor
+  const rutasPopulatePromesas = responseRutas.map(async (e) => {
+    return await Ruta.findById(e._id)
+    .populate("ciudad_origen")
+    .populate("ciudad_destino")
+    .populate("bus"); 
+  });
+  
+  const rutasPopulate = await Promise.all(rutasPopulatePromesas);
+  options.value.ruta = rutasPopulate.map(c=>c.nombre)
+  models.value.ruta = responseRutas
+  // options.value.ciudad = responseCiudad.map(c=>c.nombre)
+  // options.value.bus = responseBus.busPopulate.map(b=>b.placa)
 }
 
 obtenerOptions()

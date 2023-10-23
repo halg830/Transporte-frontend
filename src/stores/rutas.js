@@ -19,18 +19,18 @@ export const useRutasStore = defineStore("ruta", () => {
     try {
       const response = await axios.post(`${model}guardar`, data);
       console.log(response);
-      return response.data
+      return response.data.rutasPopulate
     } catch (error) {
       console.log(error);
       return null
     }
   };
 
-  const editar = async (data) => {
+  const editar = async (id, data) => {
     try {
-      const response = await axios.put(`${model}editar/:id`, data);
+      const response = await axios.put(`${model}editar/${id}`, data);
       console.log(response);
-      return response.data
+      return response.data.rutasPopulate
     } catch (error) {
       console.log(error);
       return null
@@ -41,7 +41,7 @@ export const useRutasStore = defineStore("ruta", () => {
     try {
       const response = await axios.put(`${model}activar/${id}`);
       console.log(response);
-      return response.data
+      return response.data.rutasPopulate
     } catch (error) {
       console.log(error);
       return null
@@ -52,7 +52,7 @@ export const useRutasStore = defineStore("ruta", () => {
     try {
       const response = await axios.put(`${model}inactivar/${id}`);
       console.log(response);
-      return response.data
+      return response.data.rutasPopulate
     } catch (error) {
       console.log(error);
       return null

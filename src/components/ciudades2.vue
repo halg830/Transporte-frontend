@@ -29,11 +29,6 @@ const data = ref({
   nombre: "",
 });
 
-const options = ref({
-  ciudad: [],
-  bus: [],
-});
-
 const obtenerInfo = async () => {
   try {
     const ciudad = await useCiudad.obtener();
@@ -50,9 +45,25 @@ const obtenerInfo = async () => {
 
 obtenerInfo();
 
+const estado = ref("guardar");
 const modal = ref(false);
-function agregar() {
-  modal.value = true;
+const opciones = {
+  agregar: () => {
+    data.value = {
+      nombre: ""
+    };
+    modal.value = true;
+    estado.value="guardar";
+  },
+  editar: (info) => {
+    data.value = info;
+    modal.value = true;
+    estado.value="editar";
+  },
+};
+
+function buscarIndexLocal(id) {
+  return rows.value.findIndex((r) => r._id === id);
 }
 
 const enviarInfo = {
@@ -60,29 +71,37 @@ const enviarInfo = {
     try {
       const response = await useCiudad.guardar(data.value);
       console.log(response);
-      rows.value.push(response.ciudad)
+      rows.value.push(response)
       modal.value = false
     } catch (error) {
       console.log(error);
     }
   },
-  editar: async () => {},
+  editar: async () => {
+    try {
+    const response = await useCiudad.editar(data.value._id, data.value);
+      console.log(response);
+
+      rows.value.splice(buscarIndexLocal(response._id), 1, response);
+      modal.value = false
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };
 
-const activar = async (id) => {
-  const response = await useCiudad.activar(id);
-  console.log("r", response);
-  const buscar = rows.value.findIndex((r) => r._id == response.ciudad._id);
-  console.log(buscar);
-  rows.value.splice(buscar, 1, response.ciudad);
-};
-
-const inactivar = async (id) => {
-  const response = await useCiudad.inactivar(id);
-  console.log("r", response);
-  const buscar = rows.value.findIndex((r) => r._id == response.ciudad._id);
-  rows.value.splice(buscar, 1, response.ciudad);
-};
+const in_activar={
+  activar: async(id)=>{
+    const response = await useCiudad.activar(id)
+    console.log(response);
+    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+  },
+  inactivar: async(id)=>{
+    const response = await useCiudad.inactivar(id)
+    console.log(response);
+    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+  }
+}
 </script>
 
 <template>
@@ -103,7 +122,7 @@ const inactivar = async (id) => {
             label="Nombre"
             type="text"
           ></q-input>
-          <q-btn @click="enviarInfo.guardar()">Guardar</q-btn>
+          <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
 
           <!-- <q-btn
           >
@@ -118,7 +137,7 @@ const inactivar = async (id) => {
         <template v-slot:top-right="props">
           <q-tr>
             <q-td>
-              <q-btn @click="agregar">➕</q-btn>
+              <q-btn @click="opciones.agregar">➕</q-btn>
             </q-td>
           </q-tr>
         </template>
@@ -127,16 +146,8 @@ const inactivar = async (id) => {
             <q-btn
               color="white"
               text-color="black"
-              label="❌"
-              @click="inactivar(props.row._id)"
-              v-if="props.row.estado == 1"
-            />
-            <q-btn
-              color="white"
-              text-color="black"
-              label="✅"
-              @click="activar(props.row._id)"
-              v-else
+              :label="props.row.estado === 1 ? '❌' : '✅'"
+              @click="props.row.estado === 1 ? in_activar.inactivar(props.row._id) : in_activar.activar(props.row._id)"
             />
           </q-td>
         </template>
@@ -146,7 +157,7 @@ const inactivar = async (id) => {
               color="white"
               text-color="black"
               label="🖋️"
-              @click="Editar(props.row._id)"
+              @click="opciones.editar(props.row)"
             />
           </q-td>
         </template>

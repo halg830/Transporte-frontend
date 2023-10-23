@@ -6,8 +6,8 @@ import { useCiudadStore } from "../stores/ciudad2.js";
 import { useBusStore } from "../stores/buses2.js";
 
 const useRutas = useRutasStore();
-const useCiudad = useCiudadStore()
-const useBus = useBusStore()
+const useCiudad = useCiudadStore();
+const useBus = useBusStore();
 const columns = ref([
   {
     name: "Ciudad origen",
@@ -57,13 +57,20 @@ const data = ref({
   hora_salida: "",
   valor: "",
 });
+const time = ref('')
 
 const options = ref({
   ciudad: [],
   bus: [],
 });
 
+const models = ref({
+  ciudades: [],
+  buses: []
+})
+
 const obtenerInfo = async () => {
+  console.log("Esperando datos...");
   try {
     const rutas = await useRutas.obtener();
     if (rutas) {
@@ -79,54 +86,122 @@ const obtenerInfo = async () => {
 
 obtenerInfo();
 
-const obtenerOptions = async()=>{
-  const responseCiudad = await useCiudad.obtener()
-  const responseBus = await useBus.obtener()
+const obtenerOptions = async () => {
+  const responseCiudad = await useCiudad.obtener();
+  const responseBus = await useBus.obtener();
 
-  options.value.ciudad = responseCiudad.map(c=>c.nombre)
-  options.value.bus = responseBus.busPopulate.map(b=>b.placa)
+  options.value.ciudad = responseCiudad.map((c) => c.nombre);
+  models.value.ciudades = responseCiudad
+  options.value.bus = responseBus.busPopulate.map((b) => b.placa);
+  models.value.buses = responseBus.busPopulate
+};
+
+obtenerOptions();
+
+const estado = ref("guardar");
+const modal = ref(false);
+const opciones = {
+  agregar: () => {
+    data.value = {
+      ciudad_origen: "",
+  ciudad_destino: "",
+  bus: "",
+  hora_salida: "",
+  valor: "",
+    };
+    modal.value = true;
+    estado.value="guardar";
+  },
+  editar: (info) => {
+    time.value = info.hora_salida
+    data.value = info;
+    data.value.bus = info.bus.placa
+    data.value.ciudad_destino = info.ciudad_destino.nombre
+    data.value.ciudad_origen = info.ciudad_origen.nombre
+    modal.value = true;
+    estado.value="editar";
+  },
+};
+
+function buscarIndexLocal(id) {
+  return rows.value.findIndex((r) => r._id === id);
 }
 
-obtenerOptions()
+function convertirHora_Fecha(hora) {
+  const [horas, minutos] = hora.split(':');
 
-const modal = ref(false)
-async function agregar(){
-  modal.value=true
+  const fecha = new Date('1970-01-01T00:00:00.000Z');
 
-  console.log(options.value);
+  fecha.setHours(horas);
+  fecha.setMinutes(minutos);
+
+  return fecha.toISOString();
+}
+
+function idBus(placa) {
+  console.log(models.value);
+  const buscar = models.value.buses.find((c) => c.placa === placa);
+  if (buscar) return buscar._id;
+  
+  return placa
+}
+function idCiudad(nombre) {
+  const buscar = models.value.ciudades.find((c) => c.nombre === nombre);
+  if (buscar) return buscar._id;
+  
+  return nombre
 }
 
 const enviarInfo = {
   guardar: async () => {
     try {
+      data.value.ciudad_origen = idCiudad(data.value.ciudad_origen)
+      data.value.ciudad_destino = idCiudad(data.value.ciudad_destino)
+      data.value.bus = idBus(data.value.bus)
+      data.value.hora_salida = convertirHora_Fecha(time.value)
+      console.log(data.value);
+
       const response = await useRutas.guardar(data.value);
       console.log(response);
-      rows.value.push(response.RutasPopulate)
+
+      rows.value.push(response.RutasPopulate);
+      modal.value = false;
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  editar: async () => {
+    try {
+      
+      data.value.ciudad_origen = idCiudad(data.value.ciudad_origen)
+      data.value.ciudad_destino = idCiudad(data.value.ciudad_destino)
+      data.value.bus = idBus(data.value.bus)
+      data.value.hora_salida = convertirHora_Fecha(time.value)
+
+      console.log(data.value);
+      const response = await useRutas.editar(data.value._id, data.value);
+      console.log(response);
+
+      rows.value.splice(buscarIndexLocal(response._id), 1, response);
       modal.value = false
     } catch (error) {
       console.log(error);
     }
   },
-  editar: async () => {},
 };
 
-const activar = async (id) => {
-  const response = await useRutas.activar(id);
-  console.log("r", response);
-  const buscar = rows.value.findIndex(
-    (r) => r._id == response.rutasPopulate._id
-  );
-  rows.value.splice(buscar, 1, response.rutasPopulate);
-};
-
-const inactivar = async (id) => {
-  const response = await useRutas.inactivar(id);
-  console.log("r", response);
-  const buscar = rows.value.findIndex(
-    (r) => r._id == response.rutasPopulate._id
-  );
-  rows.value.splice(buscar, 1, response.rutasPopulate);
-};
+const in_activar={
+  activar: async(id)=>{
+    const response = await useRutas.activar(id)
+    console.log(response);
+    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+  },
+  inactivar: async(id)=>{
+    const response = await useRutas.inactivar(id)
+    console.log(response);
+    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+  }
+}
 
 function convertirFecha(cadenaFecha) {
   const fecha = new Date(cadenaFecha);
@@ -158,7 +233,7 @@ function convertirHora(cadenaFecha) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <div class="text-negative">{{ errorform }}</div>
+          <!-- <div class="text-negative">{{ errorform }}</div> -->
           <q-select
             rounded
             standout
@@ -180,28 +255,19 @@ function convertirHora(cadenaFecha) {
             :options="options.bus"
             label="Bus"
           />
-          <q-input
-            filled
-            v-model="data.hora_salida"
-            mask="Hora Salida"
-            :rules="['time']"
-          >
-            <template v-slot:append>
-              <q-icon name="access_time" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
-                  <q-time v-model="data.hora_salida">
-                    <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="Close" color="primary" flat />
-                    </div>
-                  </q-time>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
+          <q-input filled v-model="time" mask="time" :rules="['time']">
+        <template v-slot:append>
+          <q-icon name="access_time" class="cursor-pointer">
+            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+              <q-time v-model="time">
+                <div class="row items-center justify-end">
+                  <q-btn v-close-popup label="Close" color="primary" flat />
+                </div>
+              </q-time>
+            </q-popup-proxy>
+          </q-icon>
+        </template>
+      </q-input>
 
           <q-input
             outlined
@@ -209,10 +275,7 @@ function convertirHora(cadenaFecha) {
             label="Valor"
             type="number"
           ></q-input>
-          <q-btn
-            @click="enviarinformacion(typeform)"
-            >Guardar</q-btn
-          >
+          <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
 
           <!-- <q-btn
             :color="typeform === 'agregar' ? 'primary' : 'warning'"
@@ -229,7 +292,7 @@ function convertirHora(cadenaFecha) {
         <template v-slot:top-right>
           <q-tr>
             <q-td>
-              <q-btn @click="agregar">➕</q-btn>
+              <q-btn @click="opciones.agregar">➕</q-btn>
             </q-td>
           </q-tr>
         </template>
@@ -238,16 +301,8 @@ function convertirHora(cadenaFecha) {
             <q-btn
               color="white"
               text-color="black"
-              label="❌"
-              @click="inactivar(props.row._id)"
-              v-if="props.row.estado == 1"
-            />
-            <q-btn
-              color="white"
-              text-color="black"
-              label="✅"
-              @click="activar(props.row._id)"
-              v-else
+              :label="props.row.estado === 1 ? '❌' : '✅'"
+              @click="props.row.estado === 1 ? in_activar.inactivar(props.row._id) : in_activar.activar(props.row._id)"
             />
           </q-td>
         </template>
@@ -257,7 +312,7 @@ function convertirHora(cadenaFecha) {
               color="white"
               text-color="black"
               label="🖋️"
-              @click="Editar(props.row._id)"
+              @click="opciones.editar(props.row)"
             />
           </q-td>
         </template>

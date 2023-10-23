@@ -8,7 +8,7 @@ export const useConductorStore = defineStore("conductor", () => {
   const obtener = async () => {
     try {
       const response = await axios.get(`${model}all`);
-      return response.data;
+      return response.data.conductor;
     } catch (error) {
       console.error(error);
       return null;
@@ -26,11 +26,11 @@ export const useConductorStore = defineStore("conductor", () => {
     }
   };
 
-  const editar = async (data, id) => {
+  const editar = async (id, data) => {
     try {
       const response = await axios.put(`${model}editar/${id}`, data);
       console.log(response);
-      return response.data
+      return response.data.conductor
     } catch (error) {
       console.log(error);
       return null
@@ -41,7 +41,7 @@ export const useConductorStore = defineStore("conductor", () => {
     try {
       const response = await axios.put(`${model}activar/${id}`);
       console.log(response);
-      return response.data
+      return response.data.conductor
     } catch (error) {
       console.log(error);
       return null
@@ -52,7 +52,7 @@ export const useConductorStore = defineStore("conductor", () => {
     try {
       const response = await axios.put(`${model}inactivar/${id}`);
       console.log(response);
-      return response.data
+      return response.data.conductor
     } catch (error) {
       console.log(error);
       return null
