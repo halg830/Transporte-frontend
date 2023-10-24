@@ -12,23 +12,25 @@ const columns = ref([
     label: "Nombre",
     align: "left",
     field: (row) => row.nombre,
-    sort: true,
+    sortable: true,
     sortOrder: 'da'
   },
   {
     name: "Cedula",
     label: "Cedula",
-    align: "left",
+    align: "center",
     field: (row) => row.cedula,
   },
   {
     name: "Estado",
     label: "Estado",
+    align: "center",
     field: (row) => row.estado,
   },
   {
     name: "opciones",
     label: "Opciones",
+    align: "center",
     field: "opciones",
   },
 ]);
@@ -82,7 +84,7 @@ const enviarInfo = {
   guardar: async () => {
     try {
       const response = await useConductor.guardar(data.value);
-      console.log(response);
+      console.log(response.conductor);
       rows.value.push(response.conductor)
       modal.value = false
     } catch (error) {
@@ -150,8 +152,10 @@ const in_activar={
       </q-card>
     </q-dialog>
 
+    <q-btn>prueba</q-btn>
+
     <div class="q-pa-md">
-      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name">
+      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name" table-header-class="encabezado" table-class="tabla">
         <template v-slot:top-right>
           <q-tr>
             <q-td>
@@ -161,12 +165,19 @@ const in_activar={
         </template>
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="white"
-              text-color="black"
-              :label="props.row.estado === 1 ? '❌' : '✅'"
-              @click="props.row.estado === 1 ? in_activar.inactivar(props.row._id) : in_activar.activar(props.row._id)"
-            />
+
+            <q-btn class="botonv1" label="Activo"
+              color="positive" v-if="props.row.estado === 1"
+              @click="in_activar.inactivar(props.row._id);props.row.estado = 'load'"/>
+
+            <q-btn class="botonv1" label="No activo"
+              color="accent" v-if="props.row.estado === 0"
+              @click="in_activar.activar(props.row._id);props.row.estado = 'load'"/>
+
+            <q-btn class="botonv1" label=""
+              color="grey" v-if="props.row.estado === 'load'">
+                <q-circular-progress indeterminate color="white"/>
+              </q-btn>
           </q-td>
         </template>
         <template v-slot:body-cell-opciones="props">
@@ -183,3 +194,41 @@ const in_activar={
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 
+primary: Color principal del tema.
+secondary: Color secundario del tema.
+accent: Color de acento.
+positive: Color para indicar una acción positiva o éxito.
+negative: Color para indicar una acción negativa o error.
+info: Color para información o mensajes neutrales.
+warning: Color para advertencias o mensajes importantes. 
+*/
+
+*{
+	margin: 0px;
+  padding: 0px;
+}
+
+.tabla{
+  margin: 10px;
+  border: 3px solid black;
+}
+
+.encabezado{
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.cosascont{
+  background-color: black;
+  color: white;
+  text-align: center;
+}
+
+.botonv1{
+  font-size: 10px;
+  font-weight: bold;
+}
+</style>

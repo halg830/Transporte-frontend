@@ -4,7 +4,7 @@ import { conductoresfunction } from '../stores/conductores.js'
 import axios from "axios";
 import { ref } from "vue";
 
-let contador = ref('')
+/* let contador = ref('')
 
 const useConductores = conductoresfunction()
 
@@ -17,7 +17,7 @@ let increment = async ()=>{
   rows.value = useConductores.info.data.conductor
   console.log('prueba',useConductores.info.data.conductor)
 }
-
+ */
 
 
 /* let obtener = (url, type, id ='')=>{
@@ -30,25 +30,25 @@ let increment = async ()=>{
 
     //esta funcion recoje dos valores, primero la url pricipal 🎯
     //segundo el tipo de accion que deseas realizar 📝
-    async function _obtener(url, type, id = '') {
+    async function obtener(url, type, id = '') {
         let info
         if (type == 'cargar') {
-            info = await axios.get(url + '/cargar')
+            info = await axios.get(url + '/all')
             rows.value = info.data.conductor
         }
         if (type == 'buscar') {
-            info = await axios.get(url + '/buscarID/' + id)
+            info = await axios.get(url + '/buscar/' + id)
         }
         if (type == 'agregar') {
-            info = await axios.post(url + '/agregar', informacion.value)
+            info = await axios.post(url + '/guardar', informacion.value)
             obtener(url, 'cargar')
         }
         if (type == 'eliminar') {
-            info = await axios.delete(url + '/eliminar/' + id)
+            info = await axios.delete(url + '/borrar/' + id)
             obtener(url, 'cargar')
         }
         if (type == 'editar') {
-            info = await axios.put(url + '/modificar/' + id, informacion.value)
+            info = await axios.put(url + '/editar/' + id, informacion.value)
             obtener(url, 'cargar')
         }
         if (type == 'activar') {
@@ -56,7 +56,7 @@ let increment = async ()=>{
             obtener(url, 'cargar')
         }
         if (type == 'desactivar') {
-            info = await axios.put(url + '/desactivar/' + id)
+            info = await axios.put(url + '/inactivar/' + id)
             obtener(url, 'cargar')
         }
         //aqui muestra la respuesta del server en la consola 🛠
@@ -65,7 +65,7 @@ let increment = async ()=>{
         boxform.value = { box: false, estado: true }
     }
 
-let url = 'conductor'
+let url = 'https://transporte-el2a.onrender.com/api/conductor'
 // aqui defino los datos que seran reactivos 🧨
 let informacion = ref({nombre:'',cedula:'',id:''})
 let typeform = ref('- - -')
@@ -80,6 +80,8 @@ const boxform = ref({box:false, estado: true});
   console.log('prueba', useConductores.info.data.coductor) */
 
 //💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢
+
+obtener(url,'cargar')
 
 function form(type, data = ''){
   informacion = ref({nombre:'',cedula:''})
@@ -121,12 +123,14 @@ function enviarinformacion(type) {
           <div class="text-negative">{{errorform}}</div>
           <q-input outlined v-model="informacion.nombre" label="Nombre"></q-input>
           <q-input outlined v-model="informacion.cedula" label="Cedula" :readonly="typeform !== 'agregar'" type="number"></q-input>
+
 					<q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'"
           @click="enviarinformacion(typeform)" v-if="boxform.estado !== 'load'">{{typeform}}</q-btn>
           
           <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'" v-if="boxform.estado == 'load'">
             <q-circular-progress indeterminate color="white"/>
           </q-btn>
+          
 				</q-card-section>
 			</q-card>
 		</q-dialog>
@@ -175,8 +179,8 @@ function enviarinformacion(type) {
                   <q-circular-progress indeterminate color="white"/>
                 </q-btn>
 
-                <q-btn color="negative" icon="delete" class="botonv1"
-                @click="obtener(url,'eliminar',row._id) ;row.estado = 'load'" v-else/>
+<!--                 <q-btn color="negative" icon="delete" class="botonv1"
+                @click="obtener(url,'eliminar',row._id) ;row.estado = 'load'" v-else/> -->
 
                 <q-btn color="warning" icon="edit" class="botonv1"
                 @click="form('editar',row)"/>

@@ -1,9 +1,9 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
-import {useClienteStore} from '../stores/clientes2.js'
+import { useClienteStore } from "../stores/clientes2.js";
 
-const modelo = "Clientes"
+const modelo = "Clientes";
 const useCliente = useClienteStore();
 
 const columns = ref([
@@ -13,7 +13,7 @@ const columns = ref([
     align: "left",
     field: (row) => row.nombre,
     sort: true,
-    sortOrder: 'da'
+    sortOrder: "da",
   },
   {
     name: "Cedula",
@@ -30,6 +30,7 @@ const columns = ref([
   {
     name: "Estado",
     label: "Estado",
+    align: "center",
     field: (row) => row.estado,
   },
   {
@@ -43,7 +44,7 @@ const rows = ref([]);
 const data = ref({
   nombre: "",
   cedula: "",
-  email: ""
+  email: "",
 });
 
 const obtenerInfo = async () => {
@@ -69,15 +70,15 @@ const opciones = {
     data.value = {
       nombre: "",
       cedula: "",
-      email: ""
+      email: "",
     };
     modal.value = true;
-    estado.value="guardar";
+    estado.value = "guardar";
   },
   editar: (info) => {
     data.value = info;
     modal.value = true;
-    estado.value="editar";
+    estado.value = "editar";
   },
 };
 
@@ -90,37 +91,37 @@ const enviarInfo = {
     try {
       const response = await useCliente.guardar(data.value);
       console.log(response);
-      rows.value.push(response.cliente)
-      modal.value = false
+      rows.value.push(response.cliente);
+      modal.value = false;
     } catch (error) {
       console.log(error);
     }
   },
   editar: async () => {
     try {
-    const response = await useCliente.editar(data.value._id, data.value);
+      const response = await useCliente.editar(data.value._id, data.value);
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
-      modal.value = false
+      modal.value = false;
     } catch (error) {
       console.log(error);
     }
   },
 };
 
-const in_activar={
-  activar: async(id)=>{
-    const response = await useCliente.activar(id)
+const in_activar = {
+  activar: async (id) => {
+    const response = await useCliente.activar(id);
     console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+    rows.value.splice(buscarIndexLocal(response._id), 1, response);
   },
-  inactivar: async(id)=>{
-    const response = await useCliente.inactivar(id)
+  inactivar: async (id) => {
+    const response = await useCliente.inactivar(id);
     console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
-  }
-}
+    rows.value.splice(buscarIndexLocal(response._id), 1, response);
+  },
+};
 </script>
 
 <template>
@@ -155,6 +156,14 @@ const in_activar={
           ></q-input>
           <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
 
+<!--           <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'"
+          @click="enviarinformacion(typeform)" v-if="boxform.estado !== 'load'">{{typeform}}</q-btn>
+          
+          <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'" v-if="boxform.estado == 'load'">
+            <q-circular-progress indeterminate color="white"/>
+          </q-btn> -->
+          
+
           <!-- <q-btn
           >
             <q-circular-progress indeterminate color="white" />
@@ -164,30 +173,42 @@ const in_activar={
     </q-dialog>
 
     <div class="q-pa-md">
-      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name">
-        <template v-slot:top-right>
+      <q-table :rows="rows" :columns="columns" row-key="name">
+        <template v-slot:top-left>
           <q-tr>
-            <q-td>
-              <q-btn @click="opciones.agregar">➕</q-btn>
-            </q-td>
+            <h4 class="q-ma-xs">
+              {{ modelo }}
+              <q-btn @click="opciones.agregar" label="Añadir" color="primary" glossy>
+                <q-icon name="style" color="white" right/>
+              </q-btn>
+            </h4>
           </q-tr>
         </template>
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
+
             <q-btn
-              color="white"
-              text-color="black"
-              :label="props.row.estado === 1 ? '❌' : '✅'"
-              @click="props.row.estado === 1 ? in_activar.inactivar(props.row._id) : in_activar.activar(props.row._id)"
+              class="botonv1" glossy  text-size="1px" padding="10px"
+              :label="props.row.estado === 1 ? 'Activo' : (
+                props.row.estado === 0 ? 'No activo' :
+                '‎  ‎   ‎   ‎   ‎ ')
+                "
+              :color="props.row.estado === 1 ? 'positive' : 'accent'"
+              :loading="props.row.estado === 'load'"
+              loading-indicator-size="small"
+              @click="
+                props.row.estado === 1
+                  ? in_activar.inactivar(props.row._id)
+                  : in_activar.activar(props.row._id);
+                props.row.estado = 'load'"
             />
+
           </q-td>
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="white"
-              text-color="black"
-              label="🖋️"
+            <q-btn color="warning" icon="edit"
+              class="botonv1" glossy
               @click="opciones.editar(props.row)"
             />
           </q-td>
@@ -196,3 +217,41 @@ const in_activar={
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 
+primary: Color principal del tema.
+secondary: Color secundario del tema.
+accent: Color de acento.
+positive: Color para indicar una acción positiva o éxito.
+negative: Color para indicar una acción negativa o error.
+info: Color para información o mensajes neutrales.
+warning: Color para advertencias o mensajes importantes. 
+*/
+
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+.tabla {
+  margin: 10px;
+  border: 3px solid black;
+}
+
+.encabezado {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.cosascont {
+  background-color: black;
+  color: white;
+  text-align: center;
+}
+
+.botonv1 {
+  font-size: 10px;
+  font-weight: bold;
+}
+</style>

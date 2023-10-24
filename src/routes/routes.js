@@ -7,6 +7,7 @@ import cliente from '../components/clientes2.vue'
 import inicio from '../components/inicio.vue'
 import rutas from '../components/rutas.vue'
 import conductores from '../components/conductores2.vue'
+import conductores2 from '../components/conductores.vue'
 import usuarios from '../components/usuarios.vue'
 import tiquete from '../components/tiquete.vue'
 import vendedor from '../components/vendedor2.vue'
@@ -23,6 +24,7 @@ const routes =[
         {path: '/clientes', component:cliente},
         {path: '/rutas', component:rutas},
         {path: '/conductores', component:conductores},
+        {path: '/conductores2', component:conductores2},
         {path: '/usuarios', component:usuarios},
         {path: '/tiquete', component:tiquete},
         {path: '/vendedor', component:vendedor},
