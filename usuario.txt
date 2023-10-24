@@ -1,0 +1,2 @@
+"usuario": "superusuario",
+"contrasena": "123456789"

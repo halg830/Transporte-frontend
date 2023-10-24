@@ -61,7 +61,18 @@ export const useVendedorStore = defineStore("vendedor", () => {
     }
   };
 
+  const login = async(data)=>{
+    try {
+      const response = await axios.post(`${model}login`, data)
+      console.log(response);
+
+      return response.status
+    } catch (error) {
+      
+    }
+  }
+
   return {
-    obtener, guardar, editar, activar, inactivar
+    obtener, guardar, editar, activar, inactivar, login
   };
 });

@@ -203,16 +203,6 @@ const in_activar={
   }
 }
 
-function convertirFecha(cadenaFecha) {
-  const fecha = new Date(cadenaFecha);
-  const año = fecha.getFullYear();
-  const mes = (fecha.getMonth() + 1).toString().padStart(2, "0");
-  const dia = fecha.getDate().toString().padStart(2, "0");
-
-  const fechaFormateada = `${año}/${mes}/${dia}`;
-  return fechaFormateada;
-}
-
 function convertirHora(cadenaFecha) {
   const fecha = new Date(cadenaFecha);
   const horas = fecha.getUTCHours().toString().padStart(2, "0");

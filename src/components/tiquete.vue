@@ -1,19 +1,19 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
-import {useTiqueteStore} from '../stores/tiquete.js'
+import { useTiqueteStore } from "../stores/tiquete.js";
 import { useVendedorStore } from "../stores/vendedor2";
 import { useRutasStore } from "../stores/rutas.js";
 import { useCiudadStore } from "../stores/ciudad2.js";
 import { useBusStore } from "../stores/buses2.js";
 import { useClienteStore } from "../stores/clientes2";
 
-const modelo = "Tiquete"
+const modelo = "Tiquete";
 
-const useTiquete = useTiqueteStore()
-const useVendedor = useVendedorStore()
+const useTiquete = useTiqueteStore();
+const useVendedor = useVendedorStore();
 const useRutas = useRutasStore();
-const useCliente = useClienteStore()
+const useCliente = useClienteStore();
 
 const columns = ref([
   {
@@ -26,7 +26,8 @@ const columns = ref([
     name: "Ruta",
     label: "Ruta",
     align: "left",
-    field: (row) => row.ruta.ciudad_origen.nombre+"/"+row.ruta.ciudad_destino.nombre,
+    field: (row) =>
+      row.ruta.ciudad_origen.nombre + "/" + row.ruta.ciudad_destino.nombre,
   },
   {
     name: "Bus",
@@ -34,17 +35,23 @@ const columns = ref([
     align: "left",
     field: (row) => row.ruta.bus.placa,
   },
-  /* {
+  {
     name: "Asiento",
     label: "Asiento",
     align: "left",
-    field: (row) => row.ruta.bus.placa,
-  }, */
+    field: (row) => row.num_asiento,
+  },
+  {
+    name: "Hora salida",
+    label: "Hora salida",
+    align: "left",
+    field: (row) => convertirHora(row.ruta.hora_salida),
+  },
   {
     name: "Fecha salida",
     label: "Fecha salida",
     align: "left",
-    field: (row) => row.fecha_salida,
+    field: (row) => convertirFecha(row.fecha_salida),
   },
   {
     name: "Vendedor",
@@ -75,14 +82,14 @@ const data = ref({
 const options = ref({
   vendedor: [],
   ruta: [],
-  cliente: []
+  cliente: [],
 });
 
 const models = ref({
   vendedor: [],
   ruta: [],
-  cliente: []
-})
+  cliente: [],
+});
 
 const obtenerInfo = async () => {
   try {
@@ -100,69 +107,124 @@ const obtenerInfo = async () => {
 
 obtenerInfo();
 
-const obtenerOptions = async()=>{
-  const responseVendedor = await useVendedor.obtener()
-  const responseRutas = await useRutas.obtener()
-  const responseCliente = await useCliente.obtener()
+const obtenerOptions = async () => {
+  const responseVendedor = await useVendedor.obtener();
+  const responseRutas = await useRutas.obtener();
+  const responseCliente = await useCliente.obtener();
   // const responseCiudad = await useCiudad.obtener()
   // const responseBus = await useBus.obtener()
 
-  options.value.vendedor = responseVendedor.map(c=>c.nombre)
-  models.value.vendedor = responseVendedor
-  const rutasPopulatePromesas = responseRutas.map(async (e) => {
-    return await Ruta.findById(e._id)
-    .populate("ciudad_origen")
-    .populate("ciudad_destino")
-    .populate("bus"); 
-  });
+  console.log(responseVendedor);
+  console.log(responseRutas);
+  console.log(responseCliente);
+
+  options.value.vendedor = responseVendedor.vendedor.map((c) => c.nombre);
+  models.value.vendedor = responseVendedor.vendedor;
+  options.value.ruta = responseRutas.map((c) => c.nombre);
+  models.value.ruta = responseRutas;
+  options.value.cliente = responseCliente.cliente.map((c) => c.cedula);
+  models.value.cliente = responseCliente.cliente;
+};
+
+obtenerOptions();
+
+const estado = ref("guardar");
+const modal = ref(false);
+const opciones = {
+  agregar: () => {
+    data.value = {
+      vendedor: "",
+      ruta: "",
+      cliente: "",
+      fecha_salida: "",
+    };
+    modal.value = true;
+    estado.value = "guardar";
+  },
+  editar: (info) => {
+    data.value = info;
+    data.value.vendedor = info.vendedor.cedula;
+    data.value.ruta = info.ruta.ciudad_origen + "/" + info.ruta.ciudad_destino;
+    data.value.cliente = info.cliente.cedula;
+    modal.value = true;
+    estado.value = "editar";
+  },
+};
+
+function buscarIndexLocal(id) {
+  return rows.value.findIndex((r) => r._id === id);
+}
+
+function idVendedor(cedula){
+  const buscar = models.value.vendedor.find((c) => c.cedula === cedula);
+  if (buscar) return buscar._id;
   
-  const rutasPopulate = await Promise.all(rutasPopulatePromesas);
-  options.value.ruta = rutasPopulate.map(c=>c.nombre)
-  models.value.ruta = responseRutas
-  // options.value.ciudad = responseCiudad.map(c=>c.nombre)
-  // options.value.bus = responseBus.busPopulate.map(b=>b.placa)
+  return cedula
+}
+function idRuta(ciudades){
+  const buscar = models.value.ruta.find((c) => c.ruta.ciudad_origen + "/" + c.ruta.ciudad_destino === cedula);
+  if (buscar) return buscar._id;
+  
+  return ciudades
+}
+function idCliente(cedula){
+  const buscar = models.value.cliente.find((c) => c.cedula === cedula);
+  if (buscar) return buscar._id;
+  
+  return cedula
 }
 
-obtenerOptions()
-
-const modal = ref(false)
-async function agregar(){
-  modal.value=true
-
-  console.log(options.value);
-}
 
 const enviarInfo = {
   guardar: async () => {
     try {
+      data.value.vendedor = idVendedor(data.value.vendedor)
+      data.value.ruta = idRuta(data.value.ruta)
+      data.value.cliente = idCliente(data.value.cliente)
+      // data.value.hora_salida = convertirHora_Fecha(time.value)
+      console.log(data.value);
+
       const response = await useTiquete.guardar(data.value);
       console.log(response);
-      rows.value.push(response.tiquetePopulate)
+
+      rows.value.push(response);
+      modal.value = false;
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  editar: async () => {
+    try {
+      
+      data.value.vendedor = idVendedor(data.value.vendedor)
+      data.value.ruta = idRuta(data.value.ruta)
+      data.value.cliente = idCliente(data.value.cliente)
+      // data.value.hora_salida = convertirHora_Fecha(time.value)
+      console.log(data.value);
+
+      const response = await useTiquete.editar(data.value);
+      console.log(response);
+
+      rows.value.splice(buscarIndexLocal(response._id), 1, response);
       modal.value = false
     } catch (error) {
       console.log(error);
     }
   },
-  editar: async () => {},
 };
 
-const activar = async (id) => {
-  const response = await useTiquete.activar(id);
-  console.log("r", response);
-  const buscar = rows.value.findIndex(
-    (r) => r._id == response.tiquetePopulate._id
-  );
-  rows.value.splice(buscar, 1, response.tiquetePopulate);
-};
-
-const inactivar = async (id) => {
-  const response = await useTiquete.inactivar(id);
-  console.log("r", response);
-  const buscar = rows.value.findIndex(
-    (r) => r._id == response.tiquetePopulate._id
-  );
-  rows.value.splice(buscar, 1, response.tiquetePopulate);
-};
+const in_activar={
+  activar: async(id)=>{
+    const response = await useTiquete.activar(id)
+    console.log(response);
+    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+  },
+  inactivar: async(id)=>{
+    const response = await useTiquete.inactivar(id)
+    console.log(response);
+    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+  }
+}
 
 function convertirFecha(cadenaFecha) {
   const fecha = new Date(cadenaFecha);
@@ -245,10 +307,7 @@ function convertirHora(cadenaFecha) {
             label="Valor"
             type="number"
           ></q-input>
-          <q-btn
-            @click="enviarinformacion(typeform)"
-            >Guardar</q-btn
-          >
+          <q-btn @click="enviarinformacion(typeform)">Guardar</q-btn>
 
           <!-- <q-btn
             :color="typeform === 'agregar' ? 'primary' : 'warning'"
