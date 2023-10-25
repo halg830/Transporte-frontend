@@ -109,6 +109,7 @@ const opciones = {
   hora_salida: "",
   valor: "",
     };
+    time.value = ""
     modal.value = true;
     estado.value="guardar";
   },

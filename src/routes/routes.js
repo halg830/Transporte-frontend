@@ -26,8 +26,8 @@ const routes =[
         {path: '/conductores', component:conductores},
         {path: '/conductores2', component:conductores2},
         {path: '/usuarios', component:usuarios},
-        {path: '/tiquete', component:tiquete},
-        {path: '/vendedor', component:vendedor},
+        {path: '/tiquetes', component:tiquete},
+        {path: '/vendedores', component:vendedor},
     ] }
 ]
 

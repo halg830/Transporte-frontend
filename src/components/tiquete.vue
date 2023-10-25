@@ -77,7 +77,9 @@ const data = ref({
   ruta: "",
   cliente: "",
   fecha_salida: "",
+  num_asiento: ""
 });
+const date = ref('')
 
 const options = ref({
   vendedor: [],
@@ -120,7 +122,7 @@ const obtenerOptions = async () => {
 
   options.value.vendedor = responseVendedor.vendedor.map((c) => c.nombre);
   models.value.vendedor = responseVendedor.vendedor;
-  options.value.ruta = responseRutas.map((c) => c.nombre);
+  options.value.ruta = responseRutas.map((c) => c.ciudad_origen.nombre + "/"+ c.ciudad_destino.nombre);
   models.value.ruta = responseRutas;
   options.value.cliente = responseCliente.cliente.map((c) => c.cedula);
   models.value.cliente = responseCliente.cliente;
@@ -137,11 +139,14 @@ const opciones = {
       ruta: "",
       cliente: "",
       fecha_salida: "",
+  num_asiento: ""
     };
+    date.value = ""
     modal.value = true;
     estado.value = "guardar";
   },
   editar: (info) => {
+    date.value = info.fecha_salida
     data.value = info;
     data.value.vendedor = info.vendedor.cedula;
     data.value.ruta = info.ruta.ciudad_origen + "/" + info.ruta.ciudad_destino;
@@ -155,33 +160,53 @@ function buscarIndexLocal(id) {
   return rows.value.findIndex((r) => r._id === id);
 }
 
-function idVendedor(cedula){
+function idVendedor(cedula) {
   const buscar = models.value.vendedor.find((c) => c.cedula === cedula);
   if (buscar) return buscar._id;
-  
-  return cedula
+
+  return cedula;
 }
-function idRuta(ciudades){
-  const buscar = models.value.ruta.find((c) => c.ruta.ciudad_origen + "/" + c.ruta.ciudad_destino === cedula);
+function idRuta(ciudades) {
+  const ciudad = ciudades.split("/")
+  console.log(ciudad);
+
+  const buscar = models.value.ruta.find(
+    (c) => `${c.ciudad_origen}/${c.ciudad_destino}` === ciudades
+  );
   if (buscar) return buscar._id;
-  
-  return ciudades
+
+  return ciudades;
 }
-function idCliente(cedula){
+function idCliente(cedula) {
   const buscar = models.value.cliente.find((c) => c.cedula === cedula);
   if (buscar) return buscar._id;
-  
-  return cedula
+
+  return cedula;
 }
 
+function convertirFechaBD(fechaA) {
+  console.log(fechaA);
+  const partes = fechaA.split('/');
+  
+  const fecha = new Date(
+    parseInt(partes[0]), 
+    parseInt(partes[1]) - 1, 
+    parseInt(partes[2])
+  );
+
+  // (ISO 8601)
+  const fechaFormateada = fecha.toISOString();
+
+  return fechaFormateada;
+}
 
 const enviarInfo = {
   guardar: async () => {
     try {
-      data.value.vendedor = idVendedor(data.value.vendedor)
-      data.value.ruta = idRuta(data.value.ruta)
-      data.value.cliente = idCliente(data.value.cliente)
-      // data.value.hora_salida = convertirHora_Fecha(time.value)
+      data.value.fecha_salida = convertirFechaBD(date.value)
+      data.value.vendedor = idVendedor(data.value.vendedor);
+      data.value.ruta = idRuta(data.value.ruta);
+      data.value.cliente = idCliente(data.value.cliente);
       console.log(data.value);
 
       const response = await useTiquete.guardar(data.value);
@@ -195,10 +220,10 @@ const enviarInfo = {
   },
   editar: async () => {
     try {
-      
-      data.value.vendedor = idVendedor(data.value.vendedor)
-      data.value.ruta = idRuta(data.value.ruta)
-      data.value.cliente = idCliente(data.value.cliente)
+      data.value.fecha_salida = convertirFechaBD(date.value)
+      data.value.vendedor = idVendedor(data.value.vendedor);
+      data.value.ruta = idRuta(data.value.ruta);
+      data.value.cliente = idCliente(data.value.cliente);
       // data.value.hora_salida = convertirHora_Fecha(time.value)
       console.log(data.value);
 
@@ -206,25 +231,25 @@ const enviarInfo = {
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
-      modal.value = false
+      modal.value = false;
     } catch (error) {
       console.log(error);
     }
   },
 };
 
-const in_activar={
-  activar: async(id)=>{
-    const response = await useTiquete.activar(id)
+const in_activar = {
+  activar: async (id) => {
+    const response = await useTiquete.activar(id);
     console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+    rows.value.splice(buscarIndexLocal(response._id), 1, response);
   },
-  inactivar: async(id)=>{
-    const response = await useTiquete.inactivar(id)
+  inactivar: async (id) => {
+    const response = await useTiquete.inactivar(id);
     console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
-  }
-}
+    rows.value.splice(buscarIndexLocal(response._id), 1, response);
+  },
+};
 
 function convertirFecha(cadenaFecha) {
   const fecha = new Date(cadenaFecha);
@@ -260,42 +285,30 @@ function convertirHora(cadenaFecha) {
           <q-select
             rounded
             standout
-            v-model="data.ciudad_origen"
-            :options="options.ciudad"
-            label="Ciudad origen"
+            v-model="data.cliente"
+            :options="options.cliente"
+            label="Cliente"
           />
           <q-select
             rounded
             standout
-            v-model="data.ciudad_destino"
-            :options="options.ciudad"
-            label="Ciudad destino"
+            v-model="data.ruta"
+            :options="options.ruta"
+            label="Ruta"
           />
-          <q-select
-            rounded
-            standout
-            v-model="data.bus"
-            :options="options.bus"
-            label="Bus"
-          />
-          <q-input
-            filled
-            v-model="data.hora_salida"
-            mask="Hora Salida"
-            :rules="['time']"
-          >
+          <q-input filled v-model="date" mask="date" :rules="['date']">
             <template v-slot:append>
-              <q-icon name="access_time" class="cursor-pointer">
+              <q-icon name="event" class="cursor-pointer">
                 <q-popup-proxy
                   cover
                   transition-show="scale"
                   transition-hide="scale"
                 >
-                  <q-time v-model="data.hora_salida">
+                  <q-date v-model="date">
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>
-                  </q-time>
+                  </q-date>
                 </q-popup-proxy>
               </q-icon>
             </template>
@@ -303,11 +316,20 @@ function convertirHora(cadenaFecha) {
 
           <q-input
             outlined
-            v-model="data.valor"
-            label="Valor"
+            v-model="data.num_asiento"
+            label="Asiento"
             type="number"
           ></q-input>
-          <q-btn @click="enviarinformacion(typeform)">Guardar</q-btn>
+
+          <q-select
+            rounded
+            standout
+            v-model="data.vendedor"
+            :options="options.vendedor"
+            label="Vendedor"
+          />
+
+          <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
 
           <!-- <q-btn
             :color="typeform === 'agregar' ? 'primary' : 'warning'"
@@ -324,7 +346,7 @@ function convertirHora(cadenaFecha) {
         <template v-slot:top-right>
           <q-tr>
             <q-td>
-              <q-btn @click="agregar">➕</q-btn>
+              <q-btn @click="opciones.agregar">➕</q-btn>
             </q-td>
           </q-tr>
         </template>

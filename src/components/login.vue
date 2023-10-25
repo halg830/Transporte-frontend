@@ -1,9 +1,10 @@
 <script setup>
 import { ref } from "vue";
-import axios from "axios";
+import { useQuasar } from 'quasar'
 import { useRouter } from "vue-router";
 import { useVendedorStore } from "../stores/vendedor2.js";
 
+const $q = useQuasar()
 const useVendedor = useVendedorStore();
 const router = useRouter();
 
@@ -12,11 +13,21 @@ const data = ref({
   contrasena: "",
 });
 
+const loading = ref(false);
+
 async function validarIngreso() {
+  console.log("Esperando confirmación...");
+  loading.value = true;
   const response = await useVendedor.login(data.value);
   console.log(response);
 
+  loading.value = false
   if (response != 200) {
+    $q.notify({
+          type: 'negative',
+          message: 'Usuario o contraseña incorrecto',
+          position: "top"
+        })
     console.log("Error usuario o contraseña");
     return;
   }
@@ -37,7 +48,7 @@ async function validarIngreso() {
       </p>
 
       <input
-        class="input opcion"
+      class="input opcion"
         type="text"
         placeholder="Nombre de usuario"
         v-model="data.usuario"
@@ -52,10 +63,15 @@ async function validarIngreso() {
         <!-- <p class="contrasenaayuda">¿olvidaste tu contraseña?</p> -->
       </div>
 
-      <button class="ingresar opcion" @click="validarIngreso()">
-        Ingresar
-      </button>
+      <q-btn
+        class="ingresar opcion"
+        @click="validarIngreso()"
+        :loading="loading"
+        label="Ingresar"
+      />
     </div>
+
+    <!-- <q-btn no-caps unelevated color="negative" @click="triggerNegative" label="Trigger 'negative'" /> -->
   </div>
 </template>
 

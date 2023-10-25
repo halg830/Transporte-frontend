@@ -22,7 +22,7 @@ function toggleLeftDrawer() {
 
 const opcionesConImagenes = opciones;
 
-const primeraMayuscula = (cadena) => cadena.charAt(0).toUpperCase() + cadena.slice(1);
+const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.slice(1);
 </script>
 
 
@@ -49,9 +49,9 @@ const primeraMayuscula = (cadena) => cadena.charAt(0).toUpperCase() + cadena.sli
                 <div class="opcionescont">
                     <p class="menutitle">= Menú Desplegable =</p>
                     <div v-for="(opcion, i) in opciones" :key="i" class="opcion-container">
-                        <router-link :to="'/' + opcion.nombre" class="opcioncont">
+                        <router-link :to="'/' + primeraMinuscula(opcion.nombre)" class="opcioncont">
                             <img :src="opcion.imagen" alt="Imagen" class="imagen" />
-                            <div class="opcion-text">{{ primeraMayuscula(opcion.nombre) }}</div>
+                            <div class="opcion-text">{{opcion.nombre }}</div>
                         </router-link>
                     </div>
                 </div>
