@@ -83,12 +83,11 @@ export default {
   height: 254px;
   border-radius: 20px;
   padding: 5px;
-  box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
-  background-image: linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB);
+  
 }
 
 .card__content {
-  background: rgb(5, 6, 45);
+  background: rgb(175, 176, 204);
   border-radius: 17px;
   width: 100%;
   height: 100%;
