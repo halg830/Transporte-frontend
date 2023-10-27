@@ -5,8 +5,8 @@ const opciones = [
   "clientes",
   "conductores",
   "rutas",
-  "tiquete",
-  "vendedor",
+  "tiquetes",
+  "vendedores",
 ];
 const primeraMayuscula = (cadena) =>
   cadena.charAt(0).toUpperCase() + cadena.slice(1);
@@ -55,9 +55,9 @@ export default {
         return "./src/assets/conductores.png"; // Ruta a la imagen de clientes
       } else if (opcion === "rutas") {
         return "./src/assets/ruta.png"; // Ruta a la imagen de clientes
-      } else if (opcion === "tiquete") {
+      } else if (opcion === "tiquetes") {
         return "./src/assets/tiquetes.png"; // Ruta a la imagen de clientes
-      } else if (opcion === "vendedor") {
+      } else if (opcion === "vendedores") {
         return "./src/assets/vendedores.png"; // Ruta a la imagen de clientes
       }
       // Agrega más condiciones para otras opciones
