@@ -1,13 +1,26 @@
 <script setup>
+import { ref } from "vue";
+import imgMenu from '../assets/menu.png'
+import imgBuses from '../assets/buses.png'
+import imgCiudades from '../assets/ciudades.png'
+import imgClientes from '../assets/clientes.png'
+import imgConductores from '../assets/conductores.png'
+import imgRutas from '../assets/rutas.png'
+import imgTiquetes from '../assets/tiquetes.png'
+import imgVentas from '../assets/ventas.png'
+import imgVendedores from '../assets/vendedores.png'
+
+
 const opciones = [
-    { nombre: "Buses", imagen: "./src/assets/bus.png" },
-    { nombre: "Ciudades", imagen: "./src/assets/ciudad.png" },
-    { nombre: "Clientes", imagen: "./src/assets/clientes.png" },
-    { nombre: "Conductores", imagen: "./src/assets/conductores.png" },
-    { nombre: "Rutas", imagen: "./src/assets/ruta.png" },
-    { nombre: "Tiquetes", imagen: "./src/assets/tiquetes.png" },
-    { nombre: "Ventas", imagen: "./src/assets/ventas.png" },
-    { nombre: "Vendedores", imagen: "./src/assets/vendedores.png" }
+    { nombre: "Menu", imagen: imgMenu },
+    { nombre: "Buses", imagen: imgBuses },
+    { nombre: "Ciudades", imagen: imgCiudades },
+    { nombre: "Clientes", imagen: imgClientes },
+    { nombre: "Conductores", imagen: imgConductores },
+    { nombre: "Rutas", imagen: imgRutas },
+    { nombre: "Tiquetes", imagen: imgTiquetes },
+    { nombre: "Ventas", imagen: imgVentas },
+    { nombre: "Vendedores", imagen: imgVendedores }
 ];
 const primeraMayuscula = (cadena) =>
   cadena.charAt(0).toUpperCase() + cadena.slice(1);
