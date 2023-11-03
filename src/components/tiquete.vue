@@ -70,9 +70,9 @@ function idCliente(cedula) {
 const asientos = ref(0)
 
 const componentes = ref({
-    inicio: true,
+    inicio: false,
     asiento: false,
-    fin: true
+    fin: false
 })
 function continuar() {
     if (options.value.cliente.includes(data.value.cliente)
@@ -110,7 +110,12 @@ function convertirHora(cadenaFecha) {
 }
 </script>
 <template>
+    <div>
+        <q-btn>Nueva venta</q-btn>
+        <q-btn>Continuar venta</q-btn>
+    </div>
     <div v-if="componentes.inicio" id="inicio">
+        
         <h3>Generar ticket</h3>
         <span>Cliente: </span>
         <q-select filled v-model="data.cliente" use-input input-debounce="0" label="cedula" :options="options.cliente"
