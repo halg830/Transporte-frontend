@@ -1,6 +1,5 @@
 <script setup>
 const opciones = [
-    { nombre: "Menu", imagen: "./src/assets/menu.png" },
     { nombre: "Buses", imagen: "./src/assets/bus.png" },
     { nombre: "Ciudades", imagen: "./src/assets/ciudad.png" },
     { nombre: "Clientes", imagen: "./src/assets/clientes.png" },
