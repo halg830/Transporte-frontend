@@ -5,6 +5,7 @@ const opciones = [
   "clientes",
   "conductores",
   "rutas",
+  "ventas",
   "tiquetes",
   "vendedores",
 ];
