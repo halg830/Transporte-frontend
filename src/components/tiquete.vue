@@ -78,7 +78,7 @@ function continuar() {
     if (options.value.cliente.includes(data.value.cliente)
         && options.value.ruta.ciudad_origen.includes(data.value.ruta.ciudad_origen)
         && options.value.ruta.ciudad_destino.includes(data.value.ruta.ciudad_destino)
-        && options.value.ruta.hora_salida.includes(data.value.ruta.hora_salida) 
+        && options.value.ruta.hora_salida.includes(data.value.ruta.hora_salida)
         && date.value != "") {
 
         componentes.value.inicio = false
@@ -126,7 +126,7 @@ function convertirHora(cadenaFecha) {
 
         <span>Ciudad origen: </span>
 
-        <q-select filled v-model="data.ruta.ciudad_origen" use-input input-debounce="0" label="Ruta"
+        <q-select filled v-model="data.ruta.ciudad_origen" use-input input-debounce="0" label="Nombre"
             :options="options.ruta.ciudad_origen" @filter="filterFn" style="width: 250px" behavior="menu"
             @keyup.enter="continuar">
             <template v-slot:no-option>
@@ -138,7 +138,7 @@ function convertirHora(cadenaFecha) {
             </template>
         </q-select>
         <span>Ciudad destino: </span>
-        <q-select filled v-model="data.ruta.ciudad_destino" use-input input-debounce="0" label="Ruta"
+        <q-select filled v-model="data.ruta.ciudad_destino" use-input input-debounce="0" label="Nombre"
             :options="options.ruta.ciudad_destino" @filter="filterFn" style="width: 250px" behavior="menu"
             @keyup.enter="continuar">
             <template v-slot:no-option>
@@ -150,7 +150,7 @@ function convertirHora(cadenaFecha) {
             </template>
         </q-select>
         <span>Hora salida: </span>
-        <q-select filled v-model="data.ruta.hora_salida" use-input input-debounce="0" label="Ruta"
+        <q-select filled v-model="data.ruta.hora_salida" use-input input-debounce="0" label="Hora"
             :options="options.ruta.hora_salida" @filter="filterFn" style="width: 250px" behavior="menu"
             @keyup.enter="continuar">
             <template v-slot:no-option>
@@ -187,7 +187,18 @@ function convertirHora(cadenaFecha) {
     </div>
     <div v-if="componentes.fin">
         <div>
-
+            <span>Vendedor: </span>
+            <q-select filled v-model="data.vendedor" use-input input-debounce="0" label="Vendedor"
+                :options="options.vendedor" @filter="filterFn" style="width: 250px" behavior="menu"
+                @keyup.enter="continuar">
+                <template v-slot:no-option>
+                    <q-item>
+                        <q-item-section class="text-grey">
+                            No results
+                        </q-item-section>
+                    </q-item>
+                </template>
+            </q-select>
         </div>
     </div>
 </template>
