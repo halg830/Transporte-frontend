@@ -1,106 +1,88 @@
 <script setup>
 const opciones = [
-  "buses",
-  "ciudades",
-  "clientes",
-  "conductores",
-  "rutas",
-  "ventas",
-  "tiquetes",
-  "vendedores",
+    { nombre: "Menu", imagen: "./src/assets/menu.png" },
+    { nombre: "Buses", imagen: "./src/assets/bus.png" },
+    { nombre: "Ciudades", imagen: "./src/assets/ciudad.png" },
+    { nombre: "Clientes", imagen: "./src/assets/clientes.png" },
+    { nombre: "Conductores", imagen: "./src/assets/conductores.png" },
+    { nombre: "Rutas", imagen: "./src/assets/ruta.png" },
+    { nombre: "Tiquetes", imagen: "./src/assets/tiquetes.png" },
+    { nombre: "Vendedores", imagen: "./src/assets/vendedores.png" }
 ];
 const primeraMayuscula = (cadena) =>
   cadena.charAt(0).toUpperCase() + cadena.slice(1);
+
+const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.slice(1);
 </script>
 
 
 <template>
-  <div class="q-pa-md example-col-gutter-size">
-    <div class="row q-col-gutter-md">
-      <div class="col-4" v-for="(opcion, i) in opciones" :key="i">
-        <div class="card">
-          <div class="card__content">
-            <figure class="card" @click="redirigir(opcion)">
-              <router-link :to="'/' + opcion" class="opcioncont">
-                {{ primeraMayuscula(opcion) }}
-                <div class="imagen">
-                  <img :src="imagen(opcion)" alt="Opción" class="imagen" />
-                </div>
-              </router-link>
-            </figure>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="opcionescont">
+                    
+  <router-link v-for="(opcion, i) in opciones" :key="i" class="opcioncont" :to="'/' + primeraMinuscula(opcion.nombre)" >
+    <button class="opcion" onclick="pagina()">
+      <div class="opcion-text">{{opcion.nombre }}</div>
+      <img :src="opcion.imagen" alt="Imagen" class="opcion-imagen" />
+    </button>
+  </router-link>
+                    
+</div>
+
+
 </template>
-<script >
-export default {
-  methods: {
-    redirigir(opcion) {
-      // Realiza la acción de redireccionamiento aquí, por ejemplo:
-      this.$router.push("/" + opcion);
-    },
-    primeraMayuscula(texto) {
-      return texto.charAt(0).toUpperCase() + texto.slice(1);
-    },
-    imagen(opcion) {
-      // Asigna rutas de imagen diferentes según la opción
-      if (opcion === "buses") {
-        return "./src/assets/bus.png"; // Ruta a la imagen de buses
-      } else if (opcion === "ciudades") {
-        return "./src/assets/ciudad.png"; // Ruta a la imagen de ciudades
-      } else if (opcion === "clientes") {
-        return "./src/assets/clientes.png"; // Ruta a la imagen de clientes
-      } else if (opcion === "conductores") {
-        return "./src/assets/conductores.png"; // Ruta a la imagen de clientes
-      } else if (opcion === "rutas") {
-        return "./src/assets/ruta.png"; // Ruta a la imagen de clientes
-      } else if (opcion === "tiquetes") {
-        return "./src/assets/tiquetes.png"; // Ruta a la imagen de clientes
-      } else if (opcion === "vendedores") {
-        return "./src/assets/vendedores.png"; // Ruta a la imagen de clientes
-      }
-      // Agrega más condiciones para otras opciones
-    },
-  },
-};
-</script>
 
-<style>
+<style scoped>
 
-.imagen {
-  height: 81%;
-  margin-top: 10px;
+.opcionescont {
+    padding: 30px;
 }
-
 
 .opcioncont {
-  color: white;
+    margin: 12px 0px;
 }
 
-.card {
-  width: 190px;
-  height: 254px;
-  border-radius: 20px;
-  padding: 5px;
-  
+.opcion {
+    border: none;
+    width: 100%;
+    padding: 5px;
+    display: grid;
+    justify-content: center;
+    transition: transform 0.1s ease;
 }
+
+.opcion:hover {
+    background: #a3f7bf;
+    transform: scale(1.05);
+}
+
+.opcion-imagen {
+    height: 30px;
+    margin: auto;
+}
+
+.opcion-text{
+    text-align: center;
+    margin: auto;
+    font-weight: bold; 
+    text-decoration: underline;
+    color: black;
+
+}
+
+.paleta {
+  background-color:
+    #3f497f
+    #29a19c
+    #a3f7bf
+;}
+
 
 .card__content {
-  background: rgb(175, 176, 204);
+  background: ;
   border-radius: 17px;
   width: 100%;
   height: 100%;
 }
 
 
-</style>
-
-<style lang="sass">
-.example-col-gutter-size
-.my-content
-    padding: 10px 15px
-    background: rgba(#999,.15)
-    border: 1px solid rgba(#999,.2)
 </style>

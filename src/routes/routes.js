@@ -4,11 +4,9 @@ import menu from '../components/menu.vue'
 import buses from '../components/buses2.vue'
 import ciudad from '../components/ciudades2.vue'
 import cliente from '../components/clientes2.vue'
-import inicio from '../components/inicio.vue'
 import rutas from '../components/rutas.vue'
 import conductores from '../components/conductores2.vue'
 import conductores2 from '../components/conductores.vue'
-import usuarios from '../components/usuarios.vue'
 import tiquete from '../components/tiquete.vue'
 import ventas from '../components/ventas.vue'
 import vendedor from '../components/vendedor2.vue'
@@ -19,14 +17,12 @@ const routes =[
     {path: '/home', component: home, children:[
         {path: "", redirect: "/menu"},
         {path: "/menu", component:menu},
-        {path: '/inicio', component:inicio},
         {path: '/buses', component:buses},
         {path: '/ciudades', component:ciudad},
         {path: '/clientes', component:cliente},
         {path: '/rutas', component:rutas},
         {path: '/conductores', component:conductores},
         {path: '/conductores2', component:conductores2},
-        {path: '/usuarios', component:usuarios},
         {path: '/tiquetes', component:tiquete},
         {path: '/ventas', component:ventas},
         {path: '/vendedores', component:vendedor},

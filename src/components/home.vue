@@ -44,16 +44,17 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
                     </q-toolbar-title>
                 </q-toolbar>
             </q-header>
-
-            <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="mobile" bordered class="menudesplegable">
+            <!-- 🍻menu desplegable🍻 -->
+            <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="mobile" bordered class="menudesplegable bg-primary" >
                 <div class="opcionescont">
-                    <p class="menutitle">= Menú Desplegable =</p>
-                    <div v-for="(opcion, i) in opciones" :key="i" class="opcion-container">
-                        <router-link :to="'/' + primeraMinuscula(opcion.nombre)" class="opcioncont">
-                            <img :src="opcion.imagen" alt="Imagen" class="imagen" />
-                            <div class="opcion-text">{{opcion.nombre }}</div>
-                        </router-link>
-                    </div>
+                    
+                    <router-link v-for="(opcion, i) in opciones" :key="i" class="opcioncont" :to="'/' + primeraMinuscula(opcion.nombre)" >
+                        <button class="opcion" onclick="pagina()">
+                        <img :src="opcion.imagen" alt="Imagen" class="opcion-imagen" />
+                        <div class="opcion-text">{{opcion.nombre }}</div>
+                        </button>
+                    </router-link>
+                    
                 </div>
             </q-drawer>
 
@@ -66,6 +67,12 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
   
 
 <style scoped>
+.paleta {
+  background-color:
+    #3f497f
+    #29a19c
+    #a3f7bf
+;}
 * {
     margin: 0;
     padding: 0;
@@ -75,111 +82,62 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
     text-align: center;
 }
 
-.opcion-button {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: #0078d4;
-    color: #ffffff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    margin: 5px;
-}
-
-.opcion-button:hover {
-    background-color: #005a9e;
-}
-
-.imagen {
-    height: 30px;
+.menu-header {
+    background-color: #3f497f;
 }
 
 .menudesplegable {
-    border: solid 2px black;
-}
-
-.menutitle {
-    font-size: 25px;
-    text-align: center;
-    font-weight: bold;
-    margin: 30px 0px;
-    align-items: center;
 }
 
 .opcionescont {
-    background-color: white;
-    padding: 10px;
+    height: 100%;
+    padding: 30px;
     display: grid;
-    grid-column: 100%;
-    justify-content: left;
+    grid-template-columns: 100%;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.opcioncont {
+    margin: 12px 0px;
 }
 
 .opcion {
+    border: none;
     width: 100%;
     padding: 5px;
-}
-
-.opcioncont {
-    margin: 20px;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    font-size: large;
-    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
-        "Lucida Sans", Arial, sans-serif;
-    text-align: center;
-}
-
-.opcion-button {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: #0078d4;
-    color: #ffffff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    margin: 5px;
-}
-
-.opcion-button:hover {
-    background-color: #005a9e;
-}
-
-.imagen {
-    height: 30px;
-}
-
-.menudesplegable {
-    border: solid 2px black;
-}
-
-.menutitle {
-    font-size: 25px;
-    text-align: center;
-    font-weight: bold;
-    margin: 30px 0px;
-}
-
-.opcionescont {
-    background-color: white;
-    padding: 10px;
     display: grid;
-    grid-column: 100%;
-    justify-content: left;
+    justify-content: center;
+    transition: transform 0.1s ease;
 }
 
-.opcion-text {
-    margin-left: 10px; 
+.opcion:hover {
+    background: #a3f7bf;
+    transform: scale(1.05);
+}
+
+.opcion-imagen {
+    height: 30px;
+    margin: auto;
+}
+
+.opcion-text{
+    text-align: center;
+    margin: auto;
     font-weight: bold; 
+    text-decoration: underline;
     color: black;
+
 }
 
-.opcioncont {
-    margin: 20px;
-}
+.paleta {
+  background-color:
+    #3f497f
+    #29a19c
+    #a3f7bf
+;}
+
+
 </style>
 
