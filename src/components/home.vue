@@ -9,6 +9,7 @@ const opciones = [
     { nombre: "Conductores", imagen: "./src/assets/conductores.png" },
     { nombre: "Rutas", imagen: "./src/assets/ruta.png" },
     { nombre: "Tiquetes", imagen: "./src/assets/tiquetes.png" },
+    { nombre: "Ventas", imagen: "./src/assets/ventas.png" },
     { nombre: "Vendedores", imagen: "./src/assets/vendedores.png" }
 ];
 
