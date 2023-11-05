@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from 'vue'
-import { useClienteStore } from "../stores/clientes2.js";
+import { useClienteStore } from "../stores/clientes.js";
 import { useRutasStore } from '../stores/rutas.js';
-import { useVendedorStore } from '../stores/vendedor2';
+import { useVendedorStore } from '../stores/vendedor.js';
 
 const useCliente = useClienteStore();
 const useRutas = useRutasStore()

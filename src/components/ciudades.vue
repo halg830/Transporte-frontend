@@ -1,7 +1,7 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
-import { useCiudadStore } from "../stores/ciudad2.js";
+import { useCiudadStore } from "../stores/ciudad.js";
 
 const useCiudad = useCiudadStore();
 

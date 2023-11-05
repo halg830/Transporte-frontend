@@ -1,10 +1,10 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
-import {useConductorStore} from '../stores/conductores2.js'
+import {useVendedorStore} from '../stores/vendedor.js'
 
-const modelo = "Conductores"
-const useConductor = useConductorStore();
+const modelo = "Vendedor"
+const useVendedor = useVendedorStore();
 
 const columns = ref([
   {
@@ -12,14 +12,34 @@ const columns = ref([
     label: "Nombre",
     align: "left",
     field: (row) => row.nombre,
-    sortable: true,
+    sort: true,
+    sortOrder: 'da'
+  },
+  {
+    name: "Apellido",
+    label: "Apellido",
+    align: "left",
+    field: (row) => row.apellido,
+    sort: true,
     sortOrder: 'da'
   },
   {
     name: "Cedula",
     label: "Cedula",
-    align: "center",
+    align: "left",
     field: (row) => row.cedula,
+  },
+  {
+    name: "Teléfono",
+    label: "Teléfono",
+    align: "left",
+    field: (row) => row.telefono,
+  },
+  {
+    name: "Usuario",
+    label: "Usuario",
+    align: "left",
+    field: (row) => row.usuario,
   },
   {
     name: "Estado",
@@ -38,15 +58,19 @@ const rows = ref([]);
 
 const data = ref({
   nombre: "",
-  cedula: ""
+  apellido: "",
+  cedula: "",
+  telefono: "",
+  usuario: "",
+  contrasena: ""
 });
 
 const obtenerInfo = async () => {
   try {
-    const conductor = await useConductor.obtener();
-    if (conductor) {
-      console.log(conductor);
-      rows.value = conductor;
+    const vendedor = await useVendedor.obtener();
+    if (vendedor) {
+      console.log(vendedor);
+      rows.value = vendedor.vendedor;
     } else {
       console.log("No se pudieron obtener los datos.");
     }
@@ -80,12 +104,13 @@ function buscarIndexLocal(id) {
   return rows.value.findIndex((r) => r._id === id);
 }
 
+
 const enviarInfo = {
   guardar: async () => {
     try {
-      const response = await useConductor.guardar(data.value);
-      console.log(response.conductor);
-      rows.value.push(response.conductor)
+      const response = await useVendedor.guardar(data.value);
+      console.log(response);
+      rows.value.push(response.vendedor)
       modal.value = false
     } catch (error) {
       console.log(error);
@@ -93,7 +118,8 @@ const enviarInfo = {
   },
   editar: async () => {
     try {
-    const response = await useConductor.editar(data.value._id, data.value);
+        console.log(data.value);
+    const response = await useVendedor.editar(data.value._id, data.value);
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
@@ -106,12 +132,12 @@ const enviarInfo = {
 
 const in_activar={
   activar: async(id)=>{
-    const response = await useConductor.activar(id)
+    const response = await useVendedor.activar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   },
   inactivar: async(id)=>{
-    const response = await useConductor.inactivar(id)
+    const response = await useVendedor.inactivar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   }
@@ -138,9 +164,33 @@ const in_activar={
           ></q-input>
           <q-input
             outlined
-            v-model="data.cedula"
-            label="Cedula"
-            type="number"
+            v-model="data.apellido"
+            label="Apellido"
+            type="text"
+          ></q-input>
+          <q-input
+          outlined
+          v-model="data.cedula"
+          label="Cedula"
+          type="number"
+          ></q-input>
+          <q-input
+            outlined
+            v-model="data.telefono"
+            label="Teléfono"
+            type="Number"
+          ></q-input>
+          <q-input
+            outlined
+            v-model="data.usuario"
+            label="Usuario"
+            type="text"
+          ></q-input>
+          <q-input
+            outlined
+            v-model="data.contrasena"
+            label="Contraseña"
+            type="password"
           ></q-input>
           <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
 
@@ -152,40 +202,43 @@ const in_activar={
       </q-card>
     </q-dialog>
 
-    <q-btn>prueba</q-btn>
-
     <div class="q-pa-md">
-      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name" table-header-class="encabezado" table-class="tabla">
-        <template v-slot:top-right>
+      <q-table :rows="rows" :columns="columns" row-key="name">
+        <template v-slot:top-left>
           <q-tr>
-            <q-td>
-              <q-btn @click="opciones.agregar">➕</q-btn>
-            </q-td>
+            <h4 class="q-ma-xs">
+              {{ modelo }}
+              <q-btn @click="opciones.agregar" label="Añadir" color="primary" glossy>
+                <q-icon name="style" color="white" right/>
+              </q-btn>
+            </h4>
           </q-tr>
         </template>
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
 
-            <q-btn class="botonv1" label="Activo"
-              color="positive" v-if="props.row.estado === 1"
-              @click="in_activar.inactivar(props.row._id);props.row.estado = 'load'"/>
+            <q-btn
+              class="botonv1" glossy  text-size="1px" padding="10px"
+              :label="props.row.estado === 1 ? 'Activo' : (
+                props.row.estado === 0 ? 'No activo' :
+                '‎  ‎   ‎   ‎   ‎ ')
+                "
+              :color="props.row.estado === 1 ? 'positive' : 'accent'"
+              :loading="props.row.estado === 'load'"
+              loading-indicator-size="small"
+              @click="
+                props.row.estado === 1
+                  ? in_activar.inactivar(props.row._id)
+                  : in_activar.activar(props.row._id);
+                props.row.estado = 'load'"
+            />
 
-            <q-btn class="botonv1" label="No activo"
-              color="accent" v-if="props.row.estado === 0"
-              @click="in_activar.activar(props.row._id);props.row.estado = 'load'"/>
-
-            <q-btn class="botonv1" label=""
-              color="grey" v-if="props.row.estado === 'load'">
-                <q-circular-progress indeterminate color="white"/>
-              </q-btn>
           </q-td>
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="white"
-              text-color="black"
-              label="🖋️"
+            <q-btn color="warning" icon="edit"
+              class="botonv1" glossy
               @click="opciones.editar(props.row)"
             />
           </q-td>
@@ -206,28 +259,28 @@ info: Color para información o mensajes neutrales.
 warning: Color para advertencias o mensajes importantes. 
 */
 
-*{
-	margin: 0px;
+* {
+  margin: 0px;
   padding: 0px;
 }
 
-.tabla{
+.tabla {
   margin: 10px;
   border: 3px solid black;
 }
 
-.encabezado{
+.encabezado {
   font-weight: bold;
   font-size: 15px;
 }
 
-.cosascont{
+.cosascont {
   background-color: black;
   color: white;
   text-align: center;
 }
 
-.botonv1{
+.botonv1 {
   font-size: 10px;
   font-weight: bold;
 }

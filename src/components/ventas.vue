@@ -2,11 +2,11 @@
 import axios from "axios";
 import { ref } from "vue";
 import { useTiqueteStore } from "../stores/tiquete.js";
-import { useVendedorStore } from "../stores/vendedor2";
+import { useVendedorStore } from "../stores/vendedor.js";
 import { useRutasStore } from "../stores/rutas.js";
-import { useCiudadStore } from "../stores/ciudad2.js";
-import { useBusStore } from "../stores/buses2.js";
-import { useClienteStore } from "../stores/clientes2";
+import { useCiudadStore } from "../stores/ciudad.js";
+import { useBusStore } from "../stores/buses.js";
+import { useClienteStore } from "../stores/clientes.js";
 
 const modelo = "Tiquete";
 

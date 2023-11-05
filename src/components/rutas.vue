@@ -2,8 +2,8 @@
 import axios from "axios";
 import { ref } from "vue";
 import { useRutasStore } from "../stores/rutas.js";
-import { useCiudadStore } from "../stores/ciudad2.js";
-import { useBusStore } from "../stores/buses2.js";
+import { useCiudadStore } from "../stores/ciudad.js";
+import { useBusStore } from "../stores/buses.js";
 
 const useRutas = useRutasStore();
 const useCiudad = useCiudadStore();

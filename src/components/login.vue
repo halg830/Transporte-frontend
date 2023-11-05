@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { useQuasar } from 'quasar'
 import { useRouter } from "vue-router";
-import { useVendedorStore } from "../stores/vendedor2.js";
+import { useVendedorStore } from "../stores/vendedor.js";
 
 const $q = useQuasar()
 const useVendedor = useVendedorStore();
