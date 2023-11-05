@@ -345,36 +345,35 @@ function convertirHora(cadenaFecha) {
       <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name">
         <template v-slot:top-right>
           <q-tr>
-            <q-td>
-              <q-btn @click="opciones.agregar">➕</q-btn>
-            </q-td>
+            <q-btn @click="opciones.agregar" label="Añadir" color="primary" glossy>
+                <q-icon name="style" color="white" right/>
+              </q-btn>
           </q-tr>
         </template>
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
             <q-btn
-              color="white"
-              text-color="black"
-              label="❌"
-              @click="inactivar(props.row._id)"
-              v-if="props.row.estado == 1"
-            />
-            <q-btn
-              color="white"
-              text-color="black"
-              label="✅"
-              @click="activar(props.row._id)"
-              v-else
+              class="botonv1" glossy  text-size="1px" padding="10px"
+              :label="props.row.estado === 1 ? 'Activo' : (
+                props.row.estado === 0 ? 'Inactivo' :
+                '‎  ‎   ‎   ‎   ‎ ')
+                "
+              :color="props.row.estado === 1 ? 'positive' : 'accent'"
+              :loading="props.row.estado === 'load'"
+              loading-indicator-size="small"
+              @click="
+                props.row.estado === 1
+                  ? in_activar.inactivar(props.row._id)
+                  : in_activar.activar(props.row._id);
+                props.row.estado = 'load'"
             />
           </q-td>
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="white"
-              text-color="black"
-              label="🖋️"
-              @click="Editar(props.row._id)"
+            <q-btn color="warning" icon="edit"
+              class="botonv1" glossy
+              @click="opciones.editar(props.row)"
             />
           </q-td>
         </template>
