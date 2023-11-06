@@ -1,14 +1,15 @@
 <script setup>
-import axios from "axios";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { useTiqueteStore } from "../stores/tiquete.js";
 import { useVendedorStore } from "../stores/vendedor.js";
 import { useRutasStore } from "../stores/rutas.js";
-import { useCiudadStore } from "../stores/ciudad.js";
-import { useBusStore } from "../stores/buses.js";
 import { useClienteStore } from "../stores/clientes.js";
 
-const modelo = "Tiquete";
+const modelo = "Ventas";
+const loading = ref(false)
+const loadingTable = ref(true)
+const router = useRouter()
 
 const useTiquete = useTiqueteStore();
 const useVendedor = useVendedorStore();
@@ -98,6 +99,7 @@ const obtenerInfo = async () => {
     const tiquete = await useTiquete.obtener();
     if (tiquete) {
       console.log(tiquete);
+      loadingTable.value=false
       rows.value = tiquete;
     } else {
       console.log("No se pudieron obtener los datos.");
@@ -134,23 +136,17 @@ const estado = ref("guardar");
 const modal = ref(false);
 const opciones = {
   agregar: () => {
-    data.value = {
-      vendedor: "",
-      ruta: "",
-      cliente: "",
-      fecha_salida: "",
-  num_asiento: ""
-    };
-    date.value = ""
-    modal.value = true;
-    estado.value = "guardar";
+    router.push("/tiquetes")
   },
   editar: (info) => {
+    data.value = {
+      ...info, vendedor:info.vendedor.cedula, ruta: info.ruta.ciudad_origen.nombre + "/" + info.ruta.ciudad_destino.nombre, cliente:info.cliente.cedula
+    }
     date.value = info.fecha_salida
-    data.value = info;
+    /* data.value = info;
     data.value.vendedor = info.vendedor.cedula;
-    data.value.ruta = info.ruta.ciudad_origen + "/" + info.ruta.ciudad_destino;
-    data.value.cliente = info.cliente.cedula;
+    data.value.ruta = info.ruta.ciudad_origen.nombre + "/" + info.ruta.ciudad_destino.nombre;
+    data.value.cliente = info.cliente.cedula; */
     modal.value = true;
     estado.value = "editar";
   },
@@ -342,7 +338,7 @@ function convertirHora(cadenaFecha) {
     </q-dialog>
 
     <div class="q-pa-md">
-      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name">
+      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name" :loading="loadingTable">
         <template v-slot:top-right>
           <q-tr>
             <q-btn @click="opciones.agregar" label="Añadir" color="primary" glossy>

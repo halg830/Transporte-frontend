@@ -102,8 +102,7 @@ const opciones = {
     estado.value="guardar";
   },
   editar: (info) => {
-    data.value = info;
-    data.value.conductor = info.conductor.nombre;
+    data.value = {...info, conductor:info.conductor.nombre}
     modal.value = true;
     estado.value="editar";
   },

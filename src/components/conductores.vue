@@ -70,7 +70,7 @@ const opciones = {
     estado.value="guardar";
   },
   editar: (info) => {
-    data.value = info;
+    data.value = {...info}
     modal.value = true;
     estado.value="editar";
   },

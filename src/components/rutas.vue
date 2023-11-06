@@ -123,11 +123,14 @@ const opciones = {
     estado.value = "guardar";
   },
   editar: (info) => {
+    data.value = {...info,
+      bus:info.bus.placa, ciudad_destino:info.ciudad_destino.nombre, ciudad_origen:info.ciudad_origen.nombre
+    }
     time.value = convertirHora(info.hora_salida)
-    data.value = info;
+   /*  data.value = info;
     data.value.bus = info.bus.placa
     data.value.ciudad_destino = info.ciudad_destino.nombre
-    data.value.ciudad_origen = info.ciudad_origen.nombre
+    data.value.ciudad_origen = info.ciudad_origen.nombre */
     modal.value = true;
     estado.value = "editar";
   },
