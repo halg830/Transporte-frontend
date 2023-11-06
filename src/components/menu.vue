@@ -12,7 +12,6 @@ import imgVendedores from '../assets/vendedores.png'
 
 
 const opciones = [
-    { nombre: "Menu", imagen: imgMenu },
     { nombre: "Buses", imagen: imgBuses },
     { nombre: "Ciudades", imagen: imgCiudades },
     { nombre: "Clientes", imagen: imgClientes },
@@ -91,7 +90,6 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
 
 
 .card__content {
-  background: ;
   border-radius: 17px;
   width: 100%;
   height: 100%;

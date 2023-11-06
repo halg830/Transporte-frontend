@@ -4,6 +4,7 @@ import { ref } from "vue";
 import { useCiudadStore } from "../stores/ciudad.js";
 
 const useCiudad = useCiudadStore();
+const loadingTable = ref(true)
 
 const columns = ref([
   {
@@ -35,6 +36,7 @@ const obtenerInfo = async () => {
     if (ciudad) {
       console.log(ciudad);
       rows.value = ciudad;
+      loadingTable.value = false
     } else {
       console.log("No se pudieron obtener los datos.");
     }
@@ -133,7 +135,7 @@ const in_activar={
     </q-dialog>
 
     <div class="q-pa-md">
-      <q-table title="Ciudades" :rows="rows" :columns="columns" row-key="name">
+      <q-table title="Ciudades" :rows="rows" :columns="columns" row-key="name" :loading="loadingTable">
         <template v-slot:top-right="props">
           <q-tr>
             <q-td>

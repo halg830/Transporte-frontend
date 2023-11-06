@@ -5,6 +5,9 @@ import {useVendedorStore} from '../stores/vendedor.js'
 
 const modelo = "Vendedor"
 const useVendedor = useVendedorStore();
+const loadingTable = ref(true)
+/* loadingTable.value = false */
+/* :loading="loadingTable" */
 
 const columns = ref([
   {
@@ -71,6 +74,7 @@ const obtenerInfo = async () => {
     if (vendedor) {
       console.log(vendedor);
       rows.value = vendedor.vendedor;
+      loadingTable.value = false 
     } else {
       console.log("No se pudieron obtener los datos.");
     }
@@ -203,12 +207,12 @@ const in_activar={
     </q-dialog>
 
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" row-key="name">
+      <q-table :rows="rows" :columns="columns" row-key="name" :loading="loadingTable" >
         <template v-slot:top-left>
           <q-tr>
             <h4 class="q-ma-xs">
               {{ modelo }}
-              <q-btn @click="opciones.agregar" label="Añadir" color="primary" glossy>
+              <q-btn @click="opciones.agregar" label="Añadir" color="secondary" >
                 <q-icon name="style" color="white" right/>
               </q-btn>
             </h4>
@@ -218,7 +222,7 @@ const in_activar={
           <q-td :props="props" class="botones">
 
             <q-btn
-              class="botonv1" glossy  text-size="1px" padding="10px"
+              class="botonv1"   text-size="1px" padding="10px"
               :label="props.row.estado === 1 ? 'Activo' : (
                 props.row.estado === 0 ? 'No activo' :
                 '‎  ‎   ‎   ‎   ‎ ')
@@ -238,7 +242,7 @@ const in_activar={
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
             <q-btn color="warning" icon="edit"
-              class="botonv1" glossy
+              class="botonv1" 
               @click="opciones.editar(props.row)"
             />
           </q-td>
