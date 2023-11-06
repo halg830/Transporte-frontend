@@ -15,44 +15,51 @@ const useBus = useBusStore();
 const $q = useQuasar()
 const loading = ref(false);
 const loadingTable = ref(true)
+/* loadingTable.value = false */
+/* :loading="loadingTable" */
+
 
 const columns = ref([
   {
     name: "Ciudad origen",
     label: "Ciudad origen",
-    align: "left",
+    align: "center",
     field: (row) => row.ciudad_origen.nombre,
   },
   {
     name: "Ciudad destino",
     label: "Ciudad destino",
-    align: "left",
+    align: "center",
     field: (row) => row.ciudad_destino.nombre,
   },
   {
     name: "Bus",
     label: "Bus",
-    align: "left",
+    align: "center",
     field: (row) => row.bus.placa,
   },
   {
     name: "Hora salida",
     label: "Hora salida",
+    align: "center",
     field: (row) => convertirHora(row.hora_salida),
   },
   {
     name: "Valor",
     label: "Valor",
+    align: "center",
     field: (row) => row.valor,
   },
   {
     name: "Estado",
     label: "Estado",
+    align: "center",
     field: (row) => row.estado,
   },
   {
     name: "opciones",
     label: "Opciones",
+    align: "center",
     field: "opciones",
   },
 ]);
@@ -303,7 +310,7 @@ const validarCiudad = () => {
           <q-tr>
             <h4 class="q-ma-xs">
               {{ modelo }}
-              <q-btn @click="opciones.agregar" label="Añadir" color="primary" glossy>
+              <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
                 <q-icon name="style" color="white" right />
               </q-btn>
             </h4>
@@ -312,7 +319,7 @@ const validarCiudad = () => {
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
 
-            <q-btn class="botonv1" glossy text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
               props.row.estado === 0 ? 'Inactivo' :
                 '‎  ‎   ‎   ‎   ‎ ')
               " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
@@ -326,7 +333,7 @@ const validarCiudad = () => {
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn color="warning" icon="edit" class="botonv1" glossy @click="opciones.editar(props.row)" />
+            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
       </q-table>

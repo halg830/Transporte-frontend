@@ -5,6 +5,7 @@ import {useConductorStore} from '../stores/conductores.js'
 
 const modelo = "Conductores"
 const useConductor = useConductorStore();
+const loadingTable = ref(true)
 
 const columns = ref([
   {
@@ -47,6 +48,7 @@ const obtenerInfo = async () => {
     if (conductor) {
       console.log(conductor);
       rows.value = conductor;
+      loadingTable.value = false
     } else {
       console.log("No se pudieron obtener los datos.");
     }
@@ -155,7 +157,7 @@ const in_activar={
     <q-btn>prueba</q-btn>
 
     <div class="q-pa-md">
-      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name" table-header-class="encabezado" table-class="tabla">
+      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name" table-header-class="encabezado" table-class="tabla" :loading="loadingTable">
         <template v-slot:top-right>
           <q-tr>
             <q-td>

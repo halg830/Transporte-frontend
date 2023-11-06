@@ -7,6 +7,7 @@ import { useConductorStore } from "../stores/conductores.js";
 const modelo = "Buses";
 const useBus = useBusStore();
 const useConductor = useConductorStore();
+const loadingTable = ref(true)
 
 const columns = ref([
   {
@@ -63,6 +64,7 @@ const obtenerInfo = async () => {
     if (bus) {
       console.log(bus);
       rows.value = bus.busPopulate;
+      loadingTable.value = false
     } else {
       console.log("No se pudieron obtener los datos.");
     }
@@ -213,12 +215,12 @@ const in_activar={
     </q-dialog>
 
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" row-key="name">
+      <q-table :rows="rows" :columns="columns" row-key="name" :loading="loadingTable">
         <template v-slot:top-left>
           <q-tr>
             <h4 class="q-ma-xs">
               {{ modelo }}
-              <q-btn @click="opciones.agregar" label="Añadir" color="primary" glossy>
+              <q-btn @click="opciones.agregar" label="Añadir" color="secondary" >
                 <q-icon name="style" color="white" right/>
               </q-btn>
             </h4>
@@ -228,7 +230,7 @@ const in_activar={
           <q-td :props="props" class="botones">
 
             <q-btn
-              class="botonv1" glossy  text-size="1px" padding="10px"
+              class="botonv1"   text-size="1px" padding="10px"
               :label="props.row.estado === 1 ? 'Activo' : (
                 props.row.estado === 0 ? 'No activo' :
                 '‎  ‎   ‎   ‎   ‎ ')
@@ -248,7 +250,7 @@ const in_activar={
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
             <q-btn color="warning" icon="edit"
-              class="botonv1" glossy
+              class="botonv1" 
               @click="opciones.editar(props.row)"
             />
           </q-td>
