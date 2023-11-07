@@ -28,10 +28,36 @@ async function validarIngreso() {
           message: 'Usuario o contraseña incorrecto',
           position: "top"
         })
-    console.log("Error usuario o contraseña");
     return;
   }
   router.push("/home");
+}
+
+function validarCampos(){
+  const arrData = Object.values(data.value)
+  console.log(arrData);
+  for (const d of arrData) {
+    console.log(d);
+    if(d===null){
+      errorCamposVacios()
+      return
+    }
+    if (d.trim() === "") {
+      console.log("h");
+      errorCamposVacios()
+      return
+    }
+  }
+
+  validarIngreso()
+}
+
+function errorCamposVacios(){
+  $q.notify({
+        type: 'negative',
+        message: 'Por favor complete todos los campos',
+        position: "top"
+      })
 }
 </script>
 
@@ -59,13 +85,14 @@ async function validarIngreso() {
           type="password"
           placeholder="Contraseña"
           v-model="data.contrasena"
+          @keyup.enter="validarCampos"
         />
         <!-- <p class="contrasenaayuda">¿olvidaste tu contraseña?</p> -->
       </div>
 
       <q-btn
         class="ingresar opcion"
-        @click="validarIngreso()"
+        @click="validarCampos"
         :loading="loading"
         label="Ingresar"
       />

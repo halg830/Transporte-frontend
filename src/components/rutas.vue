@@ -182,7 +182,7 @@ const enviarInfo = {
       loading.value = false
       console.log(response);
 
-      rows.value.push(response.RutasPopulate);
+      rows.value.push(response);
       modal.value = false;
       $q.notify({
         type: 'positive',
@@ -239,11 +239,7 @@ function convertirHora(cadenaFecha) {
 function validarCampos() {
 
   if (time.value.trim() === "") {
-    $q.notify({
-      type: 'negative',
-      message: 'Por favor complete todos los campos',
-      position: "top"
-    })
+    errorCamposVacios()
     return
   }
   console.log(time.value);
@@ -251,13 +247,13 @@ function validarCampos() {
 
   const arrData = Object.values(data.value)
   console.log(arrData);
-  for (const d in arrData) {
+  for (const d of arrData) {
+    if(d===null){
+      errorCamposVacios()
+      return
+    }
     if (d.trim() === "") {
-      $q.notify({
-        type: 'negative',
-        message: 'Por favor complete todos los campos',
-        position: "top"
-      })
+      errorCamposVacios()
       return
     }
   }
@@ -269,9 +265,17 @@ function validarCampos() {
   enviarInfo[estado.value]()
 }
 
-const validarCiudad = () => {
-  return options.value.ciudad.map(c => { if (c != data.value.ciudad_origen && c != data.value.ciudad_destino) return c })
+function errorCamposVacios(){
+  $q.notify({
+        type: 'negative',
+        message: 'Por favor complete todos los campos',
+        position: "top"
+      })
 }
+
+const validarCiudad = computed(() => {
+  return options.value.ciudad.map(c => { if (c != data.value.ciudad_origen && c != data.value.ciudad_destino) return c })
+})
 </script>
 
 <template>

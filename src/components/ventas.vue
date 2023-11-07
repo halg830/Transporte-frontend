@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useQuasar } from "quasar";
 import { useTiqueteStore } from "../stores/tiquete.js";
 import { useVendedorStore } from "../stores/vendedor.js";
 import { useRutasStore } from "../stores/rutas.js";
@@ -9,13 +10,13 @@ import { useClienteStore } from "../stores/clientes.js";
 const modelo = "Ventas";
 const loading = ref(false)
 const loadingTable = ref(true)
+const $q = useQuasar()
 const router = useRouter()
 
 const useTiquete = useTiqueteStore();
 const useVendedor = useVendedorStore();
 const useRutas = useRutasStore();
 const useCliente = useClienteStore();
-const loadingTable = ref(true)
 
 const columns = ref([
   {
@@ -100,7 +101,7 @@ const obtenerInfo = async () => {
     const tiquete = await useTiquete.obtener();
     if (tiquete) {
       console.log(tiquete);
-      loadingTable.value=false
+      loadingTable.value = false
       rows.value = tiquete;
       loadingTable.value = false
     } else {
@@ -126,7 +127,7 @@ const obtenerOptions = async () => {
 
   options.value.vendedor = responseVendedor.vendedor.map((c) => c.nombre);
   models.value.vendedor = responseVendedor.vendedor;
-  options.value.ruta = responseRutas.map((c) => c.ciudad_origen.nombre + "/"+ c.ciudad_destino.nombre);
+  options.value.ruta = responseRutas.map((c) => c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre);
   models.value.ruta = responseRutas;
   options.value.cliente = responseCliente.cliente.map((c) => c.cedula);
   models.value.cliente = responseCliente.cliente;
@@ -142,7 +143,7 @@ const opciones = {
   },
   editar: (info) => {
     data.value = {
-      ...info, vendedor:info.vendedor.cedula, ruta: info.ruta.ciudad_origen.nombre + "/" + info.ruta.ciudad_destino.nombre, cliente:info.cliente.cedula
+      ...info, vendedor: info.vendedor.cedula, ruta: info.ruta.ciudad_origen.nombre + "/" + info.ruta.ciudad_destino.nombre, cliente: info.cliente.cedula
     }
     date.value = info.fecha_salida
     /* data.value = info;
@@ -185,10 +186,10 @@ function idCliente(cedula) {
 function convertirFechaBD(fechaA) {
   console.log(fechaA);
   const partes = fechaA.split('/');
-  
+
   const fecha = new Date(
-    parseInt(partes[0]), 
-    parseInt(partes[1]) - 1, 
+    parseInt(partes[0]),
+    parseInt(partes[1]) - 1,
     parseInt(partes[2])
   );
 
@@ -201,10 +202,6 @@ function convertirFechaBD(fechaA) {
 const enviarInfo = {
   guardar: async () => {
     try {
-      data.value.fecha_salida = convertirFechaBD(date.value)
-      data.value.vendedor = idVendedor(data.value.vendedor);
-      data.value.ruta = idRuta(data.value.ruta);
-      data.value.cliente = idCliente(data.value.cliente);
       console.log(data.value);
 
       const response = await useTiquete.guardar(data.value);
@@ -218,10 +215,6 @@ const enviarInfo = {
   },
   editar: async () => {
     try {
-      data.value.fecha_salida = convertirFechaBD(date.value)
-      data.value.vendedor = idVendedor(data.value.vendedor);
-      data.value.ruta = idRuta(data.value.ruta);
-      data.value.cliente = idCliente(data.value.cliente);
       // data.value.hora_salida = convertirHora_Fecha(time.value)
       console.log(data.value);
 
@@ -267,6 +260,43 @@ function convertirHora(cadenaFecha) {
   const horaFormateada = `${horas}:${minutos}`;
   return horaFormateada;
 }
+
+function validarCampos() {
+
+  if (date.value.trim() === "") {
+    errorCamposVacios()
+    return
+  }
+  data.value.hora_salida = convertirFecha(date.value)
+
+  const arrData = Object.values(data.value)
+  console.log(arrData);
+  for (const d of arrData) {
+    console.log(d);
+    if(d===null){
+      errorCamposVacios()
+      return
+    }
+    if ( d.trim() === "") {
+      errorCamposVacios()
+      return
+    }
+  }
+
+  data.value.vendedor = idVendedor(data.value.vendedor);
+  data.value.ruta = idRuta(data.value.ruta);
+  data.value.cliente = idCliente(data.value.cliente);
+
+  enviarInfo[estado.value]()
+}
+
+function errorCamposVacios(){
+  $q.notify({
+        type: 'negative',
+        message: 'Por favor complete todos los campos',
+        position: "top"
+      })
+}
 </script>
 
 <template>
@@ -280,28 +310,12 @@ function convertirHora(cadenaFecha) {
 
         <q-card-section class="q-gutter-md">
           <div class="text-negative">{{ errorform }}</div>
-          <q-select
-            rounded
-            standout
-            v-model="data.cliente"
-            :options="options.cliente"
-            label="Cliente"
-          />
-          <q-select
-            rounded
-            standout
-            v-model="data.ruta"
-            :options="options.ruta"
-            label="Ruta"
-          />
+          <q-select rounded standout v-model="data.cliente" :options="options.cliente" label="Cliente" />
+          <q-select rounded standout v-model="data.ruta" :options="options.ruta" label="Ruta" />
           <q-input filled v-model="date" mask="date" :rules="['date']">
             <template v-slot:append>
               <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
+                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                   <q-date v-model="date">
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
@@ -312,22 +326,11 @@ function convertirHora(cadenaFecha) {
             </template>
           </q-input>
 
-          <q-input
-            outlined
-            v-model="data.num_asiento"
-            label="Asiento"
-            type="number"
-          ></q-input>
+          <q-input outlined v-model="data.num_asiento" label="Asiento" type="number"></q-input>
 
-          <q-select
-            rounded
-            standout
-            v-model="data.vendedor"
-            :options="options.vendedor"
-            label="Vendedor"
-          />
+          <q-select rounded standout v-model="data.vendedor" :options="options.vendedor" label="Vendedor" />
 
-          <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
+          <q-btn @click="validarCampos()">Guardar</q-btn>
 
           <!-- <q-btn
             :color="typeform === 'agregar' ? 'primary' : 'warning'"
@@ -343,36 +346,27 @@ function convertirHora(cadenaFecha) {
       <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name" :loading="loadingTable">
         <template v-slot:top-right>
           <q-tr>
-            <q-btn @click="opciones.agregar" label="Añadir" color="secondary" >
-                <q-icon name="style" color="white" right/>
-              </q-btn>
+            <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+              <q-icon name="style" color="white" right />
+            </q-btn>
           </q-tr>
         </template>
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              class="botonv1"   text-size="1px" padding="10px"
-              :label="props.row.estado === 1 ? 'Activo' : (
-                props.row.estado === 0 ? 'Inactivo' :
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
+              props.row.estado === 0 ? 'Inactivo' :
                 '‎  ‎   ‎   ‎   ‎ ')
-                "
-              :color="props.row.estado === 1 ? 'positive' : 'accent'"
-              :loading="props.row.estado === 'load'"
-              loading-indicator-size="small"
-              @click="
+              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
+              loading-indicator-size="small" @click="
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-                props.row.estado = 'load'"
-            />
+              props.row.estado = 'load'" />
           </q-td>
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn color="warning" icon="edit"
-              class="botonv1" 
-              @click="opciones.editar(props.row)"
-            />
+            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
       </q-table>
