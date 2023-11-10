@@ -182,49 +182,70 @@ $q.notify({
       </q-card>
     </q-dialog>
 
-    <q-btn>prueba</q-btn>
 
     <div class="q-pa-md">
-      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name" table-header-class="encabezado" table-class="tabla" :loading="loadingTable">
-        <template v-slot:top-right>
-          <q-tr>
-            <q-td>
-              <q-btn @click="opciones.agregar">➕</q-btn>
-            </q-td>
-          </q-tr>
+      <q-table :rows="rows" :columns="columns" class="tabla"
+      row-key="name" :loading="loadingTable" :filter="filter">
+
+        <template v-slot:top >
+          
+          <h4 class="titulo-cont">
+           {{ modelo }}
+           <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+            <q-icon name="style" color="white" right/>
+          </q-btn>
+          </h4>
+
+          
+
+          
+            <q-input borderless dense debounce="300" color="primary"
+            v-model="filter" class="buscar">
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+         
         </template>
+
+        <template v-slot:header="props">
+        <q-tr :props="props">
+          <q-th
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+            class="encabezado"
+          >
+            {{ col.label }}
+          </q-th>
+        </q-tr>
+      </template>
+  
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
+              props.row.estado === 0 ? 'No activo' :
+                '‎  ‎   ‎   ‎   ‎ ')
+              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
+              loading-indicator-size="small" @click="
+                props.row.estado === 1
+                  ? in_activar.inactivar(props.row._id)
+                  : in_activar.activar(props.row._id);
+              props.row.estado = 'load'" />
 
-            <q-btn class="botonv1" label="Activo"
-              color="positive" v-if="props.row.estado === 1"
-              @click="in_activar.inactivar(props.row._id);props.row.estado = 'load'"/>
-
-            <q-btn class="botonv1" label="No activo"
-              color="accent" v-if="props.row.estado === 0"
-              @click="in_activar.activar(props.row._id);props.row.estado = 'load'"/>
-
-            <q-btn class="botonv1" label=""
-              color="grey" v-if="props.row.estado === 'load'">
-                <q-circular-progress indeterminate color="white"/>
-              </q-btn>
           </q-td>
         </template>
+
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="white"
-              text-color="black"
-              label="🖋️"
-              @click="opciones.editar(props.row)"
-            />
+            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
+
       </q-table>
     </div>
   </div>
 </template>
-
 <style scoped>
 /* 
 primary: Color principal del tema.
@@ -236,30 +257,46 @@ info: Color para información o mensajes neutrales.
 warning: Color para advertencias o mensajes importantes. 
 */
 
-*{
-	margin: 0px;
+* {
+  margin: 0px;
   padding: 0px;
 }
 
-.tabla{
-  margin: 10px;
-  border: 3px solid black;
+.tabla {
+  padding: 0 20px;
+  margin: 10px auto;
+  max-width: 1000px;
+
+  border: 0px solid black;
 }
 
-.encabezado{
+
+.buscar-cont{
+  width: 100%;
+}
+
+.titulo-cont {
+  margin: auto;
+}
+
+.buscar{
+  display: inline-block;
+  margin: auto;
+  margin-top: 8px;
+  padding: 0px 15px;
+
+  border: 1px solid rgb(212, 212, 212);
+  border-radius: 5px;
+
+}
+
+.encabezado {
   font-weight: bold;
   font-size: 15px;
 }
 
-.cosascont{
-  background-color: black;
-  color: white;
-  text-align: center;
-}
-
-.botonv1{
+.botonv1 {
   font-size: 10px;
   font-weight: bold;
 }
 </style>
-../stores/conductores.js

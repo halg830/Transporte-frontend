@@ -7,6 +7,7 @@ import { useQuasar } from 'quasar'
 const useCiudad = useCiudadStore();
 const loadingTable = ref(true)
 const $q = useQuasar()
+const filter = ref('')
 
 const columns = ref([
   {
@@ -18,11 +19,13 @@ const columns = ref([
   {
     name: "Estado",
     label: "Estado",
+    align: "center",
     field: (row) => row.estado,
   },
   {
     name: "opciones",
     label: "Opciones",
+    align: "right",
     field: "opciones",
   },
 ]);
@@ -49,6 +52,7 @@ const obtenerInfo = async () => {
 
 obtenerInfo();
 
+const modelo = "ciudades";
 const estado = ref("guardar");
 const modal = ref(false);
 const opciones = {
@@ -156,28 +160,121 @@ function errorCamposVacios() {
         </q-card-section>
       </q-card>
     </q-dialog>
-
+    
     <div class="q-pa-md">
-      <q-table title="Ciudades" :rows="rows" :columns="columns" row-key="name" :loading="loadingTable">
-        <template v-slot:top-right="props">
-          <q-tr>
-            <q-td>
-              <q-btn @click="opciones.agregar">➕</q-btn>
-            </q-td>
-          </q-tr>
+      <q-table :rows="rows" :columns="columns" class="tabla"
+      row-key="name" :loading="loadingTable" :filter="filter">
+
+        <template v-slot:top >
+          
+          <h4 class="titulo-cont">
+           {{ modelo }}
+           <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+            <q-icon name="style" color="white" right/>
+          </q-btn>
+          </h4>
+
+          
+
+          
+            <q-input borderless dense debounce="300" color="primary"
+            v-model="filter" class="buscar">
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+         
         </template>
+
+        <template v-slot:header="props">
+        <q-tr :props="props">
+          <q-th
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+            class="encabezado"
+          >
+            {{ col.label }}
+          </q-th>
+        </q-tr>
+      </template>
+  
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-            <q-btn color="white" text-color="black" :label="props.row.estado === 1 ? '❌' : '✅'"
-              @click="props.row.estado === 1 ? in_activar.inactivar(props.row._id) : in_activar.activar(props.row._id)" />
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
+              props.row.estado === 0 ? 'No activo' :
+                '‎  ‎   ‎   ‎   ‎ ')
+              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
+              loading-indicator-size="small" @click="
+                props.row.estado === 1
+                  ? in_activar.inactivar(props.row._id)
+                  : in_activar.activar(props.row._id);
+              props.row.estado = 'load'" />
+
           </q-td>
         </template>
+
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn color="white" text-color="black" label="🖋️" @click="opciones.editar(props.row)" />
+            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
+
       </q-table>
     </div>
   </div>
 </template>
+<style scoped>
+/* 
+primary: Color principal del tema.
+secondary: Color secundario del tema.
+accent: Color de acento.
+positive: Color para indicar una acción positiva o éxito.
+negative: Color para indicar una acción negativa o error.
+info: Color para información o mensajes neutrales.
+warning: Color para advertencias o mensajes importantes. 
+*/
+
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+.tabla {
+  padding: 0 20px;
+  margin: 10px auto;
+  max-width: 1000px;
+
+  border: 0px solid black;
+}
+
+
+.buscar-cont{
+  width: 100%;
+}
+
+.titulo-cont {
+  margin: auto;
+}
+
+.buscar{
+  display: inline-block;
+  margin: auto;
+  margin-top: 8px;
+  padding: 0px 15px;
+
+  border: 1px solid rgb(212, 212, 212);
+  border-radius: 5px;
+
+}
+
+.encabezado {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.botonv1 {
+  font-size: 10px;
+  font-weight: bold;
+}
+</style>
