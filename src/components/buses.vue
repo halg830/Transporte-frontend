@@ -8,6 +8,7 @@ import { useQuasar } from "quasar";
 const modelo = "Buses";
 const useBus = useBusStore();
 const useConductor = useConductorStore();
+const loading = ref(false)
 const loadingTable = ref(true)
 const $q = useQuasar()
 
@@ -126,11 +127,17 @@ function buscarIndexLocal(id) {
 const enviarInfo = {
   guardar: async () => {
     try {
+      loading.value=true
 
       console.log(data.value);
 
       const response = await useBus.guardar(data.value);
+      loading.value=false
       console.log(response);
+      if (response.error) {
+        errorNotify(response.error)
+        return
+      }
 
       rows.value.push(response);
       modal.value = false;
@@ -174,11 +181,11 @@ function validarCampos() {
   for (const d of arrData) {
     console.log(d);
     if (d === null) {
-      errorCamposVacios()
+      errorNotify("Por favor complete todos los campos")
       return
     }
     if (d.trim() === "") {
-      errorCamposVacios()
+      errorNotify("Por favor complete todos los campos")
       return
     }
   }
@@ -188,10 +195,10 @@ function validarCampos() {
   enviarInfo[estado.value]()
 }
 
-function errorCamposVacios() {
+function errorNotify(msg) {
   $q.notify({
     type: 'negative',
-    message: 'Por favor complete todos los campos',
+    message: msg,
     position: "top"
   })
 }
@@ -213,7 +220,7 @@ function errorCamposVacios() {
           <q-select rounded standout v-model="data.conductor" :options="options.conductores" label="Conductor" />
           <q-input outlined v-model="data.empresa" label="Empresa" type="text"></q-input>
           <q-input outlined v-model="data.asiento" label="Asientos" type="number"></q-input>
-          <q-btn @click="validarCampos">Guardar</q-btn>
+          <q-btn @click="validarCampos" :loading="loading">Guardar</q-btn>
 
           <!-- <q-btn
           >
@@ -238,7 +245,7 @@ function errorCamposVacios() {
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
 
-            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
+            <q-btn  class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
               props.row.estado === 0 ? 'No activo' :
                 '‎  ‎   ‎   ‎   ‎ ')
               " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
@@ -246,7 +253,7 @@ function errorCamposVacios() {
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-              props.row.estado = 'load'" />
+              props.row.estado = 'load'"  />
 
           </q-td>
         </template>

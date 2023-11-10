@@ -180,6 +180,7 @@ const enviarInfo = {
 
       const response = await useRutas.guardar(data.value);
       loading.value = false
+      
       console.log(response);
 
       rows.value.push(response);
@@ -239,7 +240,7 @@ function convertirHora(cadenaFecha) {
 function validarCampos() {
 
   if (time.value.trim() === "") {
-    errorCamposVacios()
+    errorNotify("Por favor complete todos los campos")
     return
   }
   console.log(time.value);
@@ -249,11 +250,11 @@ function validarCampos() {
   console.log(arrData);
   for (const d of arrData) {
     if(d===null){
-      errorCamposVacios()
+      errorNotify("Por favor complete todos los campos")
       return
     }
     if (d.trim() === "") {
-      errorCamposVacios()
+      errorNotify("Por favor complete todos los campos")
       return
     }
   }
@@ -265,10 +266,10 @@ function validarCampos() {
   enviarInfo[estado.value]()
 }
 
-function errorCamposVacios(){
+function errorNotify(msg){
   $q.notify({
         type: 'negative',
-        message: 'Por favor complete todos los campos',
+        message: msg,
         position: "top"
       })
 }

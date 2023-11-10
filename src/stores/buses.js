@@ -30,8 +30,8 @@ export const useBusStore = defineStore("bus", () => {
       console.log(response);
       return response.data.busPopulate
     } catch (error) {
-      console.log(error);
-      return null
+      console.log("e",error);
+      return error.response.data
     }
   };
 
