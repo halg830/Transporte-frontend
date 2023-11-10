@@ -3,11 +3,13 @@ import axios from "axios";
 import { ref } from "vue";
 import { useBusStore } from "../stores/buses.js";
 import { useConductorStore } from "../stores/conductores.js";
+import { useQuasar } from "quasar";
 
 const modelo = "Buses";
 const useBus = useBusStore();
 const useConductor = useConductorStore();
 const loadingTable = ref(true)
+const $q = useQuasar()
 
 const columns = ref([
   {
@@ -101,19 +103,19 @@ const opciones = {
       asiento: 0,
     };
     modal.value = true;
-    estado.value="guardar";
+    estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = {...info, conductor:info.conductor.nombre}
+    data.value = { ...info, conductor: info.conductor.nombre }
     modal.value = true;
-    estado.value="editar";
+    estado.value = "editar";
   },
 };
 
 function idConductor(nombre) {
   const buscar = conductores.value.find((c) => c.nombre === nombre);
   if (buscar) return buscar._id;
-  
+
   return nombre
 }
 
@@ -124,7 +126,7 @@ function buscarIndexLocal(id) {
 const enviarInfo = {
   guardar: async () => {
     try {
-      data.value.conductor = idConductor(data.value.conductor);
+
       console.log(data.value);
 
       const response = await useBus.guardar(data.value);
@@ -138,7 +140,7 @@ const enviarInfo = {
   },
   editar: async () => {
     try {
-      data.value.conductor = idConductor(data.value.conductor);
+
       console.log(data.value);
 
       const response = await useBus.editar(data.value._id, data.value);
@@ -152,17 +154,46 @@ const enviarInfo = {
   },
 };
 
-const in_activar={
-  activar: async(id)=>{
+const in_activar = {
+  activar: async (id) => {
     const response = await useBus.activar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   },
-  inactivar: async(id)=>{
+  inactivar: async (id) => {
     const response = await useBus.inactivar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   }
+}
+
+function validarCampos() {
+
+  const arrData = Object.values(data.value)
+  console.log(arrData);
+  for (const d of arrData) {
+    console.log(d);
+    if (d === null) {
+      errorCamposVacios()
+      return
+    }
+    if (d.trim() === "") {
+      errorCamposVacios()
+      return
+    }
+  }
+
+  data.value.conductor = idConductor(data.value.conductor);
+
+  enviarInfo[estado.value]()
+}
+
+function errorCamposVacios() {
+  $q.notify({
+    type: 'negative',
+    message: 'Por favor complete todos los campos',
+    position: "top"
+  })
 }
 </script>
 
@@ -178,32 +209,11 @@ const in_activar={
         <q-card-section class="q-gutter-md">
           <!-- <div class="text-negative">{{ errorform }}</div> -->
 
-          <q-input
-            outlined
-            v-model="data.placa"
-            label="Placa"
-            type="text"
-          ></q-input>
-          <q-select
-            rounded
-            standout
-            v-model="data.conductor"
-            :options="options.conductores"
-            label="Conductor"
-          />
-          <q-input
-            outlined
-            v-model="data.empresa"
-            label="Empresa"
-            type="text"
-          ></q-input>
-          <q-input
-            outlined
-            v-model="data.asiento"
-            label="Asientos"
-            type="number"
-          ></q-input>
-          <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
+          <q-input outlined v-model="data.placa" label="Placa" type="text"></q-input>
+          <q-select rounded standout v-model="data.conductor" :options="options.conductores" label="Conductor" />
+          <q-input outlined v-model="data.empresa" label="Empresa" type="text"></q-input>
+          <q-input outlined v-model="data.asiento" label="Asientos" type="number"></q-input>
+          <q-btn @click="validarCampos">Guardar</q-btn>
 
           <!-- <q-btn
           >
@@ -219,8 +229,8 @@ const in_activar={
           <q-tr>
             <h4 class="q-ma-xs">
               {{ modelo }}
-              <q-btn @click="opciones.agregar" label="Añadir" color="secondary" >
-                <q-icon name="style" color="white" right/>
+              <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+                <q-icon name="style" color="white" right />
               </q-btn>
             </h4>
           </q-tr>
@@ -228,30 +238,21 @@ const in_activar={
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
 
-            <q-btn
-              class="botonv1"   text-size="1px" padding="10px"
-              :label="props.row.estado === 1 ? 'Activo' : (
-                props.row.estado === 0 ? 'No activo' :
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
+              props.row.estado === 0 ? 'No activo' :
                 '‎  ‎   ‎   ‎   ‎ ')
-                "
-              :color="props.row.estado === 1 ? 'positive' : 'accent'"
-              :loading="props.row.estado === 'load'"
-              loading-indicator-size="small"
-              @click="
+              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
+              loading-indicator-size="small" @click="
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-                props.row.estado = 'load'"
-            />
+              props.row.estado = 'load'" />
 
           </q-td>
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn color="warning" icon="edit"
-              class="botonv1" 
-              @click="opciones.editar(props.row)"
-            />
+            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
       </q-table>

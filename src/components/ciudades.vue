@@ -2,9 +2,11 @@
 import axios from "axios";
 import { ref } from "vue";
 import { useCiudadStore } from "../stores/ciudad.js";
+import { useQuasar } from 'quasar'
 
 const useCiudad = useCiudadStore();
 const loadingTable = ref(true)
+const $q = useQuasar()
 
 const columns = ref([
   {
@@ -55,12 +57,12 @@ const opciones = {
       nombre: ""
     };
     modal.value = true;
-    estado.value="guardar";
+    estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = {...info}
+    data.value = { ...info }
     modal.value = true;
-    estado.value="editar";
+    estado.value = "editar";
   },
 };
 
@@ -81,7 +83,7 @@ const enviarInfo = {
   },
   editar: async () => {
     try {
-    const response = await useCiudad.editar(data.value._id, data.value);
+      const response = await useCiudad.editar(data.value._id, data.value);
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
@@ -92,17 +94,43 @@ const enviarInfo = {
   },
 };
 
-const in_activar={
-  activar: async(id)=>{
+const in_activar = {
+  activar: async (id) => {
     const response = await useCiudad.activar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   },
-  inactivar: async(id)=>{
+  inactivar: async (id) => {
     const response = await useCiudad.inactivar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   }
+}
+
+function validarCampos() {
+
+  const arrData = Object.values(data.value)
+  console.log(arrData);
+  for (const d of arrData) {
+    console.log(d);
+    if (d === null) {
+      errorCamposVacios()
+      return
+    }
+    if (d.trim() === "") {
+      errorCamposVacios()
+      return
+    }
+  }
+  enviarInfo[estado.value]()
+}
+
+function errorCamposVacios() {
+  $q.notify({
+    type: 'negative',
+    message: 'Por favor complete todos los campos',
+    position: "top"
+  })
 }
 </script>
 
@@ -118,13 +146,8 @@ const in_activar={
         <q-card-section class="q-gutter-md">
           <div class="text-negative">{{ errorform }}</div>
 
-          <q-input
-            outlined
-            v-model="data.nombre"
-            label="Nombre"
-            type="text"
-          ></q-input>
-          <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
+          <q-input outlined v-model="data.nombre" label="Nombre" type="text"></q-input>
+          <q-btn @click="validarCampos">Guardar</q-btn>
 
           <!-- <q-btn
           >
@@ -145,22 +168,13 @@ const in_activar={
         </template>
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="white"
-              text-color="black"
-              :label="props.row.estado === 1 ? '❌' : '✅'"
-              @click="props.row.estado === 1 ? in_activar.inactivar(props.row._id) : in_activar.activar(props.row._id)"
-            />
+            <q-btn color="white" text-color="black" :label="props.row.estado === 1 ? '❌' : '✅'"
+              @click="props.row.estado === 1 ? in_activar.inactivar(props.row._id) : in_activar.activar(props.row._id)" />
           </q-td>
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="white"
-              text-color="black"
-              label="🖋️"
-              @click="opciones.editar(props.row)"
-            />
+            <q-btn color="white" text-color="black" label="🖋️" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
       </q-table>

@@ -2,10 +2,12 @@
 import axios from "axios";
 import { ref } from "vue";
 import { useClienteStore } from "../stores/clientes.js";
+import { useQuasar } from 'quasar'
 
 const modelo = "Clientes";
 const useCliente = useClienteStore();
 const loadingTable = ref(true)
+const $q = useQuasar()
 /* loadingTable.value = false */
 /* :loading="loadingTable" */
 
@@ -80,7 +82,7 @@ const opciones = {
     estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = {...info}
+    data.value = { ...info }
     modal.value = true;
     estado.value = "editar";
   },
@@ -126,6 +128,32 @@ const in_activar = {
     rows.value.splice(buscarIndexLocal(response._id), 1, response);
   },
 };
+
+function validarCampos() {
+
+  const arrData = Object.values(data.value)
+  console.log(arrData);
+  for (const d of arrData) {
+    console.log(d);
+    if (d === null) {
+      errorCamposVacios()
+      return
+    }
+    if (d.trim() === "") {
+      errorCamposVacios()
+      return
+    }
+  }
+  enviarInfo[estado.value]()
+}
+
+function errorCamposVacios() {
+  $q.notify({
+    type: 'negative',
+    message: 'Por favor complete todos los campos',
+    position: "top"
+  })
+}
 </script>
 
 <template>
@@ -140,33 +168,18 @@ const in_activar = {
         <q-card-section class="q-gutter-md">
           <div class="text-negative">{{ errorform }}</div>
 
-          <q-input
-            outlined
-            v-model="data.nombre"
-            label="Nombre"
-            type="text"
-          ></q-input>
-          <q-input
-            outlined
-            v-model="data.cedula"
-            label="Cedula"
-            type="number"
-          ></q-input>
-          <q-input
-            outlined
-            v-model="data.email"
-            label="Email"
-            type="email"
-          ></q-input>
-          <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
+          <q-input outlined v-model="data.nombre" label="Nombre" type="text"></q-input>
+          <q-input outlined v-model="data.cedula" label="Cedula" type="number"></q-input>
+          <q-input outlined v-model="data.email" label="Email" type="email"></q-input>
+          <q-btn @click="validarCampos">Guardar</q-btn>
 
-<!--           <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'"
+          <!--           <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'"
           @click="enviarinformacion(typeform)" v-if="boxform.estado !== 'load'">{{typeform}}</q-btn>
           
           <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'" v-if="boxform.estado == 'load'">
             <q-circular-progress indeterminate color="white"/>
           </q-btn> -->
-          
+
 
           <!-- <q-btn
           >
@@ -182,8 +195,8 @@ const in_activar = {
           <q-tr>
             <h4 class="q-ma-xs">
               {{ modelo }}
-              <q-btn @click="opciones.agregar" label="Añadir" color="secondary" >
-                <q-icon name="style" color="white" right/>
+              <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+                <q-icon name="style" color="white" right />
               </q-btn>
             </h4>
           </q-tr>
@@ -191,30 +204,21 @@ const in_activar = {
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
 
-            <q-btn
-              class="botonv1"   text-size="1px" padding="10px"
-              :label="props.row.estado === 1 ? 'Activo' : (
-                props.row.estado === 0 ? 'No activo' :
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
+              props.row.estado === 0 ? 'No activo' :
                 '‎  ‎   ‎   ‎   ‎ ')
-                "
-              :color="props.row.estado === 1 ? 'positive' : 'accent'"
-              :loading="props.row.estado === 'load'"
-              loading-indicator-size="small"
-              @click="
+              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
+              loading-indicator-size="small" @click="
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-                props.row.estado = 'load'"
-            />
+              props.row.estado = 'load'" />
 
           </q-td>
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn color="warning" icon="edit"
-              class="botonv1" 
-              @click="opciones.editar(props.row)"
-            />
+            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
       </q-table>

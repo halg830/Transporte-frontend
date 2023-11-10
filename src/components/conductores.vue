@@ -2,10 +2,12 @@
 import axios from "axios";
 import { ref } from "vue";
 import {useConductorStore} from '../stores/conductores.js'
+import {useQuasar} from 'quasar'
 
 const modelo = "Conductores"
 const useConductor = useConductorStore();
 const loadingTable = ref(true)
+const $q = useQuasar()
 
 const columns = ref([
   {
@@ -118,6 +120,32 @@ const in_activar={
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   }
 }
+
+function validarCampos() {
+
+const arrData = Object.values(data.value)
+console.log(arrData);
+for (const d of arrData) {
+  console.log(d);
+  if (d === null) {
+    errorCamposVacios()
+    return
+  }
+  if (d.trim() === "") {
+    errorCamposVacios()
+    return
+  }
+}
+enviarInfo[estado.value]()
+}
+
+function errorCamposVacios() {
+$q.notify({
+  type: 'negative',
+  message: 'Por favor complete todos los campos',
+  position: "top"
+})
+}
 </script>
 
 <template>
@@ -144,7 +172,7 @@ const in_activar={
             label="Cedula"
             type="number"
           ></q-input>
-          <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
+          <q-btn @click="validarCampos">Guardar</q-btn>
 
           <!-- <q-btn
           >
