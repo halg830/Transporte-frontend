@@ -131,26 +131,31 @@ const in_activar = {
 
 function validarCampos() {
 
-  const arrData = Object.values(data.value)
+  const arrData = Object.entries(data.value)
   console.log(arrData);
   for (const d of arrData) {
     console.log(d);
-    if (d === null) {
-      errorCamposVacios()
+    if (d[1] === null) {
+      errorNotify("Por favor complete todos los campos")
       return
     }
-    if (d.trim() === "") {
-      errorCamposVacios()
+    if (d[1].trim() === "") {
+      errorNotify("Por favor complete todos los campos")
+      return
+    }
+
+    if(d[0]==="cedula" && d[1].length>=8){ //arreglar
+      errorNotify("La cedula debe tener más de 8 digitos")
       return
     }
   }
   enviarInfo[estado.value]()
 }
 
-function errorCamposVacios() {
+function errorNotify(msg) {
   $q.notify({
     type: 'negative',
-    message: 'Por favor complete todos los campos',
+    message: msg,
     position: "top"
   })
 }

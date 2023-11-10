@@ -176,18 +176,23 @@ const in_activar = {
 
 function validarCampos() {
 
-  const arrData = Object.values(data.value)
+  const arrData = Object.entries(data.value)
   console.log(arrData);
   for (const d of arrData) {
     console.log(d);
-    if (d === null) {
+    if (d[1] === null) {
       errorNotify("Por favor complete todos los campos")
       return
     }
-    if (d.trim() === "") {
+    if (d[1].trim() === "") {
       errorNotify("Por favor complete todos los campos")
       return
     }
+
+    if(d[0]==="placa" && d[1].length<6){
+      errorNotify("La placa no debe tener más de 6 carácteres")
+      return
+    }    
   }
 
   data.value.conductor = idConductor(data.value.conductor);
