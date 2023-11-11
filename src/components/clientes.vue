@@ -97,7 +97,13 @@ const enviarInfo = {
     try {
       const response = await useCliente.guardar(data.value);
       console.log(response);
+      if(response.error){
+        notificar('negative', response.error)
+        return
+      }
+
       rows.value.push(response.cliente);
+      notificar('positive', 'Guardado exitosamente')
       modal.value = false;
     } catch (error) {
       console.log(error);
@@ -107,8 +113,12 @@ const enviarInfo = {
     try {
       const response = await useCliente.editar(data.value._id, data.value);
       console.log(response);
-
+      if(response.error){
+        notificar('negative', response.error)
+        return
+      }
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
+      notificar('positive', 'Editado exitosamente')
       modal.value = false;
     } catch (error) {
       console.log(error);
@@ -136,25 +146,35 @@ function validarCampos() {
   for (const d of arrData) {
     console.log(d);
     if (d[1] === null) {
-      errorNotify("Por favor complete todos los campos")
+      notificar('negative', "Por favor complete todos los campos")
       return
     }
     if (d[1].trim() === "") {
-      errorNotify("Por favor complete todos los campos")
+      notificar('negative', "Por favor complete todos los campos")
       return
     }
 
-    if(d[0]==="cedula" && d[1].length>=8){ //arreglar
-      errorNotify("La cedula debe tener más de 8 digitos")
+    if (d[0] === "nombre" && d[1].length > 15) {
+      notificar('negative', 'El nombre no puede tener más de 15 caracteres')
+      return
+    }
+
+    if (d[0] === "cedula" && d[1].toString().length < 8) {
+      notificar('negative', "La cedula debe tener más de 8 digitos")
+      return
+    }
+
+    if (d[0] === "email" && !d[1].includes('@')) {
+      notificar('negative', 'Email no válido')
       return
     }
   }
   enviarInfo[estado.value]()
 }
 
-function errorNotify(msg) {
+function notificar(tipo, msg) {
   $q.notify({
-    type: 'negative',
+    type: tipo,
     message: msg,
     position: "top"
   })
@@ -171,25 +191,13 @@ function errorNotify(msg) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <div class="text-negative">{{ errorform }}</div>
-
-          <q-input outlined v-model="data.nombre" label="Nombre" type="text"></q-input>
-          <q-input outlined v-model="data.cedula" label="Cedula" type="number"></q-input>
-          <q-input outlined v-model="data.email" label="Email" type="email"></q-input>
+          <q-input outlined v-model="data.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
+          <q-input outlined v-model="data.cedula" label="Cedula" type="number" :disable="estado === 'editar'" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
+          <q-input outlined v-model="data.email" label="Email" type="email" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
           <q-btn @click="validarCampos">Guardar</q-btn>
-
-          <!--           <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'"
-          @click="enviarinformacion(typeform)" v-if="boxform.estado !== 'load'">{{typeform}}</q-btn>
-          
-          <q-btn :color="typeform === 'agregar' ? 'primary' : 'warning'" v-if="boxform.estado == 'load'">
-            <q-circular-progress indeterminate color="white"/>
-          </q-btn> -->
-
-
-          <!-- <q-btn
-          >
-            <q-circular-progress indeterminate color="white" />
-          </q-btn> -->
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -266,5 +274,4 @@ warning: Color para advertencias o mensajes importantes.
 .botonv1 {
   font-size: 10px;
   font-weight: bold;
-}
-</style>
+}</style>

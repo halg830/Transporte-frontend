@@ -22,7 +22,7 @@ export const useClienteStore = defineStore("cliente", () => {
       return response.data
     } catch (error) {
       console.log(error);
-      return null
+      return error.response.data
     }
   };
 
@@ -33,7 +33,7 @@ export const useClienteStore = defineStore("cliente", () => {
       return response.data.cliente
     } catch (error) {
       console.log(error);
-      return null
+      return error.response.data
     }
   };
 

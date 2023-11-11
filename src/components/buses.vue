@@ -1,5 +1,4 @@
 <script setup>
-import axios from "axios";
 import { ref } from "vue";
 import { useBusStore } from "../stores/buses.js";
 import { useConductorStore } from "../stores/conductores.js";
@@ -135,11 +134,12 @@ const enviarInfo = {
       loading.value=false
       console.log(response);
       if (response.error) {
-        errorNotify(response.error)
+        notificar('negative', response.error)
         return
       }
 
       rows.value.push(response);
+      notificar('positive', "Guardado exitosamente")
       modal.value = false;
     } catch (error) {
       console.log(error);
@@ -154,6 +154,7 @@ const enviarInfo = {
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
+      notificar('positive', "Editado exitosamente")
       modal.value = false
     } catch (error) {
       console.log(error);
@@ -181,16 +182,16 @@ function validarCampos() {
   for (const d of arrData) {
     console.log(d);
     if (d[1] === null) {
-      errorNotify("Por favor complete todos los campos")
+      notificar('negative', "Por favor complete todos los campos")
       return
     }
     if (d[1].trim() === "") {
-      errorNotify("Por favor complete todos los campos")
+      notificar('negative', "Por favor complete todos los campos")
       return
     }
 
-    if(d[0]==="placa" && d[1].length<6){
-      errorNotify("La placa no debe tener más de 6 carácteres")
+    if(d[0]==="placa" && d[1].length>6){
+      notificar('negative', "La placa no debe tener más de 6 carácteres")
       return
     }    
   }
@@ -200,9 +201,9 @@ function validarCampos() {
   enviarInfo[estado.value]()
 }
 
-function errorNotify(msg) {
+function notificar(tipo, msg) {
   $q.notify({
-    type: 'negative',
+    type: tipo,
     message: msg,
     position: "top"
   })

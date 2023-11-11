@@ -23,28 +23,25 @@ async function validarIngreso() {
 
   loading.value = false
   if (response != 200) {
-    $q.notify({
-          type: 'negative',
-          message: 'Usuario o contraseña incorrecto',
-          position: "top"
-        })
+    notificar('negative', 'Usuario o contraseña incorrecto')
     return;
   }
+  notificar('positive', 'Sección exitosa')
   router.push("/home");
 }
 
-function validarCampos(){
-  const arrData = Object.values(data.value)
+function validarCampos() {
+  const arrData = Object.entries(data.value)
   console.log(arrData);
   for (const d of arrData) {
     console.log(d);
-    if(d===null){
-      errorCamposVacios()
+    if (d[1] === null) {
+      notificar('negative', 'Por favor complete todos los campos')
       return
     }
-    if (d.trim() === "") {
+    if (d[1].trim() === "") {
       console.log("h");
-      errorCamposVacios()
+      notificar('negative','Por favor complete todos los campos')
       return
     }
   }
@@ -52,12 +49,12 @@ function validarCampos(){
   validarIngreso()
 }
 
-function errorCamposVacios(){
+function notificar(tipo, msg) {
   $q.notify({
-        type: 'negative',
-        message: 'Por favor complete todos los campos',
-        position: "top"
-      })
+    type: tipo,
+    message: msg,
+    position: "top"
+  })
 }
 </script>
 
@@ -73,29 +70,14 @@ function errorCamposVacios(){
         Por favor ingrese sus datos de usuario para continuar, ¡te esperamos!
       </p>
 
-      <input
-      class="input opcion"
-        type="text"
-        placeholder="Nombre de usuario"
-        v-model="data.usuario"
-      />
+      <input class="input opcion" type="text" placeholder="Nombre de usuario" v-model="data.usuario" />
       <div class="contrasenacont">
-        <input
-          class="input opcion"
-          type="password"
-          placeholder="Contraseña"
-          v-model="data.contrasena"
-          @keyup.enter="validarCampos"
-        />
+        <input class="input opcion" type="password" placeholder="Contraseña" v-model="data.contrasena"
+          @keyup.enter="validarCampos" />
         <!-- <p class="contrasenaayuda">¿olvidaste tu contraseña?</p> -->
       </div>
 
-      <q-btn
-        class="ingresar opcion"
-        @click="validarCampos"
-        :loading="loading"
-        label="Ingresar"
-      />
+      <q-btn class="ingresar opcion" @click="validarCampos" :loading="loading" label="Ingresar" />
     </div>
 
     <!-- <q-btn no-caps unelevated color="negative" @click="triggerNegative" label="Trigger 'negative'" /> -->
