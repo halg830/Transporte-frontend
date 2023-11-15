@@ -102,7 +102,7 @@ const enviarInfo = {
         return
       }
 
-      rows.value.push(response.cliente);
+      rows.value.unshift(response.cliente);
       notificar('positive', 'Guardado exitosamente')
       modal.value = false;
     } catch (error) {

@@ -69,7 +69,7 @@ export const useVendedorStore = defineStore("vendedor", () => {
       return response.status
     } catch (error) {
       console.log(error)
-      return null
+      return error.response.data
     }
   }
 
