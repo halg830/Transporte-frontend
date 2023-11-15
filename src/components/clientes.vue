@@ -184,20 +184,20 @@ function notificar(tipo, msg) {
 <template>
   <div>
     <q-dialog v-model="modal">
-      <q-card>
+      <q-card class="hola">
         <q-toolbar>
           <q-toolbar-title>Agregar {{ modelo }}</q-toolbar-title>
           <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <q-input outlined v-model="data.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
+          <q-input class="input1" outlined v-model="data.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
-          <q-input outlined v-model="data.cedula" label="Cedula" type="number" :disable="estado === 'editar'" lazy-rules
+          <q-input class="input2" outlined v-model="data.cedula" label="Cedula" type="number" :disable="estado === 'editar'" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
-          <q-input outlined v-model="data.email" label="Email" type="email" :disable="estado==='editar'" lazy-rules
+          <q-input class="input3" outlined v-model="data.email" label="Email" type="email" :disable="estado==='editar'" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
-          <q-btn @click="validarCampos">Guardar</q-btn>
+          <q-btn class="boton" @click="validarCampos">Guardar</q-btn>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -254,10 +254,27 @@ warning: Color para advertencias o mensajes importantes.
   margin: 0px;
   padding: 0px;
 }
+.input1{
+  margin-top: 20px;
+}
+.input2{
+  margin-top: 20px;
+}
+
+.input3{
+  margin-top: 20px;
+}
+.boton{
+  margin-top: 50px;
+}
 
 .tabla {
   margin: 10px;
   border: 3px solid black;
+}
+.hola{
+  width: 100%;
+  height: 450px;
 }
 
 .encabezado {

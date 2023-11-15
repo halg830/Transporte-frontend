@@ -161,41 +161,54 @@ const in_activar={
           <div class="text-negative">{{ errorform }}</div>
 
           <q-input
-            outlined
-            v-model="data.nombre"
-            label="Nombre"
-            type="text"
-          ></q-input>
-          <q-input
-            outlined
-            v-model="data.apellido"
-            label="Apellido"
-            type="text"
-          ></q-input>
-          <q-input
-          outlined
-          v-model="data.cedula"
-          label="Cedula"
-          type="number"
-          ></q-input>
-          <q-input
-            outlined
-            v-model="data.telefono"
-            label="Teléfono"
-            type="Number"
-          ></q-input>
-          <q-input
-            outlined
-            v-model="data.usuario"
-            label="Usuario"
-            type="text"
-          ></q-input>
-          <q-input
-            outlined
-            v-model="data.contrasena"
-            label="Contraseña"
-            type="password"
-          ></q-input>
+      outlined
+      v-model="data.nombre"
+      label="Nombre"
+      type="text"
+      :rules="[val => !!val || 'Ingrese un nombre']"
+    ></q-input>
+
+    <q-input
+      outlined
+      v-model="data.apellido"
+      label="Apellido"
+      type="text"
+      :rules="[val => !!val || 'Ingrese un apellido']"
+    ></q-input>
+
+    <q-input
+      outlined
+      v-model="data.cedula"
+      label="Cedula"
+      type="number"
+      maxlength="10"
+      :rules="[val => !!val || 'Ingrese una cédula']"
+    ></q-input>
+
+    <q-input
+      outlined
+      v-model="data.telefono"
+      label="Teléfono"
+      type="number"
+      maxlength="10"
+      :rules="[val => !!val || 'Ingrese un teléfono']"
+    ></q-input>
+
+    <q-input
+      outlined
+      v-model="data.usuario"
+      label="Usuario"
+      type="text"
+      :rules="[val => !!val || 'Ingrese un usuario']"
+    ></q-input>
+
+    <q-input
+      outlined
+      v-model="data.contrasena"
+      label="Contraseña"
+      type="password"
+      :rules="[val => !!val || 'Ingrese una contraseña']"
+    ></q-input>
           <q-btn @click="enviarInfo[estado]()">Guardar</q-btn>
 
           <!-- <q-btn

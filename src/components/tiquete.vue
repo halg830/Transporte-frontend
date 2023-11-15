@@ -12,7 +12,7 @@ const useRutas = useRutasStore()
 const useVendedor = useVendedorStore()
 const $q = useQuasar()
 
-const data = ref({ ruta: {} })
+const data = ref({ num_asiento: 0 })
 const date = ref("")
 const options = ref({ ruta: [] })
 const models = ref({})
@@ -195,90 +195,146 @@ async function verificarAsiento() {
 }
 
 const asientoSel = ref(0)
-const dataCliente = ref({})
+const dataCliente = ref({ cedula: "" })
+const vendedorTemp = "652f05b63db578d921c61edd"
 
+async function buscarCliente() {
+    const response = await useCliente.buscarxCC(dataCliente.value.cedula)
+
+    console.log(response);
+    dataCliente.value = response[0]
+}
+
+function validarCampos() {
+
+    const arrData = Object.entries(dataCliente.value)
+    console.log(arrData);
+    for (const d of arrData) {
+        if (d[0] === null) {
+            notificar('negative', "Por favor complete todos los campos")
+            return
+        }
+
+        if (typeof d[0] === "string") {
+            if (d[0].trim() === "") {
+                notificar('negative', "Por favor complete todos los campos")
+                return
+            }
+        }
+    }
+
+    console.log("h", data.value);
+
+    const idRuta = buscarRuta(data.value.ruta)
+
+    data.value.cliente = dataCliente.value._id
+    data.value.vendedor = vendedorTemp
+    data.value.ruta = idRuta._id
+
+    console.log(data.value);
+
+    generarTicket()
+}
+
+async function generarTicket() {
+    try {
+        console.log(data.value);
+
+        const response = await useTiquete.guardar(data.value);
+        console.log(response);
+
+        notificar("positive", "Guardado exitosamente")
+    } catch (error) {
+        console.log(error);
+    }
+}
 </script>
 <template>
-    <div v-if="opciones">
-        <q-btn label="Nueva venta" color="primary" @click="modal = true" />
-        <q-btn>Continuar venta</q-btn>
-    </div>
-
-    <q-dialog v-model="modal">
-        <q-card style="width: 700px; max-width: 80vw;">
-            <q-card-section>
-                <div class="text-h6">Generar venta</div>
-            </q-card-section>
-
-            <q-card-section class="q-pt-none">
-                <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-                    <span>Ruta: </span>
-                    <q-select filled v-model="data.ruta" use-input input-debounce="0" label="Nombre" :options="options.ruta"
-                        @filter="filterFn" style="width: 250px" behavior="menu" @keyup.enter="continuar">
-                        <template v-slot:no-option>
-                            <q-item>
-                                <q-item-section class="text-grey">
-                                    No results
-                                </q-item-section>
-                            </q-item>
-                        </template>
-                    </q-select>
-
-                    <span>Fecha salida: </span>
-                    <q-input filled v-model="date" mask="date" :rules="['date']">
-                        <template v-slot:append>
-                            <q-icon name="event" class="cursor-pointer">
-                                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                                    <q-date v-model="date">
-                                        <div class="row items-center justify-end">
-                                            <q-btn v-close-popup label="Close" color="primary" flat />
-                                        </div>
-                                    </q-date>
-                                </q-popup-proxy>
-                            </q-icon>
-                        </template>
-                    </q-input>
-
-                    <div>
-                        <q-btn label="Submit" type="submit" color="primary" />
-                        <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
-                    </div>
-                </q-form>
-            </q-card-section>
-
-            <q-card-actions align="right" class="bg-white text-teal">
-                <q-btn flat label="OK" v-close-popup />
-            </q-card-actions>
-        </q-card>
-    </q-dialog>
-
-    <div v-if="!opciones">
-        <div v-if="verificarAsiento">
-            <button v-for="a in buscarRuta(data.ruta).bus.asiento"
-                :class="asientosOcupados.includes(a) ? 'ocupado' : 'desocupado'" @click="asientoSel = a">{{ a }}</button>
-
+    <div>
+        <div v-if="opciones">
+            <q-btn label="Nueva venta" color="primary" @click="modal = true" />
+            <q-btn>Continuar venta</q-btn>
         </div>
 
-        <div v-if="asientoSel != 0">
-            <span>Asiento {{ asientoSel }}</span>
+        <q-dialog v-model="modal">
+            <q-card style="width: 700px; max-width: 80vw;">
+                <q-card-section>
+                    <div class="text-h6">Generar venta</div>
+                </q-card-section>
 
-            <div>
-                <q-btn label="Buscar cliente" />
-                <q-btn label="Guardar cliente" />
+                <q-card-section class="q-pt-none">
+                    <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+                        <span>Ruta: </span>
+                        <q-select filled v-model="data.ruta" use-input input-debounce="0" label="Nombre"
+                            :options="options.ruta" @filter="filterFn" style="width: 250px" behavior="menu"
+                            @keyup.enter="continuar">
+                            <template v-slot:no-option>
+                                <q-item>
+                                    <q-item-section class="text-grey">
+                                        No results
+                                    </q-item-section>
+                                </q-item>
+                            </template>
+                        </q-select>
+
+                        <span>Fecha salida: </span>
+                        <q-input filled v-model="date" mask="date" :rules="['date']">
+                            <template v-slot:append>
+                                <q-icon name="event" class="cursor-pointer">
+                                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                                        <q-date v-model="date">
+                                            <div class="row items-center justify-end">
+                                                <q-btn v-close-popup label="Close" color="primary" flat />
+                                            </div>
+                                        </q-date>
+                                    </q-popup-proxy>
+                                </q-icon>
+                            </template>
+                        </q-input>
+
+                        <div>
+                            <q-btn label="Submit" type="submit" color="primary" />
+                            <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
+                        </div>
+                    </q-form>
+                </q-card-section>
+
+                <!-- <q-card-actions align="right" class="bg-white text-teal">
+                
+            </q-card-actions> -->
+            </q-card>
+        </q-dialog>
+
+        <div v-if="!opciones" class="contCrear">
+            <div v-if="verificarAsiento">
+                <button v-for="a in buscarRuta(data.ruta).bus.asiento"
+                    :class="asientosOcupados.includes(a) ? 'ocupado' : 'desocupado'" @click="data.num_asiento = a">{{ a
+                    }}</button>
+
             </div>
 
-            <div>
-                <span>Cedula cliente: </span>
-                <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10"></q-input>
-                <span>Teléfono: </span>
-                <q-input outlined v-model="dataCliente.telefono" label="Telefono" type="number" maxlength="10"></q-input>
-                <span>Nombre: </span>
-                <q-input outlined v-model="dataCliente.Nombre" label="Nombre" type="text" maxlength="15"></q-input>
+            <div v-if="data.num_asiento != 0">
+                <span>Asiento #{{ data.num_asiento }}</span>
 
-                <q-btn label="Confirmar venta"/>
+                <div>
+                    <q-btn label="Buscar cliente" @click="buscarCliente()" />
+                    <q-btn label="Guardar cliente" />
+                </div>
+
+                <div>
+                    <span>Cedula cliente: </span>
+                    <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10"></q-input>
+                    <span>Teléfono: </span>
+                    <q-input outlined v-model="dataCliente.email" label="Email" type="text"></q-input>
+                    <span>Nombre: </span>
+                    <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15"></q-input>
+
+                    <q-btn label="Confirmar venta" @click="validarCampos" />
+                </div>
             </div>
         </div>
     </div>
+
 
 
 
@@ -386,6 +442,10 @@ const dataCliente = ref({})
 
 .desocupado {
     background-color: white;
+}
+
+.contCrear {
+    display: flex;
 }
 
 

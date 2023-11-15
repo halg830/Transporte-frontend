@@ -69,7 +69,6 @@ const opciones = {
     data.value = {
       nombre: "",
       cedula: "",
-      email: ""
     };
     modal.value = true;
     estado.value="guardar";
@@ -123,7 +122,7 @@ const in_activar={
 }
 
 function validarCampos() {
-
+console.log(data.value);
 const arrData = Object.values(data.value)
 console.log(arrData);
 for (const d of arrData) {
@@ -166,12 +165,17 @@ $q.notify({
             v-model="data.nombre"
             label="Nombre"
             type="text"
+            lazy-rules
+            :rules="[val=>val.trim()!='' || 'Ingrese un nombre']"
           ></q-input>
           <q-input
             outlined
             v-model="data.cedula"
             label="Cedula"
             type="number"
+            max-length="10"
+            lazy-rules
+            :rules="[val=>val.trim()!='' || 'Ingrese una cedula']"
           ></q-input>
           <q-btn @click="validarCampos">Guardar</q-btn>
 
