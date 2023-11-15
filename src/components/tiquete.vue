@@ -1,10 +1,12 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useClienteStore } from "../stores/clientes.js";
 import { useRutasStore } from '../stores/rutas.js';
 import { useVendedorStore } from '../stores/vendedor.js';
 import { useQuasar } from 'quasar';
+import { useTiqueteStore } from '../stores/tiquete';
 
+const useTiquete = useTiqueteStore()
 const useCliente = useClienteStore();
 const useRutas = useRutasStore()
 const useVendedor = useVendedorStore()
@@ -12,7 +14,7 @@ const $q = useQuasar()
 
 const data = ref({ ruta: {} })
 const date = ref("")
-const options = ref({ ruta: { ciudad_origen: [] } })
+const options = ref({ ruta:[]})
 const models = ref({})
 
 const obtenerOptions = async () => {
@@ -26,9 +28,9 @@ const obtenerOptions = async () => {
 
     options.value.vendedor = responseVendedor.vendedor.map((c) => c.nombre);
     models.value.vendedor = responseVendedor.vendedor;
-    options.value.ruta.ciudad_origen = responseRutas.map((c) => c.ciudad_origen.nombre);
-    options.value.ruta.ciudad_destino = responseRutas.map((c) => c.ciudad_destino.nombre);
-    options.value.ruta.hora_salida = responseRutas.map((c) => convertirHora(c.hora_salida));
+    options.value.ruta = responseRutas.map((c) => c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida));
+    // options.value.ruta.ciudad_destino = responseRutas.map((c) => c.ciudad_destino.nombre);
+    // options.value.ruta.hora_salida = responseRutas.map((c) => convertirHora(c.hora_salida));
     console.log(options.value);
     models.value.ruta = responseRutas;
     options.value.cliente = responseCliente.cliente.map((c) => c.cedula);
@@ -52,14 +54,19 @@ function filterFn(val, update) {
 
 }
 
-function idRuta(ruta) {
+function buscarRuta(ciudades) {
+    const ciudad = ciudades.split("/")
+    console.log(ciudad);
 
+    
     const buscar = models.value.ruta.find(
-        (c) => c.ciudad_origen.nombre == ruta.ciudad_origen && c.ciudad_destino.nombre == ruta.ciudad_destino && convertirHora(c.hora_salida) == ruta.hora_salida
+        (c) => `${c.ciudad_origen.nombre}/${c.ciudad_destino.nombre}/${convertirHora(c.hora_salida)}` === ciudades
     );
-    if (buscar) return buscar._id;
+    console.log("buscarRuta", buscar);
 
-    return ruta;
+    if (buscar) return buscar
+
+    return ciudades;
 }
 
 function idCliente(cedula) {
@@ -112,6 +119,7 @@ function convertirHora(cadenaFecha) {
 }
 
 const modal = ref(false)
+const opciones = ref(true)
 
 function onSubmit() {
     if (date.value.trim() === "") {
@@ -138,6 +146,8 @@ function onSubmit() {
     }
 
     modal.value = false
+    opciones.value = false
+    verificarAsiento()
 }
 
 function notificar(tipo, msg) {
@@ -169,9 +179,24 @@ function convertirFechaBD(fechaA) {
     return fechaFormateada;
 }
 
+const asientosOcupados = ref([])
+
+async function verificarAsiento(){
+    const idRuta = buscarRuta(data.value.ruta)
+    const fecha = data.value.fecha_salida
+
+    const response = await useTiquete.asientosOcupados(idRuta._id, fecha)
+    console.log(response);
+
+    asientosOcupados.value = response.map(t=>t.num_asiento)
+    console.log(asientosOcupados.value);
+
+    return true
+}
+
 </script>
 <template>
-    <div>
+    <div v-if="opciones">
         <q-btn label="Nueva venta" color="primary" @click="modal = true" />
         <q-btn>Continuar venta</q-btn>
     </div>
@@ -184,36 +209,9 @@ function convertirFechaBD(fechaA) {
 
             <q-card-section class="q-pt-none">
                 <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-                    <span>Ciudad origen: </span>
-                    <q-select filled v-model="data.ruta.ciudad_origen" use-input input-debounce="0" label="Nombre"
-                        :options="options.ruta.ciudad_origen" @filter="filterFn" style="width: 250px" behavior="menu"
-                        @keyup.enter="continuar">
-                        <template v-slot:no-option>
-                            <q-item>
-                                <q-item-section class="text-grey">
-                                    No results
-                                </q-item-section>
-                            </q-item>
-                        </template>
-                    </q-select>
-
-                    <span>Ciudad destino: </span>
-                    <q-select filled v-model="data.ruta.ciudad_destino" use-input input-debounce="0" label="Nombre"
-                        :options="options.ruta.ciudad_destino" @filter="filterFn" style="width: 250px" behavior="menu"
-                        @keyup.enter="continuar">
-                        <template v-slot:no-option>
-                            <q-item>
-                                <q-item-section class="text-grey">
-                                    No results
-                                </q-item-section>
-                            </q-item>
-                        </template>
-                    </q-select>
-
-                    <span>Hora salida: </span>
-                    <q-select filled v-model="data.ruta.hora_salida" use-input input-debounce="0" label="Hora"
-                        :options="options.ruta.hora_salida" @filter="filterFn" style="width: 250px" behavior="menu"
-                        @keyup.enter="continuar">
+                    <span>Ruta: </span>
+                    <q-select filled v-model="data.ruta" use-input input-debounce="0" label="Nombre" :options="options.ruta"
+                        @filter="filterFn" style="width: 250px" behavior="menu" @keyup.enter="continuar">
                         <template v-slot:no-option>
                             <q-item>
                                 <q-item-section class="text-grey">
@@ -251,7 +249,12 @@ function convertirFechaBD(fechaA) {
         </q-card>
     </q-dialog>
 
+    <div v-if="!opciones">
+        <div v-if="verificarAsiento">
+            <div v-for="a in buscarRuta(data.ruta).bus.asiento" :class="asientosOcupados.includes(a) ? 'ocupado': 'desocupado'">{{ a }}</div>
 
+        </div>
+    </div>
 
 
 
@@ -353,6 +356,15 @@ function convertirFechaBD(fechaA) {
 </template>
 
 <style scoped>
+.ocupado{
+    background-color: red;
+}
+
+.desocupado{
+    background-color: green;
+}
+
+
 #inicio {
     display: flex;
     flex-direction: column;

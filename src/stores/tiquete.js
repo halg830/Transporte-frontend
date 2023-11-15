@@ -16,6 +16,20 @@ console.log(response);
     }
   };
 
+  const asientosOcupados = async(idRuta, fecha_salida)=>{
+    try {
+      console.log(idRuta);
+      console.log(fecha_salida);
+      const response = await axios.get(`${model}asientosOcupados/${idRuta}/${fecha_salida}`)
+
+      console.log(response);
+      return response.data
+    } catch (error) {
+      console.log(error);
+      return null
+    }
+  }
+
   const guardar = async (data) => {
     try {
       const response = await axios.post(`${model}guardar`, data);
@@ -63,6 +77,7 @@ console.log(response);
 
   return {
     obtener,
+    asientosOcupados,
     guardar,
     editar,
     activar,
