@@ -1,5 +1,4 @@
 <script setup>
-import axios from "axios";
 import { ref } from "vue";
 import { useBusStore } from "../stores/buses.js";
 import { useConductorStore } from "../stores/conductores.js";
@@ -87,7 +86,7 @@ const conductores = ref([]);
 const obtenerOptions = async () => {
   const responseConductores = await useConductor.obtener();
 
-  options.value.conductores = responseConductores.map((c) => c.nombre);
+  options.value.conductores = responseConductores.map((c) => {return {label: c.nombre, value: c._id}});
   conductores.value = responseConductores;
 };
 
@@ -135,11 +134,12 @@ const enviarInfo = {
       loading.value=false
       console.log(response);
       if (response.error) {
-        errorNotify(response.error)
+        notificar('negative', response.error)
         return
       }
 
       rows.value.push(response);
+      notificar('positive', "Guardado exitosamente")
       modal.value = false;
     } catch (error) {
       console.log(error);
@@ -154,6 +154,7 @@ const enviarInfo = {
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
+      notificar('positive', "Editado exitosamente")
       modal.value = false
     } catch (error) {
       console.log(error);
@@ -181,31 +182,55 @@ function validarCampos() {
   for (const d of arrData) {
     console.log(d);
     if (d[1] === null) {
-      errorNotify("Por favor complete todos los campos")
-      return
-    }
-    if (d[1].trim() === "") {
-      errorNotify("Por favor complete todos los campos")
+      notificar('negative', "Por favor complete todos los campos")
       return
     }
 
-    if(d[0]==="placa" && d[1].length<6){
-      errorNotify("La placa no debe tener más de 6 carácteres")
+    if(typeof d[1] === 'string'){
+      if (d[1].trim() === "") {
+        notificar('negative', "Por favor complete todos los campos")
+        return
+      }
+    }
+
+    if(d[0]==="placa" && d[1].length>6){
+      notificar('negative', "La placa no debe tener más de 6 carácteres")
       return
     }    
-  }
 
-  data.value.conductor = idConductor(data.value.conductor);
+    if(d[0]==="asiento" && d[1]<=0){
+      notificar('negative', "El bus debe tener asientos")
+      return
+    }
+  }
+console.log(data.value);
+  data.value.conductor = data.value.conductor.value
 
   enviarInfo[estado.value]()
 }
 
-function errorNotify(msg) {
+function notificar(tipo, msg) {
   $q.notify({
-    type: 'negative',
+    type: tipo,
     message: msg,
     position: "top"
   })
+}
+
+function filterFn(val, update) {
+    if (val === '') {
+        update(() => {
+            options.value.conductores = options.value.conductores
+        })
+        return
+    }
+
+    update(() => {
+        const needle = val.toLowerCase()
+        options.value.conductores = options.value.conductores.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+    })
+
+
 }
 </script>
 
@@ -219,18 +244,22 @@ function errorNotify(msg) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <!-- <div class="text-negative">{{ errorform }}</div> -->
-
-          <q-input outlined v-model="data.placa" label="Placa" type="text"></q-input>
-          <q-select rounded standout v-model="data.conductor" :options="options.conductores" label="Conductor" />
-          <q-input outlined v-model="data.empresa" label="Empresa" type="text"></q-input>
-          <q-input outlined v-model="data.asiento" label="Asientos" type="number"></q-input>
+          <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado==='editar'" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una placa', val=>val.length<=6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
+          <!-- <q-select rounded standout v-model="data.conductor" lazy-rules  :options="options.conductores" label="Conductor" /> -->
+          <q-select filled v-model:model-value="data.conductor" use-input input-debounce="0" label="cedula" :options="options.conductores"
+            @filter="filterFn" style="width: 250px" behavior="menu">
+            <template v-slot:no-option>
+                <q-item>
+                    <q-item-section class="text-grey">
+                        No results
+                    </q-item-section>
+                </q-item>
+            </template>
+        </q-select>
+          <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una empresa']"></q-input>
+          <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules :rules="[val=>val!='0' || 'Cantidad no válida']"></q-input>
           <q-btn @click="validarCampos" :loading="loading">Guardar</q-btn>
 
-          <!-- <q-btn
-          >
-            <q-circular-progress indeterminate color="white" />
-          </q-btn> -->
         </q-card-section>
       </q-card>
     </q-dialog>
