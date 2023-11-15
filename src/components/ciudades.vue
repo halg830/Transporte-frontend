@@ -2,12 +2,12 @@
 import axios from "axios";
 import { ref } from "vue";
 import { useCiudadStore } from "../stores/ciudad.js";
-import { useQuasar } from 'quasar'
+import { useQuasar } from "quasar";
 
 const useCiudad = useCiudadStore();
-const loadingTable = ref(true)
-const $q = useQuasar()
-const filter = ref('')
+const loadingTable = ref(true);
+const $q = useQuasar();
+const filter = ref("");
 
 const columns = ref([
   {
@@ -27,6 +27,7 @@ const columns = ref([
     label: "Opciones",
     align: "right",
     field: "opciones",
+    fontSize: "100px",
   },
 ]);
 const rows = ref([]);
@@ -41,7 +42,8 @@ const obtenerInfo = async () => {
     if (ciudad) {
       console.log(ciudad);
       rows.value = ciudad;
-      loadingTable.value = false
+      loadingTable.value = false;
+      altura();
     } else {
       console.log("No se pudieron obtener los datos.");
     }
@@ -55,16 +57,17 @@ obtenerInfo();
 const modelo = "ciudades";
 const estado = ref("guardar");
 const modal = ref(false);
+const loadingmodal = ref(false);
 const opciones = {
   agregar: () => {
     data.value = {
-      nombre: ""
+      nombre: "",
     };
     modal.value = true;
     estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = { ...info }
+    data.value = { ...info };
     modal.value = true;
     estado.value = "editar";
   },
@@ -76,65 +79,79 @@ function buscarIndexLocal(id) {
 
 const enviarInfo = {
   guardar: async () => {
+    loadingmodal.value = true;
     try {
       const response = await useCiudad.guardar(data.value);
       console.log(response);
-      rows.value.push(response)
-      modal.value = false
+      rows.value.push(response);
+      modal.value = false;
+      loadingmodal.value = false;
     } catch (error) {
       console.log(error);
+      loadingmodal.value = false;
     }
   },
   editar: async () => {
+    loadingmodal.value = true;
     try {
       const response = await useCiudad.editar(data.value._id, data.value);
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
-      modal.value = false
+      modal.value = false;
+      loadingmodal.value = false;
     } catch (error) {
       console.log(error);
+      loadingmodal.value = false;
     }
   },
 };
 
 const in_activar = {
   activar: async (id) => {
-    const response = await useCiudad.activar(id)
+    const response = await useCiudad.activar(id);
     console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+    rows.value.splice(buscarIndexLocal(response._id), 1, response);
   },
   inactivar: async (id) => {
-    const response = await useCiudad.inactivar(id)
+    const response = await useCiudad.inactivar(id);
     console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
-  }
-}
+    rows.value.splice(buscarIndexLocal(response._id), 1, response);
+  },
+};
 
 function validarCampos() {
-
-  const arrData = Object.values(data.value)
+  const arrData = Object.values(data.value);
   console.log(arrData);
   for (const d of arrData) {
     console.log(d);
     if (d === null) {
-      errorCamposVacios()
-      return
+      errorCamposVacios();
+      return;
     }
-    if (d.trim() === "") {
-      errorCamposVacios()
-      return
+    if (typeof d === "string") {
+      if (d.trim() === "") {
+        errorCamposVacios();
+        return;
+      }
     }
   }
-  enviarInfo[estado.value]()
+  enviarInfo[estado.value]();
 }
 
 function errorCamposVacios() {
   $q.notify({
-    type: 'negative',
-    message: 'Por favor complete todos los campos',
-    position: "top"
-  })
+    type: "negative",
+    message: "Por favor complete todos los campos",
+    position: "top",
+  });
+}
+
+function altura() {
+  // Obtener la altura de la página
+  var alturaPagina = document.body.scrollHeight;
+  // Mostrar la altura en la consola (puedes hacer lo que quieras con este valor)
+  console.log("Altura de la página:", alturaPagina);
 }
 </script>
 
@@ -150,8 +167,26 @@ function errorCamposVacios() {
         <q-card-section class="q-gutter-md">
           <div class="text-negative">{{ errorform }}</div>
 
-          <q-input outlined v-model="data.nombre" label="Nombre" type="text"></q-input>
-          <q-btn @click="validarCampos">Guardar</q-btn>
+          <q-input
+            outlined
+            v-model="data.nombre"
+            label="Nombre"
+            type="text"
+          ></q-input>
+
+          <q-btn
+            @click="validarCampos"
+            :loading="loadingmodal"
+            padding="10px"
+            :color="estado == 'editar' ? 'warning' : 'secondary'"
+            :label="estado"
+          >
+            <q-icon
+              :name="estado == 'editar' ? 'edit' : 'style'"
+              color="white"
+              right
+            />
+          </q-btn>
 
           <!-- <q-btn
           >
@@ -160,66 +195,91 @@ function errorCamposVacios() {
         </q-card-section>
       </q-card>
     </q-dialog>
-    
+
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" class="tabla"
-      row-key="name" :loading="loadingTable" :filter="filter">
-
-        <template v-slot:top >
-          
+      <q-table
+        :rows="rows"
+        :columns="columns"
+        class="tabla"
+        row-key="name"
+        :loading="loadingTable"
+        :filter="filter"
+        rows-per-page-label="visualización de filas"
+        page="2"
+        :rows-per-page-options="[10, 20, 40, 0]"
+        no-results-label="No hay resultados para la busqueda"
+        wrap-cells="false"
+      >
+        <template v-slot:top>
           <h4 class="titulo-cont">
-           {{ modelo }}
-           <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
-            <q-icon name="style" color="white" right/>
-          </q-btn>
+            {{ modelo }}
+            <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+              <q-icon name="style" color="white" right />
+            </q-btn>
           </h4>
-
-          
-
-          
-            <q-input borderless dense debounce="300" color="primary"
-            v-model="filter" class="buscar">
-              <template v-slot:append>
-                <q-icon name="search" />
-              </template>
-            </q-input>
-         
+          <q-input
+            borderless
+            dense
+            debounce="300"
+            color="primary"
+            v-model="filter"
+            class="buscar"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
         </template>
 
         <template v-slot:header="props">
-        <q-tr :props="props">
-          <q-th
-            v-for="col in props.cols"
-            :key="col.name"
-            :props="props"
-            class="encabezado"
-          >
-            {{ col.label }}
-          </q-th>
-        </q-tr>
-      </template>
-  
+          <q-tr :props="props">
+            <q-th
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+              class="encabezado"
+            >
+              {{ col.label }}
+            </q-th>
+          </q-tr>
+        </template>
+
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
-              props.row.estado === 0 ? 'No activo' :
-                '‎  ‎   ‎   ‎   ‎ ')
-              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
-              loading-indicator-size="small" @click="
+            <q-btn
+              class="botonv1"
+              text-size="1px"
+              padding="10px"
+              :label="
+                props.row.estado === 1
+                  ? 'Activo'
+                  : props.row.estado === 0
+                  ? 'Inactivo'
+                  : '‎  ‎   ‎   ‎   ‎ '
+              "
+              :color="props.row.estado === 1 ? 'positive' : 'accent'"
+              :loading="props.row.estado === 'load'"
+              loading-indicator-size="small"
+              @click="
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-              props.row.estado = 'load'" />
-
+                props.row.estado = 'load';
+              "
+            />
           </q-td>
         </template>
 
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
+            <q-btn
+              color="warning"
+              icon="edit"
+              class="botonv1"
+              @click="opciones.editar(props.row)"
+            />
           </q-td>
         </template>
-
       </q-table>
     </div>
   </div>
@@ -244,28 +304,21 @@ warning: Color para advertencias o mensajes importantes.
   padding: 0 20px;
   margin: 10px auto;
   max-width: 1000px;
-
+  /* min-height: 710px; */
   border: 0px solid black;
-}
-
-
-.buscar-cont{
-  width: 100%;
 }
 
 .titulo-cont {
   margin: auto;
 }
 
-.buscar{
+.buscar {
   display: inline-block;
   margin: auto;
   margin-top: 8px;
   padding: 0px 15px;
-
   border: 1px solid rgb(212, 212, 212);
   border-radius: 5px;
-
 }
 
 .encabezado {

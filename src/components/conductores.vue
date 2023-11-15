@@ -8,6 +8,7 @@ const modelo = "Conductores"
 const useConductor = useConductorStore();
 const loadingTable = ref(true)
 const $q = useQuasar()
+const filter = ref('')
 
 const columns = ref([
   {
@@ -183,6 +184,8 @@ $q.notify({
     </q-dialog>
 
 
+
+
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla"
       row-key="name" :loading="loadingTable" :filter="filter">
@@ -195,10 +198,6 @@ $q.notify({
             <q-icon name="style" color="white" right/>
           </q-btn>
           </h4>
-
-          
-
-          
             <q-input borderless dense debounce="300" color="primary"
             v-model="filter" class="buscar">
               <template v-slot:append>
@@ -265,7 +264,7 @@ warning: Color para advertencias o mensajes importantes.
 .tabla {
   padding: 0 20px;
   margin: 10px auto;
-  max-width: 1000px;
+  max-width: 1500px;
 
   border: 0px solid black;
 }
