@@ -60,7 +60,7 @@ function cerrarCesion(){
                         EMPRESA DE BUSES
                     </q-toolbar-title>
 
-                    <q-btn label="cerrar cesión" @click="cerrarCesion"></q-btn>
+                    <img class="imagencerrar" src="/src/assets/cerrar-sesion.png " @click="cerrarCesion" alt=""/>
                 </q-toolbar>
             </q-header>
             <!-- 🍻menu desplegable🍻 -->
@@ -100,7 +100,9 @@ function cerrarCesion(){
         "Lucida Sans", Arial, sans-serif;
     text-align: center;
 }
-
+.imagencerrar{
+    width: 30px;
+}
 .menu-header {
     background-color: #3f497f;
 }
