@@ -3,10 +3,12 @@ import { ref } from 'vue'
 import { useClienteStore } from "../stores/clientes.js";
 import { useRutasStore } from '../stores/rutas.js';
 import { useVendedorStore } from '../stores/vendedor.js';
+import { useQuasar } from 'quasar';
 
 const useCliente = useClienteStore();
 const useRutas = useRutasStore()
 const useVendedor = useVendedorStore()
+const $q = useQuasar()
 
 const data = ref({ ruta: {} })
 const date = ref("")
@@ -44,7 +46,7 @@ function filterFn(val, update) {
 
     update(() => {
         const needle = val.toLowerCase()
-        options.value.cliente = options.value.cliente.filter(v => v.toLowerCase().indexOf(needle) > -1)
+        options.value.cliente = options.value.cliente?.filter(v => v.toLowerCase().indexOf(needle) > -1) || []
     })
 
 
@@ -108,13 +110,155 @@ function convertirHora(cadenaFecha) {
     const horaFormateada = `${horas}:${minutos}`;
     return horaFormateada;
 }
+
+const modal = ref(false)
+
+function onSubmit() {
+    if (date.value.trim() === "") {
+        notificar('negative', "Por favor complete todos los campos")
+        return
+    }
+
+    data.value.fecha_salida = convertirFechaBD(date.value)
+
+    const arrData = Object.entries(data.value)
+    console.log(arrData);
+    for (const d of arrData) {
+        if (d[0] === null) {
+            notificar('negative', "Por favor complete todos los campos")
+            return
+        }
+
+        if (typeof d[0] === "string") {
+            if (d[0].trim() === "") {
+                notificar('negative', "Por favor complete todos los campos")
+                return
+            }
+        }
+    }
+
+    modal.value = false
+}
+
+function notificar(tipo, msg) {
+    $q.notify({
+        type: tipo,
+        message: msg,
+        position: "top"
+    })
+}
+
+function onReset() {
+    data.value = { ruta: {} }
+    date.value = ""
+}
+
+function convertirFechaBD(fechaA) {
+    console.log(fechaA);
+    const partes = fechaA.split('/');
+
+    const fecha = new Date(
+        parseInt(partes[0]),
+        parseInt(partes[1]) - 1,
+        parseInt(partes[2])
+    );
+
+    // (ISO 8601)
+    const fechaFormateada = fecha.toISOString();
+
+    return fechaFormateada;
+}
+
 </script>
 <template>
     <div>
-        <q-btn>Nueva venta</q-btn>
+        <q-btn label="Nueva venta" color="primary" @click="modal = true" />
         <q-btn>Continuar venta</q-btn>
     </div>
-    <div v-if="componentes.inicio" id="inicio">
+
+    <q-dialog v-model="modal">
+        <q-card style="width: 700px; max-width: 80vw;">
+            <q-card-section>
+                <div class="text-h6">Generar venta</div>
+            </q-card-section>
+
+            <q-card-section class="q-pt-none">
+                <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+                    <span>Ciudad origen: </span>
+                    <q-select filled v-model="data.ruta.ciudad_origen" use-input input-debounce="0" label="Nombre"
+                        :options="options.ruta.ciudad_origen" @filter="filterFn" style="width: 250px" behavior="menu"
+                        @keyup.enter="continuar">
+                        <template v-slot:no-option>
+                            <q-item>
+                                <q-item-section class="text-grey">
+                                    No results
+                                </q-item-section>
+                            </q-item>
+                        </template>
+                    </q-select>
+
+                    <span>Ciudad destino: </span>
+                    <q-select filled v-model="data.ruta.ciudad_destino" use-input input-debounce="0" label="Nombre"
+                        :options="options.ruta.ciudad_destino" @filter="filterFn" style="width: 250px" behavior="menu"
+                        @keyup.enter="continuar">
+                        <template v-slot:no-option>
+                            <q-item>
+                                <q-item-section class="text-grey">
+                                    No results
+                                </q-item-section>
+                            </q-item>
+                        </template>
+                    </q-select>
+
+                    <span>Hora salida: </span>
+                    <q-select filled v-model="data.ruta.hora_salida" use-input input-debounce="0" label="Hora"
+                        :options="options.ruta.hora_salida" @filter="filterFn" style="width: 250px" behavior="menu"
+                        @keyup.enter="continuar">
+                        <template v-slot:no-option>
+                            <q-item>
+                                <q-item-section class="text-grey">
+                                    No results
+                                </q-item-section>
+                            </q-item>
+                        </template>
+                    </q-select>
+
+                    <span>Fecha salida: </span>
+                    <q-input filled v-model="date" mask="date" :rules="['date']">
+                        <template v-slot:append>
+                            <q-icon name="event" class="cursor-pointer">
+                                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                                    <q-date v-model="date">
+                                        <div class="row items-center justify-end">
+                                            <q-btn v-close-popup label="Close" color="primary" flat />
+                                        </div>
+                                    </q-date>
+                                </q-popup-proxy>
+                            </q-icon>
+                        </template>
+                    </q-input>
+
+                    <div>
+                        <q-btn label="Submit" type="submit" color="primary" />
+                        <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
+                    </div>
+                </q-form>
+            </q-card-section>
+
+            <q-card-actions align="right" class="bg-white text-teal">
+                <q-btn flat label="OK" v-close-popup />
+            </q-card-actions>
+        </q-card>
+    </q-dialog>
+
+
+
+
+
+
+
+
+    <!-- <div v-if="componentes.inicio" id="inicio">
         
         <h3>Generar ticket</h3>
         <span>Cliente: </span>
@@ -205,7 +349,7 @@ function convertirHora(cadenaFecha) {
                 </template>
             </q-select>
         </div>
-    </div>
+    </div> -->
 </template>
 
 <style scoped>

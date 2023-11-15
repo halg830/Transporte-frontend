@@ -185,9 +185,12 @@ function validarCampos() {
       notificar('negative', "Por favor complete todos los campos")
       return
     }
-    if (d[1].trim() === "") {
-      notificar('negative', "Por favor complete todos los campos")
-      return
+
+    if(typeof d[1] === 'string'){
+      if (d[1].trim() === "") {
+        notificar('negative', "Por favor complete todos los campos")
+        return
+      }
     }
 
     if(d[0]==="placa" && d[1].length>6){
@@ -220,18 +223,12 @@ function notificar(tipo, msg) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <!-- <div class="text-negative">{{ errorform }}</div> -->
-
-          <q-input outlined v-model="data.placa" label="Placa" type="text"></q-input>
-          <q-select rounded standout v-model="data.conductor" :options="options.conductores" label="Conductor" />
-          <q-input outlined v-model="data.empresa" label="Empresa" type="text"></q-input>
-          <q-input outlined v-model="data.asiento" label="Asientos" type="number"></q-input>
+          <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado==='editar'" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una placa', val=>val.length<=6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
+          <q-select rounded standout v-model="data.conductor" lazy-rules :rules="[val=>val===null]" :options="options.conductores" label="Conductor" />
+          <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una empresa']"></q-input>
+          <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules :rules="[val=>val!='0' || 'Cantidad no válida']"></q-input>
           <q-btn @click="validarCampos" :loading="loading">Guardar</q-btn>
 
-          <!-- <q-btn
-          >
-            <q-circular-progress indeterminate color="white" />
-          </q-btn> -->
         </q-card-section>
       </q-card>
     </q-dialog>

@@ -1,1 +1,1 @@
-Solucionar borrado al editar
+Validacion de modelos repetidos

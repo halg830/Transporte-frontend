@@ -23,13 +23,14 @@ console.log(response);
       return response.data.tiquetePopulate;
     } catch (error) {
       console.log(error);
-      return null;
+      return error.response.data;
     }
   };
 
-  const editar = async (data) => {
+  const editar = async (id, data) => {
     try {
-      const response = await axios.put(`${model}editar/:id`, data);
+      console.log("a",id, data);
+      const response = await axios.put(`${model}editar/${id}`, data);
       console.log(response);
       return response.data.tiquetePopulate;
     } catch (error) {

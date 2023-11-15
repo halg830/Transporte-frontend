@@ -43,7 +43,7 @@ export const useBusStore = defineStore("bus", () => {
       return response.data.busPopulate
     } catch (error) {
       console.log(error);
-      return null
+      return error.response.data
     }
   };
 

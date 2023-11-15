@@ -195,7 +195,7 @@ function notificar(tipo, msg) {
             :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
           <q-input outlined v-model="data.cedula" label="Cedula" type="number" :disable="estado === 'editar'" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
-          <q-input outlined v-model="data.email" label="Email" type="email" lazy-rules
+          <q-input outlined v-model="data.email" label="Email" type="email" :disable="estado==='editar'" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
           <q-btn @click="validarCampos">Guardar</q-btn>
         </q-card-section>

@@ -130,14 +130,15 @@ const opciones = {
     estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = {...info,
-      bus:info.bus.placa, ciudad_destino:info.ciudad_destino.nombre, ciudad_origen:info.ciudad_origen.nombre
+    data.value = {
+      ...info,
+      bus: info.bus.placa, ciudad_destino: info.ciudad_destino.nombre, ciudad_origen: info.ciudad_origen.nombre
     }
     time.value = convertirHora(info.hora_salida)
-   /*  data.value = info;
-    data.value.bus = info.bus.placa
-    data.value.ciudad_destino = info.ciudad_destino.nombre
-    data.value.ciudad_origen = info.ciudad_origen.nombre */
+    /*  data.value = info;
+     data.value.bus = info.bus.placa
+     data.value.ciudad_destino = info.ciudad_destino.nombre
+     data.value.ciudad_origen = info.ciudad_origen.nombre */
     modal.value = true;
     estado.value = "editar";
   },
@@ -152,7 +153,7 @@ function convertirHora_Fecha(hora) {
 
   const fecha = new Date('1970-01-01T00:00:00.000Z');
 
-  fecha.setHours(horas);
+  fecha.setHours(horas - 5);
   fecha.setMinutes(minutos);
 
   return fecha.toISOString();
@@ -180,16 +181,12 @@ const enviarInfo = {
 
       const response = await useRutas.guardar(data.value);
       loading.value = false
-      
+
       console.log(response);
 
       rows.value.push(response);
       modal.value = false;
-      $q.notify({
-        type: 'positive',
-        message: 'Guardado con exito',
-        position: "top"
-      })
+      notificar('positive', 'Guardado exitosamente')
     } catch (error) {
       console.log(error);
     }
@@ -203,12 +200,9 @@ const enviarInfo = {
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
+notificar('positive', 'Editado exitosamente')
       modal.value = false
-      $q.notify({
-        type: 'positive',
-        message: 'Editado con exito',
-        position: "top"
-      })
+    
     } catch (error) {
       console.log(error);
     }
@@ -240,21 +234,42 @@ function convertirHora(cadenaFecha) {
 function validarCampos() {
 
   if (time.value.trim() === "") {
-    errorNotify("Por favor complete todos los campos")
+    notificar('negative', "Por favor complete todos los campos")
     return
   }
+
+  const hora = time.value.split(':')
+  if (hora[0] > 23) {
+    notificar('negative', 'Hora invalida')
+    return
+  }
+  if (hora[1] > 59) {
+    notificar('negative', 'Hora invalida')
+    return
+  }
+
   console.log(time.value);
   data.value.hora_salida = convertirHora_Fecha(time.value)
 
-  const arrData = Object.values(data.value)
+  const arrData = Object.entries(data.value)
   console.log(arrData);
   for (const d of arrData) {
-    if(d===null){
-      errorNotify("Por favor complete todos los campos")
+    if (d[0] === null) {
+      notificar('negative', "Por favor complete todos los campos")
       return
     }
-    if (d.trim() === "") {
-      errorNotify("Por favor complete todos los campos")
+
+    if (typeof d[0] === "string") {
+      if (d[0].trim() === "") {
+        notificar('negative', "Por favor complete todos los campos")
+        return
+      }
+    }
+
+
+
+    if (d[0] === 'valor' && d[1] < 0) {
+      notificar('negative', 'El valor es invalido')
       return
     }
   }
@@ -266,12 +281,12 @@ function validarCampos() {
   enviarInfo[estado.value]()
 }
 
-function errorNotify(msg){
+function notificar(tipo, msg) {
   $q.notify({
-        type: 'negative',
-        message: msg,
-        position: "top"
-      })
+    type: tipo,
+    message: msg,
+    position: "top"
+  })
 }
 
 const validarCiudad = computed(() => {
@@ -289,10 +304,13 @@ const validarCiudad = computed(() => {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <q-select rounded standout v-model="data.ciudad_origen" :options="validarCiudad" label="Ciudad origen" />
-          <q-select rounded standout v-model="data.ciudad_destino" :options="validarCiudad" label="Ciudad destino" />
-          <q-select rounded standout v-model="data.bus" :options="options.bus" label="Bus" />
-          <q-input filled v-model="time" mask="time" :rules="['time']">
+          <q-select rounded standout v-model="data.ciudad_origen" :options="validarCiudad" label="Ciudad origen"
+            lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" />
+          <q-select rounded standout v-model="data.ciudad_destino" :options="validarCiudad" label="Ciudad destino"
+            lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" />
+          <q-select rounded standout v-model="data.bus" :options="options.bus" label="Bus" lazy-rules
+            :rules="[val => val != '' || 'Ingrese un bus']" />
+          <q-input filled v-model="time" mask="time" :rules="[val => val.trim() != '' || 'Ingrese una hora']">
             <template v-slot:append>
               <q-icon name="access_time" class="cursor-pointer">
                 <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -306,7 +324,8 @@ const validarCiudad = computed(() => {
             </template>
           </q-input>
 
-          <q-input outlined v-model="data.valor" label="Valor" type="number"></q-input>
+          <q-input outlined v-model="data.valor" label="Valor" type="number" lazy-rules
+            :rules="[val => val != '' || 'Ingrese un valor', val => val > 0 || 'Valor invalido']" />
           <q-btn @click="validarCampos" :loading="loading">Guardar</q-btn>
         </q-card-section>
       </q-card>

@@ -30,7 +30,7 @@ const columns = ref([
     label: "Ruta",
     align: "left",
     field: (row) =>
-      row.ruta.ciudad_origen.nombre + "/" + row.ruta.ciudad_destino.nombre,
+      row.ruta.ciudad_origen.nombre + " / " + row.ruta.ciudad_destino.nombre+" / "+convertirHora(row.ruta.hora_salida),
   },
   {
     name: "Bus",
@@ -127,7 +127,7 @@ const obtenerOptions = async () => {
 
   options.value.vendedor = responseVendedor.vendedor.map((c) => c.nombre);
   models.value.vendedor = responseVendedor.vendedor;
-  options.value.ruta = responseRutas.map((c) => c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre);
+  options.value.ruta = responseRutas.map((c) => c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre+"/"+convertirHora(c.hora_salida));
   models.value.ruta = responseRutas;
   options.value.cliente = responseCliente.cliente.map((c) => c.cedula);
   models.value.cliente = responseCliente.cliente;
@@ -143,7 +143,7 @@ const opciones = {
   },
   editar: (info) => {
     data.value = {
-      ...info, vendedor: info.vendedor.cedula, ruta: info.ruta.ciudad_origen.nombre + "/" + info.ruta.ciudad_destino.nombre, cliente: info.cliente.cedula
+      ...info, vendedor: info.vendedor.cedula, ruta: info.ruta.ciudad_origen.nombre + "/" + info.ruta.ciudad_destino.nombre+"/" +convertirHora(info.ruta.hora_salida), cliente: info.cliente.cedula
     }
     date.value = info.fecha_salida
     /* data.value = info;
@@ -170,7 +170,7 @@ function idRuta(ciudades) {
   console.log(ciudad);
 
   const buscar = models.value.ruta.find(
-    (c) => `${c.ciudad_origen}/${c.ciudad_destino}` === ciudades
+    (c) => `${c.ciudad_origen.nombre}/${c.ciudad_destino.nombre}/${convertirHora(c.hora_salida)}` === ciudades
   );
   if (buscar) return buscar._id;
 
@@ -204,7 +204,7 @@ const enviarInfo = {
     try {
       console.log(data.value);
 
-      const response = await useTiquete.guardar(data.value);
+      const response = await useTiquete.guardar( data.value);
       console.log(response);
 
       rows.value.push(response);
@@ -218,7 +218,7 @@ const enviarInfo = {
       // data.value.hora_salida = convertirHora_Fecha(time.value)
       console.log(data.value);
 
-      const response = await useTiquete.editar(data.value);
+      const response = await useTiquete.editar(data.value._id, data.value);
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
@@ -264,7 +264,7 @@ function convertirHora(cadenaFecha) {
 function validarCampos() {
 
   if (date.value.trim() === "") {
-    errorCamposVacios()
+    notificar('negative', 'Todos los campos son obligatorios')
     return
   }
   data.value.hora_salida = convertirFecha(date.value)
@@ -274,12 +274,16 @@ function validarCampos() {
   for (const d of arrData) {
     console.log(d);
     if(d===null){
-      errorCamposVacios()
+      notificar('negative', 'Todos los campos son obligatorios')
       return
     }
-    if ( d.trim() === "") {
-      errorCamposVacios()
-      return
+
+    if(typeof d === "string"){
+      if ( d.trim() === "") {
+        notificar('negative', 'Todos los campos son obligatorios')
+        return
+      }
+
     }
   }
 
@@ -290,10 +294,10 @@ function validarCampos() {
   enviarInfo[estado.value]()
 }
 
-function errorCamposVacios(){
+function notificar(tipo, msg){
   $q.notify({
-        type: 'negative',
-        message: 'Por favor complete todos los campos',
+        type: tipo,
+        message: msg,
         position: "top"
       })
 }
