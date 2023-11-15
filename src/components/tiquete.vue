@@ -14,7 +14,7 @@ const $q = useQuasar()
 
 const data = ref({ ruta: {} })
 const date = ref("")
-const options = ref({ ruta:[]})
+const options = ref({ ruta: [] })
 const models = ref({})
 
 const obtenerOptions = async () => {
@@ -58,7 +58,7 @@ function buscarRuta(ciudades) {
     const ciudad = ciudades.split("/")
     console.log(ciudad);
 
-    
+
     const buscar = models.value.ruta.find(
         (c) => `${c.ciudad_origen.nombre}/${c.ciudad_destino.nombre}/${convertirHora(c.hora_salida)}` === ciudades
     );
@@ -181,18 +181,21 @@ function convertirFechaBD(fechaA) {
 
 const asientosOcupados = ref([])
 
-async function verificarAsiento(){
+async function verificarAsiento() {
     const idRuta = buscarRuta(data.value.ruta)
     const fecha = data.value.fecha_salida
 
     const response = await useTiquete.asientosOcupados(idRuta._id, fecha)
     console.log(response);
 
-    asientosOcupados.value = response.map(t=>t.num_asiento)
+    asientosOcupados.value = response.map(t => t.num_asiento)
     console.log(asientosOcupados.value);
 
     return true
 }
+
+const asientoSel = ref(0)
+const dataCliente = ref({})
 
 </script>
 <template>
@@ -251,8 +254,29 @@ async function verificarAsiento(){
 
     <div v-if="!opciones">
         <div v-if="verificarAsiento">
-            <div v-for="a in buscarRuta(data.ruta).bus.asiento" :class="asientosOcupados.includes(a) ? 'ocupado': 'desocupado'">{{ a }}</div>
+            <button v-for="a in buscarRuta(data.ruta).bus.asiento"
+                :class="asientosOcupados.includes(a) ? 'ocupado' : 'desocupado'" @click="asientoSel = a">{{ a }}</button>
 
+        </div>
+
+        <div v-if="asientoSel != 0">
+            <span>Asiento {{ asientoSel }}</span>
+
+            <div>
+                <q-btn label="Buscar cliente" />
+                <q-btn label="Guardar cliente" />
+            </div>
+
+            <div>
+                <span>Cedula cliente: </span>
+                <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10"></q-input>
+                <span>Teléfono: </span>
+                <q-input outlined v-model="dataCliente.telefono" label="Telefono" type="number" maxlength="10"></q-input>
+                <span>Nombre: </span>
+                <q-input outlined v-model="dataCliente.Nombre" label="Nombre" type="text" maxlength="15"></q-input>
+
+                <q-btn label="Confirmar venta"/>
+            </div>
         </div>
     </div>
 
@@ -356,12 +380,12 @@ async function verificarAsiento(){
 </template>
 
 <style scoped>
-.ocupado{
+.ocupado {
     background-color: red;
 }
 
-.desocupado{
-    background-color: green;
+.desocupado {
+    background-color: white;
 }
 
 
