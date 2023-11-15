@@ -47,15 +47,20 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
 
 .opcionescont {
     padding: 30px;
+    display: block;
 }
 
 .opcioncont {
-    margin: 12px 0px;
+    margin: 12px 10px;
+    width: 200px;
+    height: 200px;
+    display: inline-block;
 }
 
 .opcion {
     border: none;
     width: 100%;
+    height: 100%;
     padding: 5px;
     display: grid;
     justify-content: center;
@@ -68,11 +73,12 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
 }
 
 .opcion-imagen {
-    height: 30px;
+    height: 100px;
     margin: auto;
 }
 
 .opcion-text{
+    font-size: 25px;
     text-align: center;
     margin: auto;
     font-weight: bold; 
@@ -88,12 +94,6 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
     #a3f7bf
 ;}
 
-
-.card__content {
-  border-radius: 17px;
-  width: 100%;
-  height: 100%;
-}
 
 
 </style>
