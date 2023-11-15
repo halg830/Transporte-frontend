@@ -42,18 +42,15 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
 <style scoped>
 .opcionescont {
   padding: 30px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: block;
 }
 
 .opcioncont {
   margin: 12px 10px;
-  width: 25%;
+  width: 300px;
+  min-width: 200px;
   height: 200px;
-  display: flex;
-  flex-direction: column;
-  flex-basis: calc(25% - 20px);
+  display: inline-block;
 }
 
 .opcion {
