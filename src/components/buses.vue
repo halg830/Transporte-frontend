@@ -197,6 +197,11 @@ function validarCampos() {
       notificar('negative', "La placa no debe tener más de 6 carácteres")
       return
     }    
+
+    if(d[0]==="asiento" && d[1]<=0){
+      notificar('negative', "El bus debe tener asientos")
+      return
+    }
   }
 
   data.value.conductor = idConductor(data.value.conductor);
@@ -224,7 +229,7 @@ function notificar(tipo, msg) {
 
         <q-card-section class="q-gutter-md">
           <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado==='editar'" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una placa', val=>val.length<=6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
-          <q-select rounded standout v-model="data.conductor" lazy-rules :rules="[val=>val===null]" :options="options.conductores" label="Conductor" />
+          <q-select rounded standout v-model="data.conductor" lazy-rules  :options="options.conductores" label="Conductor" />
           <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una empresa']"></q-input>
           <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules :rules="[val=>val!='0' || 'Cantidad no válida']"></q-input>
           <q-btn @click="validarCampos" :loading="loading">Guardar</q-btn>
