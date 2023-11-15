@@ -15,6 +15,16 @@ export const useClienteStore = defineStore("cliente", () => {
     }
   };
 
+  const buscarxCC = async(cedula)=>{
+    try {
+      const response = await axios.get(`${model}buscarCC/${cedula}`)
+      console.log(response);
+      return response.data.cliente
+    } catch (error) {
+      
+    }
+  }
+
   const guardar = async (data) => {
     try {
       const response = await axios.post(`${model}guardar`, data);
@@ -60,6 +70,6 @@ export const useClienteStore = defineStore("cliente", () => {
   };
 
   return {
-    obtener, guardar, editar, activar, inactivar
+    obtener,buscarxCC, guardar, editar, activar, inactivar
   };
 });

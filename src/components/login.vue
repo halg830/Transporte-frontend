@@ -193,6 +193,12 @@ input::placeholder {
   transform: translate(50%, 0);
 }
 
+.opcioncont{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 @media screen and (min-height: 850px) {
   .opcioncont {
     margin-top: 5vh;

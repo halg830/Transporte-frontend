@@ -9,7 +9,9 @@ import imgRutas from '../assets/rutas.png'
 import imgTiquetes from '../assets/tiquetes.png'
 import imgVentas from '../assets/ventas.png'
 import imgVendedores from '../assets/vendedores.png'
+import {useRouter} from 'vue-router'
 
+const router = useRouter()
 
 const opciones = [
     { nombre: "Menu", imagen: imgMenu },
@@ -34,6 +36,10 @@ function toggleLeftDrawer() {
 const opcionesConImagenes = opciones;
 
 const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.slice(1);
+
+function cerrarCesion(){
+    router.push("/")
+}
 </script>
 
 
@@ -53,6 +59,8 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
                         </q-avatar>
                         EMPRESA DE BUSES
                     </q-toolbar-title>
+
+                    <q-btn label="cerrar cesión" @click="cerrarCesion"></q-btn>
                 </q-toolbar>
             </q-header>
             <!-- 🍻menu desplegable🍻 -->
