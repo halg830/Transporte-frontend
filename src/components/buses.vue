@@ -86,7 +86,7 @@ const conductores = ref([]);
 const obtenerOptions = async () => {
   const responseConductores = await useConductor.obtener();
 
-  options.value.conductores = responseConductores.map((c) => c.nombre);
+  options.value.conductores = responseConductores.map((c) => {return {label: c.nombre, value: c._id}});
   conductores.value = responseConductores;
 };
 
@@ -203,8 +203,8 @@ function validarCampos() {
       return
     }
   }
-
-  data.value.conductor = idConductor(data.value.conductor);
+console.log(data.value);
+  data.value.conductor = data.value.conductor.value
 
   enviarInfo[estado.value]()
 }
@@ -215,6 +215,22 @@ function notificar(tipo, msg) {
     message: msg,
     position: "top"
   })
+}
+
+function filterFn(val, update) {
+    if (val === '') {
+        update(() => {
+            options.value.conductores = options.value.conductores
+        })
+        return
+    }
+
+    update(() => {
+        const needle = val.toLowerCase()
+        options.value.conductores = options.value.conductores.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+    })
+
+
 }
 </script>
 
@@ -229,7 +245,17 @@ function notificar(tipo, msg) {
 
         <q-card-section class="q-gutter-md">
           <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado==='editar'" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una placa', val=>val.length<=6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
-          <q-select rounded standout v-model="data.conductor" lazy-rules  :options="options.conductores" label="Conductor" />
+          <!-- <q-select rounded standout v-model="data.conductor" lazy-rules  :options="options.conductores" label="Conductor" /> -->
+          <q-select filled v-model:model-value="data.conductor" use-input input-debounce="0" label="cedula" :options="options.conductores"
+            @filter="filterFn" style="width: 250px" behavior="menu">
+            <template v-slot:no-option>
+                <q-item>
+                    <q-item-section class="text-grey">
+                        No results
+                    </q-item-section>
+                </q-item>
+            </template>
+        </q-select>
           <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una empresa']"></q-input>
           <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules :rules="[val=>val!='0' || 'Cantidad no válida']"></q-input>
           <q-btn @click="validarCampos" :loading="loading">Guardar</q-btn>

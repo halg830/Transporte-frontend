@@ -23,7 +23,7 @@ async function validarIngreso() {
 
   loading.value = false
   if (response != 200) {
-    notificar('negative', 'Usuario o contraseña incorrecto')
+    notificar('negative', response.msg)
     return;
   }
   notificar('positive', 'Sección exitosa')
