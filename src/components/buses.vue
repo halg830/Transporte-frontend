@@ -86,7 +86,7 @@ const conductores = ref([]);
 const obtenerOptions = async () => {
   const responseConductores = await useConductor.obtener();
 
-  options.value.conductores = responseConductores.map((c) => {return {label: c.nombre, value: c._id}});
+  options.value.conductores = responseConductores.map((c) => { return { label: c.nombre, value: c._id } });
   conductores.value = responseConductores;
 };
 
@@ -126,12 +126,12 @@ function buscarIndexLocal(id) {
 const enviarInfo = {
   guardar: async () => {
     try {
-      loading.value=true
+      loading.value = true
 
       console.log(data.value);
 
       const response = await useBus.guardar(data.value);
-      loading.value=false
+      loading.value = false
       console.log(response);
       if (response.error) {
         notificar('negative', response.error)
@@ -186,24 +186,24 @@ function validarCampos() {
       return
     }
 
-    if(typeof d[1] === 'string'){
+    if (typeof d[1] === 'string') {
       if (d[1].trim() === "") {
         notificar('negative', "Por favor complete todos los campos")
         return
       }
     }
 
-    if(d[0]==="placa" && d[1].length>6){
+    if (d[0] === "placa" && d[1].length > 6) {
       notificar('negative', "La placa no debe tener más de 6 carácteres")
       return
-    }    
+    }
 
-    if(d[0]==="asiento" && d[1]<=0){
+    if (d[0] === "asiento" && d[1] <= 0) {
       notificar('negative', "El bus debe tener asientos")
       return
     }
   }
-console.log(data.value);
+  console.log(data.value);
   data.value.conductor = data.value.conductor.value
 
   enviarInfo[estado.value]()
@@ -217,20 +217,22 @@ function notificar(tipo, msg) {
   })
 }
 
+const opcionesFiltro = ref({
+  conductores: options.value.conductores
+})
+
 function filterFn(val, update) {
-    if (val === '') {
-        update(() => {
-            options.value.conductores = options.value.conductores
-        })
-        return
-    }
-
+  if (val === '') {
     update(() => {
-        const needle = val.toLowerCase()
-        options.value.conductores = options.value.conductores.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+      opcionesFiltro.value.conductores = options.value.conductores
     })
+    return
+  }
 
-
+  update(() => {
+    const needle = val.toLowerCase()
+    opcionesFiltro.value.conductores = options.value.conductores.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+  })
 }
 </script>
 
@@ -244,20 +246,22 @@ function filterFn(val, update) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado==='editar'" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una placa', val=>val.length<=6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
-          <!-- <q-select rounded standout v-model="data.conductor" lazy-rules  :options="options.conductores" label="Conductor" /> -->
-          <q-select filled v-model:model-value="data.conductor" use-input input-debounce="0" label="cedula" :options="options.conductores"
-            @filter="filterFn" style="width: 250px" behavior="menu">
+          <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado === 'editar'" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese una placa', val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
+          <q-select filled v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre"
+            :options="opcionesFiltro.conductores" @filter="filterFn" style="width: 250px" behavior="menu">
             <template v-slot:no-option>
-                <q-item>
-                    <q-item-section class="text-grey">
-                        No results
-                    </q-item-section>
-                </q-item>
+              <q-item>
+                <q-item-section class="text-grey">
+                  Sin resultados
+                </q-item-section>
+              </q-item>
             </template>
-        </q-select>
-          <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules :rules="[val=>val.trim()!='' || 'Ingrese una empresa']"></q-input>
-          <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules :rules="[val=>val!='0' || 'Cantidad no válida']"></q-input>
+          </q-select>
+          <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese una empresa']"></q-input>
+          <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules
+            :rules="[val => val != '0' || 'Cantidad no válida']"></q-input>
           <q-btn @click="validarCampos" :loading="loading">Guardar</q-btn>
 
         </q-card-section>
@@ -279,7 +283,7 @@ function filterFn(val, update) {
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
 
-            <q-btn  class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
               props.row.estado === 0 ? 'No activo' :
                 '‎  ‎   ‎   ‎   ‎ ')
               " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
@@ -287,7 +291,7 @@ function filterFn(val, update) {
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-              props.row.estado = 'load'"  />
+              props.row.estado = 'load'" />
 
           </q-td>
         </template>
@@ -335,5 +339,4 @@ warning: Color para advertencias o mensajes importantes.
 .botonv1 {
   font-size: 10px;
   font-weight: bold;
-}
-</style>../stores/conductores.js
+}</style>../stores/conductores.js

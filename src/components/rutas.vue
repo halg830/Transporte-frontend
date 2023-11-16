@@ -106,9 +106,9 @@ const obtenerOptions = async () => {
   const responseCiudad = await useCiudad.obtener();
   const responseBus = await useBus.obtener();
 
-  options.value.ciudad = responseCiudad.map((c) => c.nombre);
+  options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre, value: c._id } });
   models.value.ciudades = responseCiudad
-  options.value.bus = responseBus.busPopulate.map((b) => b.placa);
+  options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id } });
   models.value.buses = responseBus.busPopulate
 };
 
@@ -200,9 +200,9 @@ const enviarInfo = {
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
-notificar('positive', 'Editado exitosamente')
+      notificar('positive', 'Editado exitosamente')
       modal.value = false
-    
+
     } catch (error) {
       console.log(error);
     }
@@ -266,17 +266,15 @@ function validarCampos() {
       }
     }
 
-
-
     if (d[0] === 'valor' && d[1] < 0) {
       notificar('negative', 'El valor es invalido')
       return
     }
   }
 
-  data.value.ciudad_origen = idCiudad(data.value.ciudad_origen)
-  data.value.ciudad_destino = idCiudad(data.value.ciudad_destino)
-  data.value.bus = idBus(data.value.bus)
+  data.value.ciudad_origen = data.value.ciudad_origen.value
+  data.value.ciudad_destino = data.value.ciudad_destino.value
+  data.value.bus = data.value.bus.value
 
   enviarInfo[estado.value]()
 }
@@ -289,9 +287,42 @@ function notificar(tipo, msg) {
   })
 }
 
-const validarCiudad = computed(() => {
-  return options.value.ciudad.map(c => { if (c != data.value.ciudad_origen && c != data.value.ciudad_destino) return c })
+/* const validarCiudad = computed(() => {
+  return options.value.ciudad.map(c => { if (c.label != data.value.ciudad_origen && c.label != data.value.ciudad_destino) return c })
+}) */
+
+const opcionesFiltro = ref({
+  bus: options.value.bus,
+  ciudad: options.value.ciudad
 })
+function filterFnBus(val, update) {
+
+  if (val === '') {
+    update(() => {
+      opcionesFiltro.value.bus = options.value.bus
+    })
+    return
+  }
+
+  update(() => {
+    const needle = val.toLowerCase()
+    opcionesFiltro.value.bus = options.value.bus.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+  })
+}
+
+function filterFnCiudad(val, update) {
+  if (val === '') {
+    update(() => {
+      opcionesFiltro.value.ciudad = options.value.ciudad
+    })
+    return
+  }
+
+  update(() => {
+    const needle = val.toLowerCase()
+    opcionesFiltro.value.ciudad = options.value.ciudad.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+  })
+}
 </script>
 
 <template>
@@ -304,12 +335,42 @@ const validarCiudad = computed(() => {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <q-select rounded standout v-model="data.ciudad_origen" :options="validarCiudad" label="Ciudad origen"
-            lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" />
-          <q-select rounded standout v-model="data.ciudad_destino" :options="validarCiudad" label="Ciudad destino"
-            lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" />
-          <q-select rounded standout v-model="data.bus" :options="options.bus" label="Bus" lazy-rules
-            :rules="[val => val != '' || 'Ingrese un bus']" />
+          <!-- <q-select rounded standout v-model="data.ciudad_origen" :options="validarCiudad" label="Ciudad origen"
+            lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
+          <q-select filled v-model:model-value="data.ciudad_origen" use-input input-debounce="0" label="Ciudad origen"
+            :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" style="width: 250px" behavior="menu">
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  Sin resultados
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+          <!-- <q-select rounded standout v-model="data.ciudad_destino" :options="validarCiudad" label="Ciudad destino"
+            lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
+          <q-select filled v-model:model-value="data.ciudad_destino" use-input input-debounce="0" label="Ciudad destino"
+            :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" style="width: 250px" behavior="menu">
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  Sin resultados
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+          <!-- <q-select rounded standout v-model="data.bus" :options="options.bus" label="Bus" lazy-rules
+            :rules="[val => val != '' || 'Ingrese un bus']" /> -->
+          <q-select filled v-model:model-value="data.bus" use-input input-debounce="0" label="Placa"
+            :options="opcionesFiltro.bus" @filter="filterFnBus" style="width: 250px" behavior="menu">
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  Sin resultados
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
           <q-input filled v-model="time" mask="time" :rules="[val => val.trim() != '' || 'Ingrese una hora']">
             <template v-slot:append>
               <q-icon name="access_time" class="cursor-pointer">

@@ -107,9 +107,6 @@ function cerrarCesion(){
     background-color: #3f497f;
 }
 
-.menudesplegable {
-}
-
 .opcionescont {
     height: 100%;
     padding: 30px;
