@@ -1,8 +1,8 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
-import {useConductorStore} from '../stores/conductores.js'
-import {useQuasar} from 'quasar'
+import { useConductorStore } from '../stores/conductores.js'
+import { useQuasar } from 'quasar'
 
 const modelo = "Conductores"
 const useConductor = useConductorStore();
@@ -71,12 +71,12 @@ const opciones = {
       cedula: "",
     };
     modal.value = true;
-    estado.value="guardar";
+    estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = {...info}
+    data.value = { ...info }
     modal.value = true;
-    estado.value="editar";
+    estado.value = "editar";
   },
 };
 
@@ -97,7 +97,7 @@ const enviarInfo = {
   },
   editar: async () => {
     try {
-    const response = await useConductor.editar(data.value._id, data.value);
+      const response = await useConductor.editar(data.value._id, data.value);
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
@@ -108,13 +108,13 @@ const enviarInfo = {
   },
 };
 
-const in_activar={
-  activar: async(id)=>{
+const in_activar = {
+  activar: async (id) => {
     const response = await useConductor.activar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   },
-  inactivar: async(id)=>{
+  inactivar: async (id) => {
     const response = await useConductor.inactivar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
@@ -122,29 +122,31 @@ const in_activar={
 }
 
 function validarCampos() {
-console.log(data.value);
-const arrData = Object.values(data.value)
-console.log(arrData);
-for (const d of arrData) {
-  console.log(d);
-  if (d === null) {
-    errorCamposVacios()
-    return
+  console.log(data.value);
+  const arrData = Object.values(data.value)
+  console.log(arrData);
+  for (const d of arrData) {
+    console.log(d);
+    if (d === null) {
+      errorCamposVacios()
+      return
+    }
+    if (typeof d === 'string') {
+      if (d.trim() === "") {
+        errorCamposVacios()
+        return
+      }
+    }
   }
-  if (d.trim() === "") {
-    errorCamposVacios()
-    return
-  }
-}
-enviarInfo[estado.value]()
+  enviarInfo[estado.value]()
 }
 
 function errorCamposVacios() {
-$q.notify({
-  type: 'negative',
-  message: 'Por favor complete todos los campos',
-  position: "top"
-})
+  $q.notify({
+    type: 'negative',
+    message: 'Por favor complete todos los campos',
+    position: "top"
+  })
 }
 </script>
 
@@ -160,23 +162,10 @@ $q.notify({
         <q-card-section class="q-gutter-md">
           <div class="text-negative">{{ errorform }}</div>
 
-          <q-input
-            outlined
-            v-model="data.nombre"
-            label="Nombre"
-            type="text"
-            lazy-rules
-            :rules="[val=>val.trim()!='' || 'Ingrese un nombre']"
-          ></q-input>
-          <q-input
-            outlined
-            v-model="data.cedula"
-            label="Cedula"
-            type="number"
-            max-length="10"
-            lazy-rules
-            :rules="[val=>val.trim()!='' || 'Ingrese una cedula']"
-          ></q-input>
+          <q-input outlined v-model="data.nombre" label="Nombre" type="text" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
+          <q-input outlined v-model="data.cedula" label="Cedula" type="number" max-length="10" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese una cedula']"></q-input>
           <q-btn @click="validarCampos">Guardar</q-btn>
 
           <!-- <q-btn
@@ -191,39 +180,32 @@ $q.notify({
 
 
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" class="tabla"
-      row-key="name" :loading="loadingTable" :filter="filter">
+      <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter">
 
-        <template v-slot:top >
-          
+        <template v-slot:top>
+
           <h4 class="titulo-cont">
-           {{ modelo }}
-           <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
-            <q-icon name="style" color="white" right/>
-          </q-btn>
+            {{ modelo }}
+            <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+              <q-icon name="style" color="white" right />
+            </q-btn>
           </h4>
-            <q-input borderless dense debounce="300" color="primary"
-            v-model="filter" class="buscar">
-              <template v-slot:append>
-                <q-icon name="search" />
-              </template>
-            </q-input>
-         
+          <q-input borderless dense debounce="300" color="primary" v-model="filter" class="buscar">
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+
         </template>
 
         <template v-slot:header="props">
-        <q-tr :props="props">
-          <q-th
-            v-for="col in props.cols"
-            :key="col.name"
-            :props="props"
-            class="encabezado"
-          >
-            {{ col.label }}
-          </q-th>
-        </q-tr>
-      </template>
-  
+          <q-tr :props="props">
+            <q-th v-for="col in props.cols" :key="col.name" :props="props" class="encabezado">
+              {{ col.label }}
+            </q-th>
+          </q-tr>
+        </template>
+
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
             <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
@@ -274,7 +256,7 @@ warning: Color para advertencias o mensajes importantes.
 }
 
 
-.buscar-cont{
+.buscar-cont {
   width: 100%;
 }
 
@@ -282,7 +264,7 @@ warning: Color para advertencias o mensajes importantes.
   margin: auto;
 }
 
-.buscar{
+.buscar {
   display: inline-block;
   margin: auto;
   margin-top: 8px;

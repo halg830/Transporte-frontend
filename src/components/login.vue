@@ -39,11 +39,11 @@ function validarCampos() {
       notificar('negative', 'Por favor complete todos los campos')
       return
     }
-    if (d[1].trim() === "") {
+    if(typeof d[1] === 'string'){if (d[1].trim() === "") {
       console.log("h");
       notificar('negative','Por favor complete todos los campos')
       return
-    }
+    }}
   }
 
   validarIngreso()

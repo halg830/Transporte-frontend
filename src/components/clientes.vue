@@ -97,7 +97,7 @@ const enviarInfo = {
     try {
       const response = await useCliente.guardar(data.value);
       console.log(response);
-      if(response.error){
+      if (response.error) {
         notificar('negative', response.error)
         return
       }
@@ -113,7 +113,7 @@ const enviarInfo = {
     try {
       const response = await useCliente.editar(data.value._id, data.value);
       console.log(response);
-      if(response.error){
+      if (response.error) {
         notificar('negative', response.error)
         return
       }
@@ -149,9 +149,11 @@ function validarCampos() {
       notificar('negative', "Por favor complete todos los campos")
       return
     }
-    if (d[1].trim() === "") {
-      notificar('negative', "Por favor complete todos los campos")
-      return
+    if (typeof d[1] === 'string') {
+      if (d[1].trim() === "") {
+        notificar('negative', "Por favor complete todos los campos")
+        return
+      }
     }
 
     if (d[0] === "nombre" && d[1].length > 15) {
@@ -193,10 +195,11 @@ function notificar(tipo, msg) {
         <q-card-section class="q-gutter-md">
           <q-input class="input1" outlined v-model="data.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
-          <q-input class="input2" outlined v-model="data.cedula" label="Cedula" type="number" :disable="estado === 'editar'" lazy-rules
+          <q-input class="input2" outlined v-model="data.cedula" label="Cedula" type="number"
+            :disable="estado === 'editar'" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
-          <q-input class="input3" outlined v-model="data.email" label="Email" type="email" :disable="estado==='editar'" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
+          <q-input class="input3" outlined v-model="data.email" label="Email" type="email" :disable="estado === 'editar'"
+            lazy-rules :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
           <q-btn class="boton" @click="validarCampos">Guardar</q-btn>
         </q-card-section>
       </q-card>
@@ -254,17 +257,20 @@ warning: Color para advertencias o mensajes importantes.
   margin: 0px;
   padding: 0px;
 }
-.input1{
-  margin-top: 20px;
-}
-.input2{
+
+.input1 {
   margin-top: 20px;
 }
 
-.input3{
+.input2 {
   margin-top: 20px;
 }
-.boton{
+
+.input3 {
+  margin-top: 20px;
+}
+
+.boton {
   margin-top: 50px;
 }
 
@@ -272,7 +278,8 @@ warning: Color para advertencias o mensajes importantes.
   margin: 10px;
   border: 3px solid black;
 }
-.hola{
+
+.hola {
   width: 100%;
   height: 450px;
 }
