@@ -10,6 +10,8 @@ const useConductor = useConductorStore();
 const loading = ref(false)
 const loadingTable = ref(true)
 const $q = useQuasar()
+const filter = ref("");
+const loadingmodal = ref(false);
 
 const columns = ref([
   {
@@ -35,7 +37,7 @@ const columns = ref([
   {
     name: "Asientos",
     label: "Asientos",
-    align: "left",
+    align: "center",
     field: (row) => row.asiento,
   },
   {
@@ -125,9 +127,9 @@ function buscarIndexLocal(id) {
 
 const enviarInfo = {
   guardar: async () => {
+    loadingmodal.value = true;
     try {
       loading.value = true
-
       console.log(data.value);
 
       const response = await useBus.guardar(data.value);
@@ -144,8 +146,10 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
+    loadingmodal.value = false;
   },
   editar: async () => {
+    loadingmodal.value = true;
     try {
 
       console.log(data.value);
@@ -159,6 +163,7 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
+    loadingmodal.value = false;
   },
 };
 
@@ -239,17 +244,21 @@ function filterFn(val, update) {
 <template>
   <div>
     <q-dialog v-model="modal">
-      <q-card>
+      <q-card class="modal">
         <q-toolbar>
           <q-toolbar-title>Agregar {{ modelo }}</q-toolbar-title>
           <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
+
           <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado === 'editar'" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese una placa', val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
-          <q-select filled v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre"
-            :options="opcionesFiltro.conductores" @filter="filterFn" style="width: 250px" behavior="menu">
+            :rules="[val => val.trim() != '' || 'Ingrese una placa',
+            val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
+
+          <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre"
+            :options="opcionesFiltro.conductores" @filter="filterFn" behavior="menu"
+            :rules="[val => val.trim() != '' || 'Ingrese un nombre']">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">
@@ -260,44 +269,113 @@ function filterFn(val, update) {
           </q-select>
           <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese una empresa']"></q-input>
+
           <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules
-            :rules="[val => val != '0' || 'Cantidad no válida']"></q-input>
-          <q-btn @click="validarCampos" :loading="loading">Guardar</q-btn>
+            :rules="[val => val.trim() != '' || 'Ingrese un numero',
+            val => val != '0' || 'Cantidad no válida']"></q-input>
+
+          <q-btn
+            @click="validarCampos"
+            :loading="loadingmodal"
+            padding="10px"
+            :color="estado == 'editar' ? 'warning' : 'secondary'"
+            :label="estado"
+          >
+            <q-icon
+              :name="estado == 'editar' ? 'edit' : 'style'"
+              color="white"
+              right
+            />
+          </q-btn>
+
 
         </q-card-section>
       </q-card>
     </q-dialog>
 
+    
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" row-key="name" :loading="loadingTable">
-        <template v-slot:top-left>
-          <q-tr>
-            <h4 class="q-ma-xs">
-              {{ modelo }}
-              <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
-                <q-icon name="style" color="white" right />
-              </q-btn>
-            </h4>
+      <q-table
+        :rows="rows"
+        :columns="columns"
+        class="tabla"
+        row-key="name"
+        :loading="loadingTable"
+        :filter="filter"
+        rows-per-page-label="visualización de filas"
+        page="2"
+        :rows-per-page-options="[10, 20, 40, 0]"
+        no-results-label="No hay resultados para la busqueda"
+        wrap-cells="false"
+      >
+        <template v-slot:top>
+          <h4 class="titulo-cont">
+            {{ modelo }}
+            <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+              <q-icon name="style" color="white" right />
+            </q-btn>
+          </h4>
+          <q-input
+            borderless
+            dense
+            debounce="300"
+            color="primary"
+            v-model="filter"
+            class="buscar"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </template>
+
+        <template v-slot:header="props">
+          <q-tr :props="props">
+            <q-th
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+              class="encabezado"
+            >
+              {{ col.label }}
+            </q-th>
           </q-tr>
         </template>
+
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-
-            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
-              props.row.estado === 0 ? 'No activo' :
-                '‎  ‎   ‎   ‎   ‎ ')
-              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
-              loading-indicator-size="small" @click="
+            <q-btn
+              class="botonv1"
+              text-size="1px"
+              padding="10px"
+              :label="
+                props.row.estado === 1
+                  ? 'Activo'
+                  : props.row.estado === 0
+                  ? 'Inactivo'
+                  : '‎  ‎   ‎   ‎   ‎ '
+              "
+              :color="props.row.estado === 1 ? 'positive' : 'accent'"
+              :loading="props.row.estado === 'load'"
+              loading-indicator-size="small"
+              @click="
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-              props.row.estado = 'load'" />
-
+                props.row.estado = 'load';
+              "
+            />
           </q-td>
         </template>
+
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
+            <q-btn
+              color="warning"
+              icon="edit"
+              class="botonv1"
+              @click="opciones.editar(props.row)"
+            />
           </q-td>
         </template>
       </q-table>
@@ -320,9 +398,30 @@ warning: Color para advertencias o mensajes importantes.
   padding: 0px;
 }
 
+.modal{
+  width: 100%;
+  max-width: 600px;
+}
+
 .tabla {
-  margin: 10px;
-  border: 3px solid black;
+  padding: 0 20px;
+  margin: 10px auto;
+  max-width: 1400px;
+  /* min-height: 710px; */
+  border: 0px solid black;
+}
+
+.titulo-cont {
+  margin: auto;
+}
+
+.buscar {
+  display: inline-block;
+  margin: auto;
+  margin-top: 8px;
+  padding: 0px 15px;
+  border: 1px solid rgb(212, 212, 212);
+  border-radius: 5px;
 }
 
 .encabezado {
@@ -330,13 +429,8 @@ warning: Color para advertencias o mensajes importantes.
   font-size: 15px;
 }
 
-.cosascont {
-  background-color: black;
-  color: white;
-  text-align: center;
-}
-
 .botonv1 {
   font-size: 10px;
   font-weight: bold;
-}</style>../stores/conductores.js
+}
+</style>

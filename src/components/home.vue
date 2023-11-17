@@ -49,18 +49,15 @@ function cerrarCesion(){
         <q-layout view="lHr lpR lFr">
             <q-header elevated class="bg-primary text-white menu-header">
                 <q-toolbar>
-                    <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+                    <q-btn dense flat icon="menu" @click="toggleLeftDrawer" />
 
                     <q-toolbar-title>
-                        <q-avatar>
-                            <div>
-                                <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" />
-                            </div>
-                        </q-avatar>
                         EMPRESA DE BUSES
                     </q-toolbar-title>
-
-                    <img class="imagencerrar" src="/src/assets/cerrar-sesion.png " @click="cerrarCesion" alt=""/>
+                    <q-btn dense flat @click="cerrarCesion">
+                        <q-icon size="md" name="logout" color="white" right/>
+                    </q-btn>
+                    
                 </q-toolbar>
             </q-header>
             <!-- 🍻menu desplegable🍻 -->

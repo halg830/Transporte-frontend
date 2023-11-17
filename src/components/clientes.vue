@@ -8,8 +8,8 @@ const modelo = "Clientes";
 const useCliente = useClienteStore();
 const loadingTable = ref(true)
 const $q = useQuasar()
-/* loadingTable.value = false */
-/* :loading="loadingTable" */
+const filter = ref("");
+const loadingmodal = ref(false);
 
 const columns = ref([
   {
@@ -94,6 +94,7 @@ function buscarIndexLocal(id) {
 
 const enviarInfo = {
   guardar: async () => {
+    loadingmodal.value = true;
     try {
       const response = await useCliente.guardar(data.value);
       console.log(response);
@@ -108,8 +109,10 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
+    loadingmodal.value = false;
   },
   editar: async () => {
+    loadingmodal.value = true;
     try {
       const response = await useCliente.editar(data.value._id, data.value);
       console.log(response);
@@ -123,6 +126,7 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
+    loadingmodal.value = false;
   },
 };
 
@@ -184,7 +188,7 @@ function notificar(tipo, msg) {
 <template>
   <div>
     <q-dialog v-model="modal">
-      <q-card class="hola">
+      <q-card class="modal">
         <q-toolbar>
           <q-toolbar-title>Agregar {{ modelo }}</q-toolbar-title>
           <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
@@ -197,48 +201,117 @@ function notificar(tipo, msg) {
             :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
           <q-input class="input3" outlined v-model="data.email" label="Email" type="email" :disable="estado==='editar'" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
-          <q-btn class="boton" @click="validarCampos">Guardar</q-btn>
+          
+            
+            <q-btn
+            @click="validarCampos"
+            :loading="loadingmodal"
+            padding="10px"
+            :color="estado == 'editar' ? 'warning' : 'secondary'"
+            :label="estado"
+          >
+            <q-icon
+              :name="estado == 'editar' ? 'edit' : 'style'"
+              color="white"
+              right
+            />
+          </q-btn>
         </q-card-section>
       </q-card>
     </q-dialog>
 
+
+    
+
+    
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" row-key="name" :loading="loadingTable">
-        <template v-slot:top-left>
-          <q-tr>
-            <h4 class="q-ma-xs">
-              {{ modelo }}
-              <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
-                <q-icon name="style" color="white" right />
-              </q-btn>
-            </h4>
+      <q-table
+        :rows="rows"
+        :columns="columns"
+        class="tabla"
+        row-key="name"
+        :loading="loadingTable"
+        :filter="filter"
+        rows-per-page-label="visualización de filas"
+        page="2"
+        :rows-per-page-options="[10, 20, 40, 0]"
+        no-results-label="No hay resultados para la busqueda"
+        wrap-cells="false"
+      >
+        <template v-slot:top>
+          <h4 class="titulo-cont">
+            {{ modelo }}
+            <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+              <q-icon name="style" color="white" right />
+            </q-btn>
+          </h4>
+          <q-input
+            borderless
+            dense
+            debounce="300"
+            color="primary"
+            v-model="filter"
+            class="buscar"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </template>
+
+        <template v-slot:header="props">
+          <q-tr :props="props">
+            <q-th
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+              class="encabezado"
+            >
+              {{ col.label }}
+            </q-th>
           </q-tr>
         </template>
+
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-
-            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1 ? 'Activo' : (
-              props.row.estado === 0 ? 'No activo' :
-                '‎  ‎   ‎   ‎   ‎ ')
-              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
-              loading-indicator-size="small" @click="
+            <q-btn
+              class="botonv1"
+              text-size="1px"
+              padding="10px"
+              :label="
+                props.row.estado === 1
+                  ? 'Activo'
+                  : props.row.estado === 0
+                  ? 'Inactivo'
+                  : '‎  ‎   ‎   ‎   ‎ '
+              "
+              :color="props.row.estado === 1 ? 'positive' : 'accent'"
+              :loading="props.row.estado === 'load'"
+              loading-indicator-size="small"
+              @click="
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-              props.row.estado = 'load'" />
-
+                props.row.estado = 'load';
+              "
+            />
           </q-td>
         </template>
+
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
+            <q-btn
+              color="warning"
+              icon="edit"
+              class="botonv1"
+              @click="opciones.editar(props.row)"
+            />
           </q-td>
         </template>
       </q-table>
     </div>
   </div>
 </template>
-
 <style scoped>
 /* 
 primary: Color principal del tema.
@@ -254,27 +327,31 @@ warning: Color para advertencias o mensajes importantes.
   margin: 0px;
   padding: 0px;
 }
-.input1{
-  margin-top: 20px;
-}
-.input2{
-  margin-top: 20px;
-}
 
-.input3{
-  margin-top: 20px;
-}
-.boton{
-  margin-top: 50px;
+.modal{
+  width: 100%;
+  max-width: 600px;
 }
 
 .tabla {
-  margin: 10px;
-  border: 3px solid black;
+  padding: 0 20px;
+  margin: 10px auto;
+  max-width: 1000px;
+  /* min-height: 710px; */
+  border: 0px solid black;
 }
-.hola{
-  width: 100%;
-  height: 450px;
+
+.titulo-cont {
+  margin: auto;
+}
+
+.buscar {
+  display: inline-block;
+  margin: auto;
+  margin-top: 8px;
+  padding: 0px 15px;
+  border: 1px solid rgb(212, 212, 212);
+  border-radius: 5px;
 }
 
 .encabezado {
@@ -282,13 +359,8 @@ warning: Color para advertencias o mensajes importantes.
   font-size: 15px;
 }
 
-.cosascont {
-  background-color: black;
-  color: white;
-  text-align: center;
-}
-
 .botonv1 {
   font-size: 10px;
   font-weight: bold;
-}</style>
+}
+</style>

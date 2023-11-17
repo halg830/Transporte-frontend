@@ -8,6 +8,7 @@ const useCiudad = useCiudadStore();
 const loadingTable = ref(true);
 const $q = useQuasar();
 const filter = ref("");
+const loadingmodal = ref(false);
 
 const columns = ref([
   {
@@ -43,7 +44,6 @@ const obtenerInfo = async () => {
       console.log(ciudad);
       rows.value = ciudad;
       loadingTable.value = false;
-      altura();
     } else {
       console.log("No se pudieron obtener los datos.");
     }
@@ -57,7 +57,6 @@ obtenerInfo();
 const modelo = "ciudades";
 const estado = ref("guardar");
 const modal = ref(false);
-const loadingmodal = ref(false);
 const opciones = {
   agregar: () => {
     data.value = {
@@ -85,11 +84,11 @@ const enviarInfo = {
       console.log(response);
       rows.value.push(response);
       modal.value = false;
-      loadingmodal.value = false;
+      notificar('positive', 'Guardado exitosamente')
     } catch (error) {
       console.log(error);
-      loadingmodal.value = false;
     }
+    loadingmodal.value = false;
   },
   editar: async () => {
     loadingmodal.value = true;
@@ -99,11 +98,11 @@ const enviarInfo = {
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
       modal.value = false;
-      loadingmodal.value = false;
+      notificar('positive', 'Editado exitosamente')
     } catch (error) {
       console.log(error);
-      loadingmodal.value = false;
     }
+    loadingmodal.value = false;
   },
 };
 
@@ -126,12 +125,12 @@ function validarCampos() {
   for (const d of arrData) {
     console.log(d);
     if (d === null) {
-      errorCamposVacios();
+      notificar('negative', 'Por favor complete todos los campos');
       return;
     }
     if (typeof d === "string") {
       if (d.trim() === "") {
-        errorCamposVacios();
+        notificar('negative', 'El valor de los campos es invalido');
         return;
       }
     }
@@ -139,26 +138,20 @@ function validarCampos() {
   enviarInfo[estado.value]();
 }
 
-function errorCamposVacios() {
+function notificar(tipo, msg) {
   $q.notify({
-    type: "negative",
-    message: "Por favor complete todos los campos",
-    position: "top",
-  });
+    type: tipo,
+    message: msg,
+    position: "top"
+  })
 }
 
-function altura() {
-  // Obtener la altura de la página
-  var alturaPagina = document.body.scrollHeight;
-  // Mostrar la altura en la consola (puedes hacer lo que quieras con este valor)
-  console.log("Altura de la página:", alturaPagina);
-}
 </script>
 
 <template>
   <div>
-    <q-dialog v-model="modal">
-      <q-card>
+    <q-dialog v-model="modal" >
+      <q-card class="modal">
         <q-toolbar>
           <q-toolbar-title>Agregar ciudad</q-toolbar-title>
           <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
@@ -166,7 +159,6 @@ function altura() {
 
         <q-card-section class="q-gutter-md">
           <div class="text-negative">{{ errorform }}</div>
-
           <q-input
             outlined
             v-model="data.nombre"
@@ -195,6 +187,9 @@ function altura() {
         </q-card-section>
       </q-card>
     </q-dialog>
+
+
+
 
     <div class="q-pa-md">
       <q-table
@@ -298,6 +293,11 @@ warning: Color para advertencias o mensajes importantes.
 * {
   margin: 0px;
   padding: 0px;
+}
+
+.modal{
+  width: 100%;
+  max-width: 600px;
 }
 
 .tabla {
