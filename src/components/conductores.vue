@@ -1,8 +1,8 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
-import {useConductorStore} from '../stores/conductores.js'
-import {useQuasar} from 'quasar'
+import { useConductorStore } from '../stores/conductores.js'
+import { useQuasar } from 'quasar'
 
 const modelo = "Conductores"
 const useConductor = useConductorStore();
@@ -72,12 +72,12 @@ const opciones = {
       cedula: "",
     };
     modal.value = true;
-    estado.value="guardar";
+    estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = {...info}
+    data.value = { ...info }
     modal.value = true;
-    estado.value="editar";
+    estado.value = "editar";
   },
 };
 
@@ -101,7 +101,7 @@ const enviarInfo = {
   editar: async () => {
     loadingmodal.value = true;
     try {
-    const response = await useConductor.editar(data.value._id, data.value);
+      const response = await useConductor.editar(data.value._id, data.value);
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
@@ -113,13 +113,13 @@ const enviarInfo = {
   },
 };
 
-const in_activar={
-  activar: async(id)=>{
+const in_activar = {
+  activar: async (id) => {
     const response = await useConductor.activar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   },
-  inactivar: async(id)=>{
+  inactivar: async (id) => {
     const response = await useConductor.inactivar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
@@ -127,29 +127,31 @@ const in_activar={
 }
 
 function validarCampos() {
-console.log(data.value);
-const arrData = Object.values(data.value)
-console.log(arrData);
-for (const d of arrData) {
-  console.log(d);
-  if (d === null) {
-    errorCamposVacios()
-    return
+  console.log(data.value);
+  const arrData = Object.values(data.value)
+  console.log(arrData);
+  for (const d of arrData) {
+    console.log(d);
+    if (d === null) {
+      errorCamposVacios()
+      return
+    }
+    if (typeof d === 'string') {
+      if (d.trim() === "") {
+        errorCamposVacios()
+        return
+      }
+    }
   }
-  if (d.trim() === "") {
-    errorCamposVacios()
-    return
-  }
-}
-enviarInfo[estado.value]()
+  enviarInfo[estado.value]()
 }
 
 function errorCamposVacios() {
-$q.notify({
-  type: 'negative',
-  message: 'Por favor complete todos los campos',
-  position: "top"
-})
+  $q.notify({
+    type: 'negative',
+    message: 'Por favor complete todos los campos',
+    position: "top"
+  })
 }
 </script>
 
@@ -221,6 +223,10 @@ $q.notify({
       >
         <template v-slot:top>
           <h4 class="titulo-cont">
+            {{ modelo }}
+            <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
+              <q-icon name="style" color="white" right />
+            </q-btn>
             {{ modelo }}
             <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
               <q-icon name="style" color="white" right />
