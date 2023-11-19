@@ -1,1 +1,3 @@
 Validacion de modelos repetidos
+
+iconos de carga en los inputs select

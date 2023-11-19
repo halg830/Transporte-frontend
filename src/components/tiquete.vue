@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useClienteStore } from "../stores/clientes.js";
 import { useRutasStore } from '../stores/rutas.js';
 import { useVendedorStore } from '../stores/vendedor.js';
-import { useQuasar } from 'quasar';
+import { useQuasar, QSpinnerGears } from 'quasar';
 import { useTiqueteStore } from '../stores/tiquete';
 
 const useTiquete = useTiqueteStore()
@@ -11,62 +11,83 @@ const useCliente = useClienteStore();
 const useRutas = useRutasStore()
 const useVendedor = useVendedorStore()
 const $q = useQuasar()
+const conVenta = ref('ruta')
 
 const data = ref({ num_asiento: 0 })
-const date = ref("")
+
+function fechaActual() {
+    const fecha = new Date
+    const formatoFecha = `${fecha.getFullYear()}/${(fecha.getMonth() + 1)
+        .toString()
+        .padStart(2, '0')}/${fecha.getDate().toString().padStart(2, '0')}`;
+
+    return formatoFecha
+}
+
+const date = ref(fechaActual())
 const options = ref({ ruta: [] })
 const models = ref({})
 
 const obtenerOptions = async () => {
-    const responseVendedor = await useVendedor.obtener();
+    const rutas = await useTiquete.continuarVentas()
+    console.log(rutas);
     const responseRutas = await useRutas.obtener();
-    const responseCliente = await useCliente.obtener();
 
-    console.log(responseVendedor);
-    console.log(responseRutas);
-    console.log(responseCliente);
+    const rutasVentas = rutas.map(c => { return { label: c.ruta.ciudad_origen.nombre + "/" + c.ruta.ciudad_destino.nombre + "/" + convertirHora(c.ruta.hora_salida), value: c.ruta._id, fecha_salida: c.fecha_salida } })
 
-    options.value.vendedor = responseVendedor.vendedor.map((c) => c.nombre);
-    models.value.vendedor = responseVendedor.vendedor;
-    options.value.ruta = responseRutas.map((c) => c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida));
-    // options.value.ruta.ciudad_destino = responseRutas.map((c) => c.ciudad_destino.nombre);
-    // options.value.ruta.hora_salida = responseRutas.map((c) => convertirHora(c.hora_salida));
-    console.log(options.value);
+    const conjuntoLabels = new Set();
+    const datosFiltrados = rutasVentas.filter((item) => {
+        // Si el label ya está en el conjunto, devolvemos false para filtrar el elemento
+        if (conjuntoLabels.has(item.label)) {
+            return false;
+        }
+        // Agregamos el label al conjunto
+        conjuntoLabels.add(item.label);
+        // Devolvemos true para incluir el elemento en el array filtrado
+        return true;
+    });
+    console.log(datosFiltrados);
+
+    options.value.rutasVentas = datosFiltrados
+    models.value.rutasVentas = rutas;
+
+    options.value.ruta = responseRutas.map((c) => { return { label: c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida), value: c._id } });
     models.value.ruta = responseRutas;
-    options.value.cliente = responseCliente.cliente.map((c) => c.cedula);
-    models.value.cliente = responseCliente.cliente;
 };
 obtenerOptions()
 
-function filterFn(val, update) {
+const opcionesFiltro = ref({
+    bus: options.value[conVenta.value]
+})
+function filterFnRuta(val, update) {
     if (val === '') {
         update(() => {
-            options.value.cliente = options.value.cliente
+            opcionesFiltro.value.ruta = options.value[conVenta.value]
         })
         return
     }
 
     update(() => {
         const needle = val.toLowerCase()
-        options.value.cliente = options.value.cliente?.filter(v => v.toLowerCase().indexOf(needle) > -1) || []
+        opcionesFiltro.value.ruta = options.value[conVenta.value].filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
     })
-
-
 }
 
-function buscarRuta(ciudades) {
-    const ciudad = ciudades.split("/")
-    console.log(ciudad);
+const cantAsientos = ref(0)
 
+async function buscarRuta(id) {
+    await verificarAsiento()
 
-    const buscar = models.value.ruta.find(
-        (c) => `${c.ciudad_origen.nombre}/${c.ciudad_destino.nombre}/${convertirHora(c.hora_salida)}` === ciudades
-    );
-    console.log("buscarRuta", buscar);
+    const buscar = models.value.ruta.find(r => r._id === id)
+    console.log("a", asientosOcupados.value.length, "b", buscar.bus.asiento);
+    if(asientosOcupados.value.length == buscar.bus.asiento){
+        notificar('negative', 'Ya no hay asientos disponibles')
+        return false
+    }
+    cantAsientos.value = buscar.bus.asiento
+    if (buscar) return buscar.bus.asiento
 
-    if (buscar) return buscar
-
-    return ciudades;
+    return id
 }
 
 function idCliente(cedula) {
@@ -121,7 +142,7 @@ function convertirHora(cadenaFecha) {
 const modal = ref(false)
 const opciones = ref(true)
 
-function onSubmit() {
+async function onSubmit() {
     if (date.value.trim() === "") {
         notificar('negative', "Por favor complete todos los campos")
         return
@@ -145,9 +166,24 @@ function onSubmit() {
         }
     }
 
+    if(conVenta.value==='rutasVentas'){
+        const buscar = models.value.rutasVentas.find(e=>convertirFecha(e.fecha_salida)===date.value&&e.ruta._id===data.value.ruta.value)
+        console.log(buscar);
+
+        if(!buscar){
+            notificar('negative', 'No se han generado ventas en esa fecha')
+            return
+        }
+    }
+
+
+    const r = await buscarRuta(data.value.ruta.value)
+
+    if(!r) return
     modal.value = false
     opciones.value = false
-    verificarAsiento()
+    console.log("onsubmit", data.value)
+    data.value.ruta = data.value.ruta.value
 }
 
 function notificar(tipo, msg) {
@@ -157,10 +193,14 @@ function notificar(tipo, msg) {
         position: "top"
     })
 }
-
+const dataCliente = ref({ cedula: "" })
 function onReset() {
-    data.value = { ruta: {} }
-    date.value = ""
+    data.value = { ruta: "" }
+    date.value = fechaActual()
+}
+
+function onResetCliente() {
+    dataCliente.value = { cedula: "" }
 }
 
 function convertirFechaBD(fechaA) {
@@ -182,12 +222,14 @@ function convertirFechaBD(fechaA) {
 const asientosOcupados = ref([])
 
 async function verificarAsiento() {
-    const idRuta = buscarRuta(data.value.ruta)
+    console.log(data.value);
+    const idRuta = data.value.ruta.value
     const fecha = data.value.fecha_salida
 
-    const response = await useTiquete.asientosOcupados(idRuta._id, fecha)
+    const response = await useTiquete.asientosOcupados(idRuta, fecha)
     console.log(response);
 
+    // response.forEach((t) => asientosOcupados.value.push(t.num_asiento))
     asientosOcupados.value = response.map(t => t.num_asiento)
     console.log(asientosOcupados.value);
 
@@ -195,47 +237,80 @@ async function verificarAsiento() {
 }
 
 const asientoSel = ref(0)
-const dataCliente = ref({ cedula: "" })
+
 const vendedorTemp = "652f05b63db578d921c61edd"
 
+
 async function buscarCliente() {
+    if (dataCliente.value.cedula.trim() === "") {
+        notificar('negative', 'Por favor ingrese la cedula')
+        return false
+    }
     const response = await useCliente.buscarxCC(dataCliente.value.cedula)
 
     console.log(response);
+    if (response.length <= 0) {
+        notificar('negative', 'El cliente no esta registrado')
+        return false
+    }
     dataCliente.value = response[0]
+    return true
 }
 
-function validarCampos() {
+async function guardarCliente() {
+    if (!validar()) return
 
+    const response = await useCliente.guardar(dataCliente.value)
+    console.log(response);
+
+    dataCliente.value = response.cliente
+    notificar('positive', 'Cliente guardado exitosamente')
+}
+
+function validar() {
     const arrData = Object.entries(dataCliente.value)
     console.log(arrData);
     for (const d of arrData) {
         if (d[0] === null) {
             notificar('negative', "Por favor complete todos los campos")
-            return
+            return false
         }
 
         if (typeof d[0] === "string") {
             if (d[0].trim() === "") {
                 notificar('negative', "Por favor complete todos los campos")
-                return
+                return false
             }
         }
     }
 
-    console.log("h", data.value);
+    return true
+}
 
-    const idRuta = buscarRuta(data.value.ruta)
+async function validarCampos() {
+
+    if (!validar()) return
+    const resBuscar = await buscarCliente()
+    console.log("r", resBuscar);
+    if (!resBuscar) {
+        /* const res = await confirmarCliente()
+        console.log("r2", res);
+        if (!res) return  */
+        return
+    }
+
+    console.log("h", data.value);
 
     data.value.cliente = dataCliente.value._id
     data.value.vendedor = vendedorTemp
-    data.value.ruta = idRuta._id
+
 
     console.log(data.value);
 
-    generarTicket()
+    showCustom()
 }
 
+const ticket = ref({})
 async function generarTicket() {
     try {
         console.log(data.value);
@@ -243,17 +318,151 @@ async function generarTicket() {
         const response = await useTiquete.guardar(data.value);
         console.log(response);
 
+        if (!response.data.tiquetePopulate) {
+            notificar("negative", response)
+            return
+        }
+        const resData = response.data.tiquetePopulate
         notificar("positive", "Guardado exitosamente")
+        asientosOcupados.value.push(resData.num_asiento)
+        ticket.value = resData
+
     } catch (error) {
         console.log(error);
     }
 }
+
+function nuevaVenta() {
+    modal.value = true
+    data.value = { num_asiento: 0 }
+    date.value = fechaActual()
+    dataCliente.value = { cedula: "" }
+    conVenta.value = 'ruta'
+}
+
+function formatear() {
+    data.value = { num_asiento: 0, ruta: ticket.value.ruta._id, fecha_salida: ticket.value.fecha_salida }
+    dataCliente.value = { cedula: "" }
+    console.log("f", data.value);
+}
+
+function regresar() {
+    opciones.value = true
+    data.value.num_asiento = 0
+}
+
+async function confirmarCliente() {
+    $q.dialog({
+        title: 'Cliente no registrado',
+        message: '¿Desea guardar el cliente?',
+        cancel: true,
+        persistent: true
+    }).onOk(async () => {
+        await guardarCliente()
+        return true
+    }).onCancel(async () => {
+        // console.log('>>>> Cancel')
+        return false
+    }).onDismiss(async () => {
+        // notificar('negative', 'Seleccione una opción')
+    })
+}
+
+function convertirFecha(cadenaFecha) {
+    const fecha = new Date(cadenaFecha);
+    const año = fecha.getFullYear();
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, "0");
+    const dia = fecha.getDate().toString().padStart(2, "0");
+
+    const fechaFormateada = `${año}/${mes}/${dia}`;
+    return fechaFormateada;
+}
+
+async function showCustom() {
+    const dialog = $q.dialog({
+        title: 'Generando',
+        dark: false,
+        progress: true,
+        persistent: true, // we want the user to not be able to close it
+        ok: false // we want the user to not be able to close it
+    })
+
+    await generarTicket()
+
+    console.log(ticket.value);
+
+    const mensaje = `
+    <main>
+        <span>------------------------------------------</span>
+        <section>
+            <article>
+                <span>Cliente: ${ticket.value.cliente.nombre}</span> 
+                <span>Cedula: ${ticket.value.cliente.cedula}</span> 
+            </article>
+            <article> 
+                <span>Email: ${ticket.value.cliente.email}</span> 
+            </article>  
+        </section>
+        <span>------------------------------------------</span>
+        <section>
+            <article>
+                <span>Fecha de viaje: ${convertirFecha(ticket.value.fecha_salida)}</span>
+                <span>Hora: ${convertirHora(ticket.value.ruta.hora_salida)}</span>
+            </article>
+            <article>
+                <span>Ciudad origen: ${ticket.value.ruta.ciudad_origen.nombre}</span>
+                <span>Ciudad destino: ${ticket.value.ruta.ciudad_destino.nombre}</span>
+            </article>
+        </section>
+        <span>------------------------------------------</span>
+        <section>
+            <article>
+                <span>Puesto: ${ticket.value.num_asiento}</span>
+                <span>Bus(placa): ${ticket.value.ruta.bus.placa}</span>
+            </article>    
+            <article>
+                <span>Empresa: ${ticket.value.ruta.bus.empresa}</span>
+            </article>    
+        </section>
+        <span>------------------------------------------</span>
+        <section>
+            <span>Fecha compra: ${convertirFecha(ticket.value.createdAt)}</span> 
+            <span>Vendedor: ${ticket.value.vendedor.nombre}</span>
+        </section>
+        <span>------------------------------------------</span>
+    </main>`
+
+    dialog.update({
+        title: 'Ticket',
+        message: mensaje,
+        progress: false,
+        html: true,
+        ok: true
+    }).onOk(() => {
+        formatear()
+    })
+}
+
+
+function optionsFecha(fecha) {
+    if (conVenta.value==='rutasVentas') return fecha >'0000/00/00'
+
+    const fechaA = fechaActual()
+    console.log(fechaA);
+    return fecha >= fechaA
+}
+
+function continuarVenta() {
+    nuevaVenta()
+    conVenta.value = 'rutasVentas'
+}
+
 </script>
 <template>
     <div>
         <div v-if="opciones">
-            <q-btn label="Nueva venta" color="primary" @click="modal = true" />
-            <q-btn>Continuar venta</q-btn>
+            <q-btn label="Nueva venta" color="primary" @click="nuevaVenta" />
+            <q-btn @click="continuarVenta">Continuar venta</q-btn>
         </div>
 
         <q-dialog v-model="modal">
@@ -264,25 +473,27 @@ async function generarTicket() {
 
                 <q-card-section class="q-pt-none">
                     <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-                        <span>Ruta: </span>
-                        <q-select filled v-model="data.ruta" use-input input-debounce="0" label="Nombre"
-                            :options="options.ruta" @filter="filterFn" style="width: 250px" behavior="menu"
-                            @keyup.enter="continuar">
+                        <!-- <span>Ruta: </span> -->
+                        <q-select filled v-model:model-value="data.ruta" use-input input-debounce="0" label="Ruta"
+                            :options="opcionesFiltro.ruta" @filter="filterFnRuta" style="width: 250px" behavior="menu"
+                             lazy-rules
+                            :rules="[val => val != null || 'Por favor ingrese una ruta']">
                             <template v-slot:no-option>
                                 <q-item>
                                     <q-item-section class="text-grey">
-                                        No results
+                                        Sin resultados
                                     </q-item-section>
                                 </q-item>
                             </template>
                         </q-select>
 
-                        <span>Fecha salida: </span>
-                        <q-input filled v-model="date" mask="date" :rules="['date']">
+                        <!-- <span>Fecha salida: </span> -->
+                        <q-input label="Fecha de salida" filled v-model="date" mask="date"
+                            :rules="['date', val => val.trim() != '' || 'Ingrese una fecha']">
                             <template v-slot:append>
                                 <q-icon name="event" class="cursor-pointer">
                                     <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                                        <q-date v-model="date">
+                                        <q-date v-model="date" :options="optionsFecha">
                                             <div class="row items-center justify-end">
                                                 <q-btn v-close-popup label="Close" color="primary" flat />
                                             </div>
@@ -293,7 +504,7 @@ async function generarTicket() {
                         </q-input>
 
                         <div>
-                            <q-btn label="Submit" type="submit" color="primary" />
+                            <q-btn label="Ver asientos" type="submit" color="primary" />
                             <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
                         </div>
                     </q-form>
@@ -306,30 +517,37 @@ async function generarTicket() {
         </q-dialog>
 
         <div v-if="!opciones" class="contCrear">
+            <q-btn label="Regresar" @click="regresar"></q-btn>
             <div v-if="verificarAsiento">
-                <button v-for="a in buscarRuta(data.ruta).bus.asiento"
-                    :class="asientosOcupados.includes(a) ? 'ocupado' : 'desocupado'" @click="data.num_asiento = a">{{ a
-                    }}</button>
+                <q-btn v-for="a in cantAsientos" :class="asientosOcupados.includes(String(a)) ? 'ocupado' : 'desocupado'"
+                    @click="data.num_asiento = a" :disable="asientosOcupados.includes(String(a))" :label="a" />
 
             </div>
 
             <div v-if="data.num_asiento != 0">
+
                 <span>Asiento #{{ data.num_asiento }}</span>
 
                 <div>
-                    <q-btn label="Buscar cliente" @click="buscarCliente()" />
-                    <q-btn label="Guardar cliente" />
+                    <q-btn label="Buscar cliente" @click="buscarCliente" />
+                    <q-btn label="Guardar cliente" @click="guardarCliente" />
                 </div>
 
                 <div>
-                    <span>Cedula cliente: </span>
-                    <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10"></q-input>
-                    <span>Teléfono: </span>
-                    <q-input outlined v-model="dataCliente.email" label="Email" type="text"></q-input>
-                    <span>Nombre: </span>
-                    <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15"></q-input>
+                    <q-form @submit="validarCampos" @reset="onResetCliente" class="q-gutter-md">
+                        <span>Cedula cliente: </span>
+                        <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10" lazy-rules
+                            :rules="[val => val.trim() != '' || 'Por favor ingrese una cedula']"></q-input>
+                        <span>Teléfono: </span>
+                        <q-input outlined v-model="dataCliente.email" label="Email" type="email" lazy-rules
+                            :rules="[val => val.trim() != '' || 'Por favor ingrese un email']"></q-input>
+                        <span>Nombre: </span>
+                        <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
+                            :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']"></q-input>
 
-                    <q-btn label="Confirmar venta" @click="validarCampos" />
+                        <q-btn label="Confirmar venta" type="submit" color="primary" />
+                        <q-btn label="🗑" type="reset" color="primary" flat class="q-ml-sm" />
+                    </q-form>
                 </div>
             </div>
         </div>

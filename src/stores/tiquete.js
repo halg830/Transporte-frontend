@@ -30,11 +30,23 @@ console.log(response);
     }
   }
 
+  const continuarVentas = async()=>{
+    try {
+      const response = await axios.get(`${model}continuarVenta`)
+      console.log(response);
+
+      return response.data
+    } catch (error) {
+      console.log(error);
+      return null
+    }
+  }
+
   const guardar = async (data) => {
     try {
       const response = await axios.post(`${model}guardar`, data);
       console.log(response);
-      return response.data.tiquetePopulate;
+      return response
     } catch (error) {
       console.log(error);
       return error.response.data;
@@ -78,6 +90,7 @@ console.log(response);
   return {
     obtener,
     asientosOcupados,
+    continuarVentas,
     guardar,
     editar,
     activar,
