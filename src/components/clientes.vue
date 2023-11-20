@@ -58,10 +58,10 @@ const obtenerInfo = async () => {
     if (cliente) {
       console.log(cliente);
       rows.value = cliente.cliente;
-      loadingTable.value = false
     } else {
       console.log("No se pudieron obtener los datos.");
     }
+    loadingTable.value = false
   } catch (error) {
     console.error(error);
   }
@@ -100,6 +100,7 @@ const enviarInfo = {
       console.log(response);
       if (response.error) {
         notificar('negative', response.error)
+        loadingmodal.value = false;
         return
       }
 
@@ -118,6 +119,7 @@ const enviarInfo = {
       console.log(response);
       if (response.error) {
         notificar('negative', response.error)
+        loadingmodal.value = false;
         return
       }
       rows.value.splice(buscarIndexLocal(response._id), 1, response);

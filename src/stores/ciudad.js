@@ -30,8 +30,8 @@ export const useCiudadStore = defineStore("ciudad", () => {
       console.log(response);
       return response.data
     } catch (error) {
-      console.log(error);
-      return null
+      console.log(error.response.data);
+      return error.response.data
     }
   };
 
@@ -42,7 +42,7 @@ export const useCiudadStore = defineStore("ciudad", () => {
       return response.data
     } catch (error) {
       console.log(error);
-      return null
+      return error.response.data
     }
   };
 

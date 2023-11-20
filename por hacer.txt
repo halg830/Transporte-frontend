@@ -1,3 +1,11 @@
 Validacion de modelos repetidos
 
 iconos de carga en los inputs select
+validaciones de token
+proteccion de rutas
+al agregar, quede de primero en la tabla
+revisar validaciones de backend y notificarlas
+
+ULTIMO
+cuando se seleccione una ruta en continuar venta, se muestre un select con las fechas
+cuando se seleccione una ruta en editar venta, se muestre un select con los asientos disponibles

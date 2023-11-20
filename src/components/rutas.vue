@@ -105,7 +105,7 @@ const obtenerOptions = async () => {
   const responseCiudad = await useCiudad.obtener();
   const responseBus = await useBus.obtener();
 
-  options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre, value: c._id } });
+  options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre, value: c._id, disable: false } });
   models.value.ciudades = responseCiudad
   options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id } });
   models.value.buses = responseBus.busPopulate
@@ -317,6 +317,20 @@ function filterFnCiudad(val, update) {
   })
 }
 
+function deshabilitarCiudad(val) {
+
+  console.log(val);
+  const buscar = options.value.ciudad.findIndex(c => c.label === val.label)
+  if (buscar <= 0) return false
+
+  options.value.ciudad[buscar].disable = true
+  return true
+}
+
+function prueba(val) {
+  console.log(val);
+}
+
 /* editado */
 </script>
 
@@ -333,7 +347,8 @@ function filterFnCiudad(val, update) {
           <!-- <q-select rounded standout v-model="data.ciudad_origen" :options="validarCiudad" label="Ciudad origen"
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
           <q-select outlined v-model:model-value="data.ciudad_origen" use-input input-debounce="0" label="Ciudad origen"
-            :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu">
+            :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
+            @update:model-value="deshabilitarCiudad" @remove="prueba" refresh>
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">
@@ -345,7 +360,8 @@ function filterFnCiudad(val, update) {
           <!-- <q-select rounded standout v-model="data.ciudad_destino" :options="validarCiudad" label="Ciudad destino"
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
           <q-select outlined v-model:model-value="data.ciudad_destino" use-input input-debounce="0" label="Ciudad destino"
-            :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu">
+            :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
+            @update:model-value="deshabilitarCiudad" @remove="prueba" refresh>
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">
@@ -366,7 +382,8 @@ function filterFnCiudad(val, update) {
               </q-item>
             </template>
           </q-select>
-          <q-input outlined label="Hora de salida" v-model="time" mask="time" :rules="[val => val.trim() != '' || 'Ingrese una hora']">
+          <q-input outlined label="Hora de salida" v-model="time" mask="time"
+            :rules="[val => val.trim() != '' || 'Ingrese una hora']">
             <template v-slot:append>
               <q-icon name="access_time" class="cursor-pointer">
                 <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -382,41 +399,22 @@ function filterFnCiudad(val, update) {
 
           <q-input outlined v-model="data.valor" label="Valor" type="number" lazy-rules
             :rules="[val => val != '' || 'Ingrese un valor', val => val > 0 || 'Valor invalido']" />
-          
-            
-            <q-btn
-            @click="validarCampos"
-            :loading="loadingmodal"
-            padding="10px"
-            :color="estado == 'editar' ? 'warning' : 'secondary'"
-            :label="estado"
-          >
-            <q-icon
-              :name="estado == 'editar' ? 'edit' : 'style'"
-              color="white"
-              right
-            />
+
+
+          <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
+            :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
+            <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
           </q-btn>
         </q-card-section>
       </q-card>
     </q-dialog>
 
 
-    
+
     <div class="q-pa-md">
-      <q-table
-        :rows="rows"
-        :columns="columns"
-        class="tabla"
-        row-key="name"
-        :loading="loadingTable"
-        :filter="filter"
-        rows-per-page-label="visualización de filas"
-        page="2"
-        :rows-per-page-options="[10, 20, 40, 0]"
-        no-results-label="No hay resultados para la busqueda"
-        wrap-cells="false"
-      >
+      <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
+        rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        no-results-label="No hay resultados para la busqueda" wrap-cells="false">
         <template v-slot:top>
           <h4 class="titulo-cont">
             {{ modelo }}
@@ -424,14 +422,7 @@ function filterFnCiudad(val, update) {
               <q-icon name="style" color="white" right />
             </q-btn>
           </h4>
-          <q-input
-            borderless
-            dense
-            debounce="300"
-            color="primary"
-            v-model="filter"
-            class="buscar"
-          >
+          <q-input borderless dense debounce="300" color="primary" v-model="filter" class="buscar">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -440,12 +431,7 @@ function filterFnCiudad(val, update) {
 
         <template v-slot:header="props">
           <q-tr :props="props">
-            <q-th
-              v-for="col in props.cols"
-              :key="col.name"
-              :props="props"
-              class="encabezado"
-            >
+            <q-th v-for="col in props.cols" :key="col.name" :props="props" class="encabezado">
               {{ col.label }}
             </q-th>
           </q-tr>
@@ -453,38 +439,24 @@ function filterFnCiudad(val, update) {
 
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              class="botonv1"
-              text-size="1px"
-              padding="10px"
-              :label="
-                props.row.estado === 1
-                  ? 'Activo'
-                  : props.row.estado === 0
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1
+                ? 'Activo'
+                : props.row.estado === 0
                   ? 'Inactivo'
                   : '‎  ‎   ‎   ‎   ‎ '
-              "
-              :color="props.row.estado === 1 ? 'positive' : 'accent'"
-              :loading="props.row.estado === 'load'"
-              loading-indicator-size="small"
-              @click="
+              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
+              loading-indicator-size="small" @click="
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-                props.row.estado = 'load';
-              "
-            />
+              props.row.estado = 'load';
+              " />
           </q-td>
         </template>
 
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="warning"
-              icon="edit"
-              class="botonv1"
-              @click="opciones.editar(props.row)"
-            />
+            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
       </q-table>
@@ -507,7 +479,7 @@ warning: Color para advertencias o mensajes importantes.
   padding: 0px;
 }
 
-.modal{
+.modal {
   width: 100%;
   max-width: 600px;
 }

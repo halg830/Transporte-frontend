@@ -246,7 +246,7 @@ async function verificarAsiento() {
 
 const asientoSel = ref(0)
 
-const vendedorTemp = "652f05b63db578d921c61edd"
+const vendedorTemp = "655bac195bb4d4c3c0171460"
 
 
 async function buscarCliente() {
@@ -355,6 +355,7 @@ function formatear() {
 }
 
 function regresar() {
+    obtenerOptions()
     opciones.value = true
     data.value.num_asiento = 0
 }
@@ -462,6 +463,7 @@ function optionsFecha(fecha) {
 
 function continuarVenta() {
     nuevaVenta()
+    
     conVenta.value = 'rutasVentas'
 }
 
@@ -632,149 +634,58 @@ const opcionesclientes = {
         <div v-if="!opciones" class="contventa">
 
             <div class="contopciones">
-                <div>
+                <div id="contRegresar">
                     <q-btn label="Regresar" @click="regresar" class="regresar" color="accent" icon="arrow_back_ios"></q-btn>
                 </div>
 
-                <div v-if="verificarAsiento" class="asientos">
-                    <q-btn v-for="a in cantAsientos" icon="chair" class="asiento"
-                        :class="asientosOcupados.includes(String(a)) ? 'ocupado' : 'desocupado'"
-                        @click="data.num_asiento = a" :label="a" :disable="asientosOcupados.includes(String(a))" />
-                </div>
-
-                <div v-if="data.num_asiento != 0" class="formulario">
-
-                    <span class="numasiento">Asiento #{{ data.num_asiento }}</span>
-
-                    <div>
-                        <q-btn label="Buscar cliente" @click="buscarCliente" color="primary" class="btnbuscar" />
-                        <q-btn @click="opcionesclientes.agregar" class="btnagregar" icon="group_add" color="primary" />
+                <div id="contAsientos">
+                    <div v-if="verificarAsiento" class="asientos">
+                        <q-btn v-for="a in cantAsientos" icon="chair" class="asiento"
+                            :class="asientosOcupados.includes(String(a)) ? 'ocupado' : 'desocupado'"
+                            @click="data.num_asiento = a" :label="a" :disable="asientosOcupados.includes(String(a))" />
+                    </div>
+    
+                    <div v-if="data.num_asiento != 0" class="formulario">
+    
+                        <span class="numasiento">Asiento #{{ data.num_asiento }}</span>
+    
+                        <div>
+                            <q-btn label="Buscar cliente" @click="buscarCliente" color="primary" class="btnbuscar" />
+                            <q-btn @click="opcionesclientes.agregar" class="btnagregar" icon="group_add" color="primary" />
+                        </div>
+    
+                        <div>
+                            <q-form @submit="validarCampos" @reset="onResetCliente" class="q-gutter-md inputs">
+                                <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10"
+                                    lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese una cedula']"></q-input>
+                                <q-input outlined v-model="dataCliente.email" label="Email" type="email" lazy-rules
+                                    :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable></q-input>
+                                <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15"
+                                    lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']"
+                                    disable></q-input>
+    
+                                <q-btn label="Confirmar" type="submit" color="secondary" />
+                                <q-btn label="" type="reset" color="secondary" icon="delete" />
+                            </q-form>
+                        </div>
                     </div>
 
-                    <div>
-                        <q-form @submit="validarCampos" @reset="onResetCliente" class="q-gutter-md inputs">
-                            <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10"
-                                lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese una cedula']"></q-input>
-                            <q-input outlined v-model="dataCliente.email" label="Email" type="email" lazy-rules
-                                :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable></q-input>
-                            <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15"
-                                lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']"
-                                disable></q-input>
-
-                            <q-btn label="Confirmar" type="submit" color="secondary" />
-                            <q-btn label="" type="reset" color="secondary" icon="delete" />
-                        </q-form>
-                    </div>
-
                 </div>
-
 
             </div>
-
         </div>
     </div>
-
-
-
-
-
-
-
-    <!-- <div v-if="componentes.inicio" id="inicio">
-        
-        <h3>Generar ticket</h3>
-        <span>Cliente: </span>
-        <q-select filled v-model="data.cliente" use-input input-debounce="0" label="cedula" :options="options.cliente"
-            @filter="filterFn" style="width: 250px" behavior="menu" @keyup.enter="continuar">
-            <template v-slot:no-option>
-                <q-item>
-                    <q-item-section class="text-grey">
-                        No results
-                    </q-item-section>
-                </q-item>
-            </template>
-        </q-select>
-
-        <span>Ciudad origen: </span>
-
-        <q-select filled v-model="data.ruta.ciudad_origen" use-input input-debounce="0" label="Nombre"
-            :options="options.ruta.ciudad_origen" @filter="filterFn" style="width: 250px" behavior="menu"
-            @keyup.enter="continuar">
-            <template v-slot:no-option>
-                <q-item>
-                    <q-item-section class="text-grey">
-                        No results
-                    </q-item-section>
-                </q-item>
-            </template>
-        </q-select>
-        <span>Ciudad destino: </span>
-        <q-select filled v-model="data.ruta.ciudad_destino" use-input input-debounce="0" label="Nombre"
-            :options="options.ruta.ciudad_destino" @filter="filterFn" style="width: 250px" behavior="menu"
-            @keyup.enter="continuar">
-            <template v-slot:no-option>
-                <q-item>
-                    <q-item-section class="text-grey">
-                        No results
-                    </q-item-section>
-                </q-item>
-            </template>
-        </q-select>
-        <span>Hora salida: </span>
-        <q-select filled v-model="data.ruta.hora_salida" use-input input-debounce="0" label="Hora"
-            :options="options.ruta.hora_salida" @filter="filterFn" style="width: 250px" behavior="menu"
-            @keyup.enter="continuar">
-            <template v-slot:no-option>
-                <q-item>
-                    <q-item-section class="text-grey">
-                        No results
-                    </q-item-section>
-                </q-item>
-            </template>
-        </q-select>
-
-        <span>Fecha salida: </span>
-        <q-input filled v-model="date" mask="date" :rules="['date']">
-            <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="date">
-                            <div class="row items-center justify-end">
-                                <q-btn v-close-popup label="Close" color="primary" flat />
-                            </div>
-                        </q-date>
-                    </q-popup-proxy>
-                </q-icon>
-            </template>
-        </q-input>
-
-        <q-btn @click="continuar()">Continuar</q-btn>
-    </div>
-    <div v-if="componentes.asiento" id="contAsientos">
-        <div id="asientos">
-            <q-btn v-for="n in asientos" :key="n" class="btnAsientos" @click="irFin(n)">{{ n }}</q-btn>
-
-        </div>
-    </div>
-    <div v-if="componentes.fin">
-        <div>
-            <span>Vendedor: </span>
-            <q-select filled v-model="data.vendedor" use-input input-debounce="0" label="Vendedor"
-                :options="options.vendedor" @filter="filterFn" style="width: 250px" behavior="menu"
-                @keyup.enter="continuar">
-                <template v-slot:no-option>
-                    <q-item>
-                        <q-item-section class="text-grey">
-                            No results
-                        </q-item-section>
-                    </q-item>
-                </template>
-            </q-select>
-        </div>
-    </div> -->
 </template>
 
 <style scoped>
+
+#contRegresar{
+    display: flex;
+}
+
+#contAsientos{
+    display: flex;
+}
 .asiento {
     margin: 10px;
 }
@@ -790,7 +701,10 @@ const opcionesclientes = {
 .contventa {}
 
 .regresar {
-    margin: 20px auto;
+    position: relative;
+    top: 20px;
+    left: 20;
+    /* margin: 20px auto; */
 }
 
 .contopciones {}
@@ -821,6 +735,7 @@ const opcionesclientes = {
     border: solid 2px;
     margin: auto;
     padding: 20px;
+    height: fit-content;
 }
 
 .btnbuscar {
@@ -871,5 +786,11 @@ const opcionesclientes = {
 .botonv1 {
     font-size: 10px;
     font-weight: bold;
+}
+
+@media (max-width:1100px){
+    #contAsientos{
+        margin-top: 30px;
+    }
 }
 </style>

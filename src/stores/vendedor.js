@@ -23,7 +23,7 @@ export const useVendedorStore = defineStore("vendedor", () => {
       return response.data
     } catch (error) {
       console.log(error);
-      return null
+      return error.response.data
     }
   };
 
@@ -35,7 +35,7 @@ export const useVendedorStore = defineStore("vendedor", () => {
       return response.data.vendedor
     } catch (error) {
       console.log(error);
-      return null
+      return error.response.data
     }
   };
 

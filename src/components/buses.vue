@@ -258,7 +258,7 @@ function filterFn(val, update) {
 
           <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre"
             :options="opcionesFiltro.conductores" @filter="filterFn" behavior="menu"
-            :rules="[val => val.trim() != '' || 'Ingrese un nombre']">
+            :rules="[val => val != null || 'Ingrese un nombre']">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">

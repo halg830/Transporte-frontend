@@ -101,6 +101,7 @@ const enviarInfo = {
   editar: async () => {
     loadingmodal.value = true;
     try {
+      console.log(data.value);
       const response = await useConductor.editar(data.value._id, data.value);
       console.log(response);
 
@@ -165,8 +166,6 @@ function errorCamposVacios() {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <div class="text-negative">{{ errorform }}</div>
-
           <q-input
             outlined
             v-model="data.nombre"
@@ -223,10 +222,6 @@ function errorCamposVacios() {
       >
         <template v-slot:top>
           <h4 class="titulo-cont">
-            {{ modelo }}
-            <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
-              <q-icon name="style" color="white" right />
-            </q-btn>
             {{ modelo }}
             <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
               <q-icon name="style" color="white" right />

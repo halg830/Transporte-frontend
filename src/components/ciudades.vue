@@ -81,14 +81,19 @@ const enviarInfo = {
     loadingmodal.value = true;
     try {
       const response = await useCiudad.guardar(data.value);
+      loadingmodal.value = false;
       console.log(response);
+      if(response.error){
+        notificar('negative', response.error)
+        return
+      }
       rows.value.push(response);
       modal.value = false;
       notificar('positive', 'Guardado exitosamente')
     } catch (error) {
       console.log(error);
     }
-    loadingmodal.value = false;
+    
   },
   editar: async () => {
     loadingmodal.value = true;
@@ -158,7 +163,6 @@ function notificar(tipo, msg) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <div class="text-negative">{{ errorform }}</div>
           <q-input
             outlined
             v-model="data.nombre"

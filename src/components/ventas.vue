@@ -165,14 +165,14 @@ function idVendedor(cedula) {
 
   return cedula;
 }
-function idRuta(ciudades) {
+function buscarRuta(ciudades) {
   const ciudad = ciudades.split("/")
   console.log(ciudad);
 
   const buscar = models.value.ruta.find(
     (c) => `${c.ciudad_origen.nombre}/${c.ciudad_destino.nombre}/${convertirHora(c.hora_salida)}` === ciudades
   );
-  if (buscar) return buscar._id;
+  if (buscar) return buscar;
 
   return ciudades;
 }
@@ -261,7 +261,7 @@ function convertirHora(cadenaFecha) {
   return horaFormateada;
 }
 
-function validarCampos() {
+async function validarCampos() {
 
   if (date.value.trim() === "") {
     notificar('negative', 'Todos los campos son obligatorios')
@@ -269,26 +269,36 @@ function validarCampos() {
   }
   data.value.hora_salida = convertirFecha(date.value)
 
-  const arrData = Object.values(data.value)
+  data.value.ruta = buscarRuta(data.value.ruta)
+
+  const arrData = Object.entries(data.value)
   console.log(arrData);
   for (const d of arrData) {
     console.log(d);
-    if(d===null){
+    if(d[1]===null){
       notificar('negative', 'Todos los campos son obligatorios')
       return
     }
 
-    if(typeof d === "string"){
-      if ( d.trim() === "") {
+    if(typeof d[1] === "string"){
+      if ( d[1].trim() === "") {
         notificar('negative', 'Todos los campos son obligatorios')
         return
       }
-
     }
+
+    if(typeof d[1] ==='object' && d[0]==='ruta'){
+      if(d[1].bus.asiento>data.value.num_asiento){
+        notificar('negative', 'Asiento no existente')
+        return
+      }
+    }
+
+    // if(d[0]==='num_asiento' && )
   }
 
   data.value.vendedor = idVendedor(data.value.vendedor);
-  data.value.ruta = idRuta(data.value.ruta);
+  data.value.ruta = data.value.ruta._id
   data.value.cliente = idCliente(data.value.cliente);
 
   enviarInfo[estado.value]()

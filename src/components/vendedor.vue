@@ -1,7 +1,7 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
-import {useVendedorStore} from '../stores/vendedor.js'
+import { useVendedorStore } from '../stores/vendedor.js'
 import { useQuasar } from "quasar";
 
 const modelo = "Vendedor"
@@ -76,7 +76,7 @@ const obtenerInfo = async () => {
     if (vendedor) {
       console.log(vendedor);
       rows.value = vendedor.vendedor;
-      loadingTable.value = false 
+      loadingTable.value = false
     } else {
       console.log("No se pudieron obtener los datos.");
     }
@@ -93,16 +93,19 @@ const opciones = {
   agregar: () => {
     data.value = {
       nombre: "",
+      apellido: "",
       cedula: "",
-      email: ""
+      telefono: "",
+      usuario: "",
+      contrasena: ""
     };
     modal.value = true;
-    estado.value="guardar";
+    estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = {...info}
+    data.value = { ...info }
     modal.value = true;
-    estado.value="editar";
+    estado.value = "editar";
   },
 };
 
@@ -116,6 +119,10 @@ const enviarInfo = {
     loadingmodal.value = true;
     try {
       const response = await useVendedor.guardar(data.value);
+      loadingmodal.value = false;
+      if (response.error) {
+        notificar('negative', response.error)
+      }
       console.log(response);
       rows.value.push(response.vendedor)
       modal.value = false
@@ -123,13 +130,13 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
-    loadingmodal.value = false;
+
   },
   editar: async () => {
     loadingmodal.value = true;
     try {
-        console.log(data.value);
-    const response = await useVendedor.editar(data.value._id, data.value);
+      console.log(data.value);
+      const response = await useVendedor.editar(data.value._id, data.value);
       console.log(response);
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
@@ -142,13 +149,13 @@ const enviarInfo = {
   },
 };
 
-const in_activar={
-  activar: async(id)=>{
+const in_activar = {
+  activar: async (id) => {
     const response = await useVendedor.activar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   },
-  inactivar: async(id)=>{
+  inactivar: async (id) => {
     const response = await useVendedor.inactivar(id)
     console.log(response);
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
@@ -156,6 +163,7 @@ const in_activar={
 }
 
 function validarCampos() {
+  console.log(data.value);
   const arrData = Object.values(data.value);
   console.log(arrData);
   for (const d of arrData) {
@@ -203,68 +211,27 @@ function notificar(tipo, msg) {
         <q-card-section class="q-gutter-md">
           <div class="text-negative">{{ errorform }}</div>
 
-          <q-input
-      outlined
-      v-model="data.nombre"
-      label="Nombre"
-      type="text"
-      :rules="[val => !!val || 'Ingrese un nombre']"
-    ></q-input>
+          <q-input outlined v-model="data.nombre" label="Nombre" type="text"
+            :rules="[val => !!val || 'Ingrese un nombre']"></q-input>
 
-    <q-input
-      outlined
-      v-model="data.apellido"
-      label="Apellido"
-      type="text"
-      :rules="[val => !!val || 'Ingrese un apellido']"
-    ></q-input>
+          <q-input outlined v-model="data.apellido" label="Apellido" type="text"
+            :rules="[val => !!val || 'Ingrese un apellido']"></q-input>
 
-    <q-input
-      outlined
-      v-model="data.cedula"
-      label="Cedula"
-      type="number"
-      maxlength="10"
-      :rules="[val => !!val || 'Ingrese una cédula']"
-    ></q-input>
+          <q-input outlined v-model="data.cedula" label="Cedula" type="number" maxlength="10"
+            :rules="[val => !!val || 'Ingrese una cédula']"></q-input>
 
-    <q-input
-      outlined
-      v-model="data.telefono"
-      label="Teléfono"
-      type="number"
-      maxlength="10"
-      :rules="[val => !!val || 'Ingrese un teléfono']"
-    ></q-input>
+          <q-input outlined v-model="data.telefono" label="Teléfono" type="number" maxlength="10"
+            :rules="[val => !!val || 'Ingrese un teléfono']"></q-input>
 
-    <q-input
-      outlined
-      v-model="data.usuario"
-      label="Usuario"
-      type="text"
-      :rules="[val => !!val || 'Ingrese un usuario']"
-    ></q-input>
+          <q-input outlined v-model="data.usuario" label="Usuario" type="text"
+            :rules="[val => !!val || 'Ingrese un usuario']"></q-input>
 
-    <q-input
-      outlined
-      v-model="data.contrasena"
-      label="Contraseña"
-      type="password"
-      :rules="[val => !!val || 'Ingrese una contraseña']"
-    ></q-input>
+          <q-input outlined v-model="data.contrasena" label="Contraseña" type="password"
+            :rules="[val => !!val || 'Ingrese una contraseña']"></q-input>
 
-          <q-btn
-            @click="validarCampos"
-            :loading="loadingmodal"
-            padding="10px"
-            :color="estado == 'editar' ? 'warning' : 'secondary'"
-            :label="estado"
-          >
-            <q-icon
-              :name="estado == 'editar' ? 'edit' : 'style'"
-              color="white"
-              right
-            />
+          <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
+            :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
+            <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
           </q-btn>
 
         </q-card-section>
@@ -272,21 +239,11 @@ function notificar(tipo, msg) {
     </q-dialog>
 
 
-    
+
     <div class="q-pa-md">
-      <q-table
-        :rows="rows"
-        :columns="columns"
-        class="tabla"
-        row-key="name"
-        :loading="loadingTable"
-        :filter="filter"
-        rows-per-page-label="visualización de filas"
-        page="2"
-        :rows-per-page-options="[10, 20, 40, 0]"
-        no-results-label="No hay resultados para la busqueda"
-        wrap-cells="false"
-      >
+      <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
+        rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        no-results-label="No hay resultados para la busqueda" wrap-cells="false">
         <template v-slot:top>
           <h4 class="titulo-cont">
             {{ modelo }}
@@ -294,14 +251,7 @@ function notificar(tipo, msg) {
               <q-icon name="style" color="white" right />
             </q-btn>
           </h4>
-          <q-input
-            borderless
-            dense
-            debounce="300"
-            color="primary"
-            v-model="filter"
-            class="buscar"
-          >
+          <q-input borderless dense debounce="300" color="primary" v-model="filter" class="buscar">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -310,12 +260,7 @@ function notificar(tipo, msg) {
 
         <template v-slot:header="props">
           <q-tr :props="props">
-            <q-th
-              v-for="col in props.cols"
-              :key="col.name"
-              :props="props"
-              class="encabezado"
-            >
+            <q-th v-for="col in props.cols" :key="col.name" :props="props" class="encabezado">
               {{ col.label }}
             </q-th>
           </q-tr>
@@ -323,38 +268,24 @@ function notificar(tipo, msg) {
 
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              class="botonv1"
-              text-size="1px"
-              padding="10px"
-              :label="
-                props.row.estado === 1
-                  ? 'Activo'
-                  : props.row.estado === 0
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1
+                ? 'Activo'
+                : props.row.estado === 0
                   ? 'Inactivo'
                   : '‎  ‎   ‎   ‎   ‎ '
-              "
-              :color="props.row.estado === 1 ? 'positive' : 'accent'"
-              :loading="props.row.estado === 'load'"
-              loading-indicator-size="small"
-              @click="
+              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
+              loading-indicator-size="small" @click="
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-                props.row.estado = 'load';
-              "
-            />
+              props.row.estado = 'load';
+              " />
           </q-td>
         </template>
 
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="warning"
-              icon="edit"
-              class="botonv1"
-              @click="opciones.editar(props.row)"
-            />
+            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
       </q-table>
@@ -377,7 +308,7 @@ warning: Color para advertencias o mensajes importantes.
   padding: 0px;
 }
 
-.modal{
+.modal {
   width: 100%;
   max-width: 600px;
 }
