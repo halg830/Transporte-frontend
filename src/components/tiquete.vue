@@ -13,7 +13,7 @@ const useVendedor = useVendedorStore()
 const $q = useQuasar()
 const conVenta = ref('ruta')
 const loadingruta = ref(true);
-
+const selectLoad = ref(true)
 
 const modalclientes = ref(false)
 const loadingmodalclientes = ref(false);
@@ -39,19 +39,19 @@ const obtenerOptions = async () => {
     const rutas = await useTiquete.continuarVentas()
     console.log(rutas);
     const responseRutas = await useRutas.obtener();
+    const responseCliente = await useCliente.obtener()
+    console.log(responseCliente);
 
     const rutasVentas = rutas.map(c => { return { label: c.ruta.ciudad_origen.nombre + "/" + c.ruta.ciudad_destino.nombre + "/" + convertirHora(c.ruta.hora_salida), value: c.ruta._id, fecha_salida: c.fecha_salida } })
     loadingruta.value = false
 
     const conjuntoLabels = new Set();
     const datosFiltrados = rutasVentas.filter((item) => {
-        // Si el label ya está en el conjunto, devolvemos false para filtrar el elemento
         if (conjuntoLabels.has(item.label)) {
             return false;
         }
-        // Agregamos el label al conjunto
+
         conjuntoLabels.add(item.label);
-        // Devolvemos true para incluir el elemento en el array filtrado
         return true;
     });
     console.log(datosFiltrados);
@@ -61,11 +61,16 @@ const obtenerOptions = async () => {
 
     options.value.ruta = responseRutas.map((c) => { return { label: c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida), value: c._id } });
     models.value.ruta = responseRutas;
+
+    options.value.cliente = responseCliente.cliente.map(c => { return { label: c.cedula, value: c._id } })
+    models.value.cliente = responseCliente
+
+    selectLoad.value = false
 };
 obtenerOptions()
 
 const opcionesFiltro = ref({
-    bus: options.value[conVenta.value]
+    bus: options.value[conVenta.value],
 })
 function filterFnRuta(val, update) {
     if (val === '') {
@@ -78,6 +83,18 @@ function filterFnRuta(val, update) {
     update(() => {
         const needle = val.toLowerCase()
         opcionesFiltro.value.ruta = options.value[conVenta.value].filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+    })
+}
+
+function filterFnCliente(val, update) {
+    if (val === '') {
+        update(() => opcionesFiltro.value.cliente = options.value.cliente)
+        return
+    }
+
+    update(() => {
+        const needle = val.toLowerCase()
+        opcionesFiltro.value.ruta = options.value.cliente.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
     })
 }
 
@@ -250,11 +267,20 @@ const vendedorTemp = "655bac195bb4d4c3c0171460"
 
 
 async function buscarCliente() {
-    if (dataCliente.value.cedula.trim() === "") {
-        notificar('negative', 'Por favor ingrese la cedula')
-        return false
+    console.log(dataCliente.value)
+
+    if(typeof dataCliente.value.cedula === 'string') {
+        if (dataCliente.value.cedula.trim() === "") {
+            notificar('negative', 'Por favor ingrese la cedula')
+            return false
+        }
     }
-    const response = await useCliente.buscarxCC(dataCliente.value.cedula)
+
+    let response
+
+    if(typeof dataCliente.value.cedula === 'string'){
+        response = await useCliente.buscarxCC(dataCliente.value.cedula)
+    }else response = await useCliente.buscarxCC(dataCliente.value.cedula.label)
 
     console.log(response);
     if (response.length <= 0) {
@@ -463,80 +489,80 @@ function optionsFecha(fecha) {
 
 function continuarVenta() {
     nuevaVenta()
-    
+
     conVenta.value = 'rutasVentas'
 }
 
 
 const enviarInfo = {
-  guardar: async () => {
-    loadingmodalclientes.value = true;
-    try {
-      const response = await useCliente.guardar(dataclientes.value);
-      console.log(response);
-      if (response.error) {
-        notificar('negative', response.error)
-        return
-      }
+    guardar: async () => {
+        loadingmodalclientes.value = true;
+        try {
+            const response = await useCliente.guardar(dataclientes.value);
+            console.log(response);
+            if (response.error) {
+                notificar('negative', response.error)
+                return
+            }
 
-      notificar('positive', 'Guardado exitosamente')
-      modalclientes.value = false;
-    } catch (error) {
-      console.log(error);
+            notificar('positive', 'Guardado exitosamente')
+            modalclientes.value = false;
+        } catch (error) {
+            console.log(error);
+        }
+        loadingmodalclientes.value = false;
     }
-    loadingmodalclientes.value = false;
-  }
 };
 
 function validarCamposCliente() {
 
-const arrData = Object.entries(dataclientes.value)
-console.log(arrData);
-for (const d of arrData) {
-  console.log(d);
-  if (d[1] === null) {
-    notificar('negative', "Por favor complete todos los campos")
-    return
-  }
-  if (typeof d[1] === 'string') {
-    if (d[1].trim() === "") {
-      notificar('negative', "Por favor complete todos los campos")
-      return
+    const arrData = Object.entries(dataclientes.value)
+    console.log(arrData);
+    for (const d of arrData) {
+        console.log(d);
+        if (d[1] === null) {
+            notificar('negative', "Por favor complete todos los campos")
+            return
+        }
+        if (typeof d[1] === 'string') {
+            if (d[1].trim() === "") {
+                notificar('negative', "Por favor complete todos los campos")
+                return
+            }
+        }
+
+        if (d[0] === "nombre" && d[1].length > 15) {
+            notificar('negative', 'El nombre no puede tener más de 15 caracteres')
+            return
+        }
+
+        if (d[0] === "cedula" && d[1].toString().length < 8) {
+            notificar('negative', "La cedula debe tener más de 8 digitos")
+            return
+        }
+
+        if (d[0] === "email" && !d[1].includes('@')) {
+            notificar('negative', 'Email no válido')
+            return
+        }
     }
-  }
-
-  if (d[0] === "nombre" && d[1].length > 15) {
-    notificar('negative', 'El nombre no puede tener más de 15 caracteres')
-    return
-  }
-
-  if (d[0] === "cedula" && d[1].toString().length < 8) {
-    notificar('negative', "La cedula debe tener más de 8 digitos")
-    return
-  }
-
-  if (d[0] === "email" && !d[1].includes('@')) {
-    notificar('negative', 'Email no válido')
-    return
-  }
-}
-enviarInfo[estado.value]()
+    enviarInfo[estado.value]()
 }
 const dataclientes = ref({
-  nombre: "",
-  cedula: "",
-  email: "",
+    nombre: "",
+    cedula: "",
+    email: "",
 });
 const opcionesclientes = {
-  agregar: () => {
-    dataclientes.value = {
-      nombre: "",
-      cedula: "",
-      email: "",
-    };
-    modalclientes.value = true;
-    estado.value = "guardar";
-  }
+    agregar: () => {
+        dataclientes.value = {
+            nombre: "",
+            cedula: "",
+            email: "",
+        };
+        modalclientes.value = true;
+        estado.value = "guardar";
+    }
 };
 
 
@@ -596,38 +622,31 @@ const opcionesclientes = {
 
 
         <q-dialog v-model="modalclientes">
-      <q-card class="modal">
-        <q-toolbar>
-          <q-toolbar-title>Agregar {{ modelo }}</q-toolbar-title>
-          <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
-        </q-toolbar>
+            <q-card class="modal">
+                <q-toolbar>
+                    <q-toolbar-title>Agregar </q-toolbar-title>
+                    <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
+                </q-toolbar>
 
-        <q-card-section class="q-gutter-md">
-          <q-input class="input1" outlined v-model="dataclientes.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
-          <q-input class="input2" outlined v-model="dataclientes.cedula" label="Cedula" type="number"
-            :disable="estado === 'editar'" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
-          <q-input class="input3" outlined v-model="dataclientes.email" label="Email" type="email" :disable="estado==='editar'" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
-          
-            
-            <q-btn
-            @click="validarCamposCliente"
-            :loading="loadingmodal"
-            padding="10px"
-            :color="estado == 'editar' ? 'warning' : 'secondary'"
-            :label="estado"
-          >
-            <q-icon
-              :name="estado == 'editar' ? 'edit' : 'style'"
-              color="white"
-              right
-            />
-          </q-btn>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
+                <q-card-section class="q-gutter-md">
+                    <q-input class="input1" outlined v-model="dataclientes.nombre" label="Nombre" type="text" maxlength="15"
+                        lazy-rules :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
+                    <q-input class="input2" outlined v-model="dataclientes.cedula" label="Cedula" type="number"
+                        :disable="estado === 'editar'" lazy-rules
+                        :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
+
+                    <q-input class="input3" outlined v-model="dataclientes.email" label="Email" type="email"
+                        :disable="estado === 'editar'" lazy-rules
+                        :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
+
+
+                    <q-btn @click="validarCamposCliente" :loading="loadingmodal" padding="10px"
+                        :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
+                        <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
+                    </q-btn>
+                </q-card-section>
+            </q-card>
+        </q-dialog>
 
 
 
@@ -644,26 +663,39 @@ const opcionesclientes = {
                             :class="asientosOcupados.includes(String(a)) ? 'ocupado' : 'desocupado'"
                             @click="data.num_asiento = a" :label="a" :disable="asientosOcupados.includes(String(a))" />
                     </div>
-    
+
                     <div v-if="data.num_asiento != 0" class="formulario">
-    
+
                         <span class="numasiento">Asiento #{{ data.num_asiento }}</span>
-    
+
                         <div>
-                            <q-btn label="Buscar cliente" @click="buscarCliente" color="primary" class="btnbuscar" />
-                            <q-btn @click="opcionesclientes.agregar" class="btnagregar" icon="group_add" color="primary" />
+                            <!-- <q-btn label="Buscar cliente" @click="buscarCliente" color="primary" class="btnbuscar" /> -->
+                            <q-btn @click="opcionesclientes.agregar" label="Nuevo cliente" class="btnagregar" icon="group_add" color="primary" />
                         </div>
-    
+
                         <div>
                             <q-form @submit="validarCampos" @reset="onResetCliente" class="q-gutter-md inputs">
-                                <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10"
-                                    lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese una cedula']"></q-input>
+                                <!-- <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10"
+                                    lazy-rules
+                                    :rules="[val => val.trim() != '' || 'Por favor ingrese una cedula']"></q-input> -->
+                                <q-select filled v-model:model-value="dataCliente.cedula" use-input input-debounce="0"
+                                    label="Cedula" :loading="selectLoad" :options="opcionesFiltro.cliente"
+                                    @filter="filterFnCliente" behavior="menu" lazy-rules
+                                    :rules="[val => val != null || 'Por favor ingrese una cedula']" @update:model-value="buscarCliente">
+                                    <template v-slot:no-option>
+                                        <q-item>
+                                            <q-item-section class="text-grey">
+                                                Sin resultados
+                                            </q-item-section>
+                                        </q-item>
+                                    </template>
+                                </q-select>
                                 <q-input outlined v-model="dataCliente.email" label="Email" type="email" lazy-rules
                                     :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable></q-input>
                                 <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15"
                                     lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']"
                                     disable></q-input>
-    
+
                                 <q-btn label="Confirmar" type="submit" color="secondary" />
                                 <q-btn label="" type="reset" color="secondary" icon="delete" />
                             </q-form>
@@ -678,14 +710,14 @@ const opcionesclientes = {
 </template>
 
 <style scoped>
-
-#contRegresar{
+#contRegresar {
     display: flex;
 }
 
-#contAsientos{
+#contAsientos {
     display: flex;
 }
+
 .asiento {
     margin: 10px;
 }
@@ -698,16 +730,12 @@ const opcionesclientes = {
     background-color: white;
 }
 
-.contventa {}
-
 .regresar {
     position: relative;
     top: 20px;
     left: 20;
     /* margin: 20px auto; */
 }
-
-.contopciones {}
 
 .asientos {
     display: inline-block;
@@ -788,8 +816,8 @@ const opcionesclientes = {
     font-weight: bold;
 }
 
-@media (max-width:1100px){
-    #contAsientos{
+@media (max-width:1100px) {
+    #contAsientos {
         margin-top: 30px;
     }
 }

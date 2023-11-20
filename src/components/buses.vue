@@ -12,6 +12,9 @@ const loadingTable = ref(true)
 const $q = useQuasar()
 const filter = ref("");
 const loadingmodal = ref(false);
+const selectLoad = ref({
+  conductor: true
+})
 
 const columns = ref([
   {
@@ -90,6 +93,7 @@ const obtenerOptions = async () => {
 
   options.value.conductores = responseConductores.map((c) => { return { label: c.nombre, value: c._id } });
   conductores.value = responseConductores;
+  selectLoad.value.conductor = false
 };
 
 obtenerOptions();
@@ -258,7 +262,7 @@ function filterFn(val, update) {
 
           <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre"
             :options="opcionesFiltro.conductores" @filter="filterFn" behavior="menu"
-            :rules="[val => val != null || 'Ingrese un nombre']">
+            :rules="[val => val != null || 'Ingrese un nombre']" :loading="selectLoad.conductor">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">

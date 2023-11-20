@@ -1,10 +1,11 @@
 Validacion de modelos repetidos
 
-iconos de carga en los inputs select
+boton de refrescar select si los datos no cargan
 validaciones de token
 proteccion de rutas
 al agregar, quede de primero en la tabla
 revisar validaciones de backend y notificarlas
+mejorar diseño al imprimir ticket
 
 ULTIMO
 cuando se seleccione una ruta en continuar venta, se muestre un select con las fechas

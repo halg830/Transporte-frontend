@@ -16,7 +16,7 @@ const $q = useQuasar()
 const loadingTable = ref(true)
 const filter = ref("");
 const loadingmodal = ref(false);
-
+const selectLoad = ref(true)
 
 const columns = ref([
   {
@@ -109,6 +109,8 @@ const obtenerOptions = async () => {
   models.value.ciudades = responseCiudad
   options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id } });
   models.value.buses = responseBus.busPopulate
+
+  selectLoad.value = false
 };
 
 obtenerOptions();
@@ -369,7 +371,7 @@ function prueba(val) {
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
           <q-select outlined v-model:model-value="data.ciudad_origen" use-input input-debounce="0" label="Ciudad origen"
             :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
-            @update:model-value="deshabilitarCiudad">
+            @update:model-value="deshabilitarCiudad" :loading="selectLoad">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">
@@ -382,7 +384,7 @@ function prueba(val) {
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
           <q-select outlined v-model:model-value="data.ciudad_destino" use-input input-debounce="0" label="Ciudad destino"
             :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
-            @update:model-value="deshabilitarCiudad">
+            @update:model-value="deshabilitarCiudad" :loading="selectLoad">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">
@@ -394,7 +396,7 @@ function prueba(val) {
           <!-- <q-select rounded standout v-model="data.bus" :options="options.bus" label="Bus" lazy-rules
             :rules="[val => val != '' || 'Ingrese un bus']" /> -->
           <q-select outlined v-model:model-value="data.bus" use-input input-debounce="0" label="Placa"
-            :options="opcionesFiltro.bus" @filter="filterFnBus" behavior="menu">
+            :options="opcionesFiltro.bus" @filter="filterFnBus" behavior="menu" :loading="selectLoad">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">
