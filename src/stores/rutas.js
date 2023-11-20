@@ -22,7 +22,7 @@ export const useRutasStore = defineStore("ruta", () => {
       return response.data.rutasPopulate
     } catch (error) {
       console.log(error);
-      return null
+      return error.response.data
     }
   };
 
@@ -33,7 +33,7 @@ export const useRutasStore = defineStore("ruta", () => {
       return response.data.rutasPopulate
     } catch (error) {
       console.log(error);
-      return null
+      return error.response.data
     }
   };
 

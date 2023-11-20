@@ -87,8 +87,8 @@ const obtenerInfo = async () => {
   console.log("Esperando datos...");
   try {
     const rutas = await useRutas.obtener();
+    loadingTable.value = false
     if (rutas) {
-      loadingTable.value = false
       console.log(rutas);
       rows.value = rutas;
     } else {
@@ -177,6 +177,11 @@ const enviarInfo = {
     loadingmodal.value = true;
     try {
       const response = await useRutas.guardar(data.value);
+      loadingmodal.value = false;
+      if (response.error) {
+        notificar('negative', response.error)
+        return
+      }
       console.log(response);
       rows.value.push(response);
       modal.value = false;
@@ -184,13 +189,18 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
-    loadingmodal.value = false;
+
   },
   editar: async () => {
     loadingmodal.value = true;
     try {
       const response = await useRutas.editar(data.value._id, data.value);
       console.log(response);
+      loadingmodal.value = false;
+      if (response.error) {
+        notificar('negative', response.error)
+        return
+      }
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
       notificar('positive', 'Editado exitosamente')
@@ -198,7 +208,6 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
-    loadingmodal.value = false;
   },
 };
 
@@ -320,10 +329,22 @@ function filterFnCiudad(val, update) {
 function deshabilitarCiudad(val) {
 
   console.log(val);
+  
+    for(const c of options.value.ciudad){
+      console.log(c);
+      if(c.disable === true && data.value.ciudad_origen!=c.label || data.value.ciudad_destino!=c.label) {
+        c.disable=false
+        if(val===null) return
+      }
+    }
+  
+
   const buscar = options.value.ciudad.findIndex(c => c.label === val.label)
-  if (buscar <= 0) return false
+  console.log(buscar);
+  if (buscar < 0) return false
 
   options.value.ciudad[buscar].disable = true
+  console.log(options.value.ciudad);
   return true
 }
 
@@ -348,7 +369,7 @@ function prueba(val) {
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
           <q-select outlined v-model:model-value="data.ciudad_origen" use-input input-debounce="0" label="Ciudad origen"
             :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
-            @update:model-value="deshabilitarCiudad" @remove="prueba" refresh>
+            @update:model-value="deshabilitarCiudad">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">
@@ -361,7 +382,7 @@ function prueba(val) {
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
           <q-select outlined v-model:model-value="data.ciudad_destino" use-input input-debounce="0" label="Ciudad destino"
             :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
-            @update:model-value="deshabilitarCiudad" @remove="prueba" refresh>
+            @update:model-value="deshabilitarCiudad">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">
@@ -440,10 +461,10 @@ function prueba(val) {
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
             <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1
-                ? 'Activo'
-                : props.row.estado === 0
-                  ? 'Inactivo'
-                  : '‎  ‎   ‎   ‎   ‎ '
+              ? 'Activo'
+              : props.row.estado === 0
+                ? 'Inactivo'
+                : '‎  ‎   ‎   ‎   ‎ '
               " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
               loading-indicator-size="small" @click="
                 props.row.estado === 1

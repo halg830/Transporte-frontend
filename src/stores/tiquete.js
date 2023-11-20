@@ -8,7 +8,7 @@ export const useTiqueteStore = defineStore("tiquete", () => {
   const obtener = async () => {
     try {
       const response = await axios.get(`${model}all`);
-console.log(response);
+      console.log(response);
       return response.data.tiquetePopulate;
     } catch (error) {
       console.error(error);
@@ -16,37 +16,39 @@ console.log(response);
     }
   };
 
-  const asientosOcupados = async(idRuta, fecha_salida)=>{
+  const asientosOcupados = async (idRuta, fecha_salida) => {
     try {
       console.log(idRuta);
       console.log(fecha_salida);
-      const response = await axios.get(`${model}asientosOcupados/${idRuta}/${fecha_salida}`)
+      const response = await axios.get(
+        `${model}asientosOcupados/${idRuta}/${fecha_salida}`
+      );
 
       console.log(response);
-      return response.data
+      return response.data;
     } catch (error) {
       console.log(error);
-      return null
+      return null;
     }
-  }
+  };
 
-  const continuarVentas = async()=>{
+  const continuarVentas = async () => {
     try {
-      const response = await axios.get(`${model}continuarVenta`)
+      const response = await axios.get(`${model}continuarVenta`);
       console.log(response);
 
-      return response.data
+      return response.data;
     } catch (error) {
       console.log(error);
-      return null
+      return null;
     }
-  }
+  };
 
   const guardar = async (data) => {
     try {
       const response = await axios.post(`${model}guardar`, data);
       console.log(response);
-      return response
+      return response;
     } catch (error) {
       console.log(error);
       return error.response.data;
@@ -55,13 +57,13 @@ console.log(response);
 
   const editar = async (id, data) => {
     try {
-      console.log("a",id, data);
+      console.log("a", id, data);
       const response = await axios.put(`${model}editar/${id}`, data);
       console.log(response);
       return response.data.tiquetePopulate;
     } catch (error) {
       console.log(error);
-      return null;
+      return error.response.data;
     }
   };
 

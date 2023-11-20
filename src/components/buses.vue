@@ -65,10 +65,10 @@ const data = ref({
 const obtenerInfo = async () => {
   try {
     const bus = await useBus.obtener();
+    loadingTable.value = false
     if (bus) {
       console.log(bus);
       rows.value = bus.busPopulate;
-      loadingTable.value = false
     } else {
       console.log("No se pudieron obtener los datos.");
     }
