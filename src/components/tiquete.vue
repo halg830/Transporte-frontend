@@ -12,6 +12,12 @@ const useRutas = useRutasStore()
 const useVendedor = useVendedorStore()
 const $q = useQuasar()
 const conVenta = ref('ruta')
+const loadingruta = ref(true);
+
+
+const modalclientes = ref(false)
+const loadingmodalclientes = ref(false);
+const estado = ref("guardar");
 
 const data = ref({ num_asiento: 0 })
 
@@ -29,11 +35,13 @@ const options = ref({ ruta: [] })
 const models = ref({})
 
 const obtenerOptions = async () => {
+    loadingruta.value = true
     const rutas = await useTiquete.continuarVentas()
     console.log(rutas);
     const responseRutas = await useRutas.obtener();
 
     const rutasVentas = rutas.map(c => { return { label: c.ruta.ciudad_origen.nombre + "/" + c.ruta.ciudad_destino.nombre + "/" + convertirHora(c.ruta.hora_salida), value: c.ruta._id, fecha_salida: c.fecha_salida } })
+    loadingruta.value = false
 
     const conjuntoLabels = new Set();
     const datosFiltrados = rutasVentas.filter((item) => {
@@ -80,7 +88,7 @@ async function buscarRuta(id) {
 
     const buscar = models.value.ruta.find(r => r._id === id)
     console.log("a", asientosOcupados.value.length, "b", buscar.bus.asiento);
-    if(asientosOcupados.value.length == buscar.bus.asiento){
+    if (asientosOcupados.value.length == buscar.bus.asiento) {
         notificar('negative', 'Ya no hay asientos disponibles')
         return false
     }
@@ -166,11 +174,11 @@ async function onSubmit() {
         }
     }
 
-    if(conVenta.value==='rutasVentas'){
-        const buscar = models.value.rutasVentas.find(e=>convertirFecha(e.fecha_salida)===date.value&&e.ruta._id===data.value.ruta.value)
+    if (conVenta.value === 'rutasVentas') {
+        const buscar = models.value.rutasVentas.find(e => convertirFecha(e.fecha_salida) === date.value && e.ruta._id === data.value.ruta.value)
         console.log(buscar);
 
-        if(!buscar){
+        if (!buscar) {
             notificar('negative', 'No se han generado ventas en esa fecha')
             return
         }
@@ -179,7 +187,7 @@ async function onSubmit() {
 
     const r = await buscarRuta(data.value.ruta.value)
 
-    if(!r) return
+    if (!r) return
     modal.value = false
     opciones.value = false
     console.log("onsubmit", data.value)
@@ -445,7 +453,7 @@ async function showCustom() {
 
 
 function optionsFecha(fecha) {
-    if (conVenta.value==='rutasVentas') return fecha >'0000/00/00'
+    if (conVenta.value === 'rutasVentas') return fecha > '0000/00/00'
 
     const fechaA = fechaActual()
     console.log(fechaA);
@@ -457,16 +465,89 @@ function continuarVenta() {
     conVenta.value = 'rutasVentas'
 }
 
+
+const enviarInfo = {
+  guardar: async () => {
+    loadingmodalclientes.value = true;
+    try {
+      const response = await useCliente.guardar(dataclientes.value);
+      console.log(response);
+      if (response.error) {
+        notificar('negative', response.error)
+        return
+      }
+
+      notificar('positive', 'Guardado exitosamente')
+      modalclientes.value = false;
+    } catch (error) {
+      console.log(error);
+    }
+    loadingmodalclientes.value = false;
+  }
+};
+
+function validarCamposCliente() {
+
+const arrData = Object.entries(dataclientes.value)
+console.log(arrData);
+for (const d of arrData) {
+  console.log(d);
+  if (d[1] === null) {
+    notificar('negative', "Por favor complete todos los campos")
+    return
+  }
+  if (typeof d[1] === 'string') {
+    if (d[1].trim() === "") {
+      notificar('negative', "Por favor complete todos los campos")
+      return
+    }
+  }
+
+  if (d[0] === "nombre" && d[1].length > 15) {
+    notificar('negative', 'El nombre no puede tener más de 15 caracteres')
+    return
+  }
+
+  if (d[0] === "cedula" && d[1].toString().length < 8) {
+    notificar('negative', "La cedula debe tener más de 8 digitos")
+    return
+  }
+
+  if (d[0] === "email" && !d[1].includes('@')) {
+    notificar('negative', 'Email no válido')
+    return
+  }
+}
+enviarInfo[estado.value]()
+}
+const dataclientes = ref({
+  nombre: "",
+  cedula: "",
+  email: "",
+});
+const opcionesclientes = {
+  agregar: () => {
+    dataclientes.value = {
+      nombre: "",
+      cedula: "",
+      email: "",
+    };
+    modalclientes.value = true;
+    estado.value = "guardar";
+  }
+};
+
+
 </script>
 <template>
     <div>
         <div v-if="opciones">
-            <q-btn label="Nueva venta" color="primary" @click="nuevaVenta" />
-            <q-btn @click="continuarVenta">Continuar venta</q-btn>
+            <q-btn label="Nueva venta" color="primary" @click="nuevaVenta" class="btnagregar" />
+            <q-btn @click="continuarVenta" class="btnagregar">Continuar venta</q-btn>
         </div>
 
         <q-dialog v-model="modal">
-            <q-card style="width: 700px; max-width: 80vw;">
+            <q-card style="width: 600px; max-width: 95vw;">
                 <q-card-section>
                     <div class="text-h6">Generar venta</div>
                 </q-card-section>
@@ -475,9 +556,8 @@ function continuarVenta() {
                     <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
                         <!-- <span>Ruta: </span> -->
                         <q-select filled v-model:model-value="data.ruta" use-input input-debounce="0" label="Ruta"
-                            :options="opcionesFiltro.ruta" @filter="filterFnRuta" style="width: 250px" behavior="menu"
-                             lazy-rules
-                            :rules="[val => val != null || 'Por favor ingrese una ruta']">
+                            :loading="loadingruta" :options="opcionesFiltro.ruta" @filter="filterFnRuta" behavior="menu"
+                            lazy-rules :rules="[val => val != null || 'Por favor ingrese una ruta']">
                             <template v-slot:no-option>
                                 <q-item>
                                     <q-item-section class="text-grey">
@@ -509,47 +589,88 @@ function continuarVenta() {
                         </div>
                     </q-form>
                 </q-card-section>
-
-                <!-- <q-card-actions align="right" class="bg-white text-teal">
-                
-            </q-card-actions> -->
             </q-card>
         </q-dialog>
 
-        <div v-if="!opciones" class="contCrear">
-            <q-btn label="Regresar" @click="regresar"></q-btn>
-            <div v-if="verificarAsiento">
-                <q-btn v-for="a in cantAsientos" :class="asientosOcupados.includes(String(a)) ? 'ocupado' : 'desocupado'"
-                    @click="data.num_asiento = a" :disable="asientosOcupados.includes(String(a))" :label="a" />
+
+        <q-dialog v-model="modalclientes">
+      <q-card class="modal">
+        <q-toolbar>
+          <q-toolbar-title>Agregar {{ modelo }}</q-toolbar-title>
+          <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
+        </q-toolbar>
+
+        <q-card-section class="q-gutter-md">
+          <q-input class="input1" outlined v-model="dataclientes.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
+          <q-input class="input2" outlined v-model="dataclientes.cedula" label="Cedula" type="number"
+            :disable="estado === 'editar'" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
+          <q-input class="input3" outlined v-model="dataclientes.email" label="Email" type="email" :disable="estado==='editar'" lazy-rules
+            :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
+          
+            
+            <q-btn
+            @click="validarCamposCliente"
+            :loading="loadingmodal"
+            padding="10px"
+            :color="estado == 'editar' ? 'warning' : 'secondary'"
+            :label="estado"
+          >
+            <q-icon
+              :name="estado == 'editar' ? 'edit' : 'style'"
+              color="white"
+              right
+            />
+          </q-btn>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+
+
+        <div v-if="!opciones" class="contventa">
+
+            <div class="contopciones">
+                <div>
+                    <q-btn label="Regresar" @click="regresar" class="regresar" color="accent" icon="arrow_back_ios"></q-btn>
+                </div>
+
+                <div v-if="verificarAsiento" class="asientos">
+                    <q-btn v-for="a in cantAsientos" icon="chair" class="asiento"
+                        :class="asientosOcupados.includes(String(a)) ? 'ocupado' : 'desocupado'"
+                        @click="data.num_asiento = a" :label="a" :disable="asientosOcupados.includes(String(a))" />
+                </div>
+
+                <div v-if="data.num_asiento != 0" class="formulario">
+
+                    <span class="numasiento">Asiento #{{ data.num_asiento }}</span>
+
+                    <div>
+                        <q-btn label="Buscar cliente" @click="buscarCliente" color="primary" class="btnbuscar" />
+                        <q-btn @click="opcionesclientes.agregar" class="btnagregar" icon="group_add" color="primary" />
+                    </div>
+
+                    <div>
+                        <q-form @submit="validarCampos" @reset="onResetCliente" class="q-gutter-md inputs">
+                            <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10"
+                                lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese una cedula']"></q-input>
+                            <q-input outlined v-model="dataCliente.email" label="Email" type="email" lazy-rules
+                                :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable></q-input>
+                            <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15"
+                                lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']"
+                                disable></q-input>
+
+                            <q-btn label="Confirmar" type="submit" color="secondary" />
+                            <q-btn label="" type="reset" color="secondary" icon="delete" />
+                        </q-form>
+                    </div>
+
+                </div>
+
 
             </div>
 
-            <div v-if="data.num_asiento != 0">
-
-                <span>Asiento #{{ data.num_asiento }}</span>
-
-                <div>
-                    <q-btn label="Buscar cliente" @click="buscarCliente" />
-                    <q-btn label="Guardar cliente" @click="guardarCliente" />
-                </div>
-
-                <div>
-                    <q-form @submit="validarCampos" @reset="onResetCliente" class="q-gutter-md">
-                        <span>Cedula cliente: </span>
-                        <q-input outlined v-model="dataCliente.cedula" label="Cedula" type="text" maxlength="10" lazy-rules
-                            :rules="[val => val.trim() != '' || 'Por favor ingrese una cedula']"></q-input>
-                        <span>Teléfono: </span>
-                        <q-input outlined v-model="dataCliente.email" label="Email" type="email" lazy-rules
-                            :rules="[val => val.trim() != '' || 'Por favor ingrese un email']"></q-input>
-                        <span>Nombre: </span>
-                        <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
-                            :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']"></q-input>
-
-                        <q-btn label="Confirmar venta" type="submit" color="primary" />
-                        <q-btn label="🗑" type="reset" color="primary" flat class="q-ml-sm" />
-                    </q-form>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -654,49 +775,101 @@ function continuarVenta() {
 </template>
 
 <style scoped>
+.asiento {
+    margin: 10px;
+}
+
 .ocupado {
-    background-color: red;
+    background-color: rgb(255, 188, 188);
 }
 
 .desocupado {
     background-color: white;
 }
 
-.contCrear {
-    display: flex;
+.contventa {}
+
+.regresar {
+    margin: 20px auto;
+}
+
+.contopciones {}
+
+.asientos {
+    display: inline-block;
+    max-width: 700px;
+    margin: auto;
+}
+
+.asiento {
+    padding: 20px;
+}
+
+.numasiento {
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.inputs {
+    margin: 10px;
+}
+
+.formulario {
+    display: inline-block;
+    margin: 20px !important;
+    max-width: 500px;
+    border: solid 2px;
+    margin: auto;
+    padding: 20px;
+}
+
+.btnbuscar {
+    margin: 10px;
+}
+
+.btnagregar {
+    margin: 10px;
 }
 
 
-#inicio {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
+
+
+
+
+
+.modal {
+    width: 100%;
+    max-width: 600px;
 }
 
-h3 {
-    margin: 40px;
+.tabla {
+    padding: 0 20px;
+    margin: 10px auto;
+    max-width: 1000px;
+    /* min-height: 710px; */
+    border: 0px solid black;
 }
 
-#contAsientos {
-    display: flex;
-    justify-content: center;
+.titulo-cont {
+    margin: auto;
 }
 
-#asientos {
-    max-width: 70vw;
-    min-height: 90vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    align-content: center;
+.buscar {
+    display: inline-block;
+    margin: auto;
+    margin-top: 8px;
+    padding: 0px 15px;
+    border: 1px solid rgb(212, 212, 212);
+    border-radius: 5px;
 }
 
-.btnAsientos {
-    width: 5vw;
-    height: 5vw;
-    margin: 20px;
+.encabezado {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.botonv1 {
+    font-size: 10px;
+    font-weight: bold;
 }
 </style>
