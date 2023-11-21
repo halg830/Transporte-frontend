@@ -22,10 +22,13 @@ async function validarIngreso() {
   console.log(response);
 
   loading.value = false
-  if (response != 200) {
+  if (response.status != 200) {
     notificar('negative', response.msg)
     return;
   }
+
+  localStorage.setItem("x-token", response.data.token)
+  localStorage.setItem("vendedor", response.data.vendedor)
   notificar('positive', 'Sección exitosa')
   router.push("/home");
 }

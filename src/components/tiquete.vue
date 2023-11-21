@@ -5,21 +5,23 @@ import { useRutasStore } from '../stores/rutas.js';
 import { useVendedorStore } from '../stores/vendedor.js';
 import { useQuasar, QSpinnerGears } from 'quasar';
 import { useTiqueteStore } from '../stores/tiquete';
+import { useRouter } from 'vue-router';
 
-const useTiquete = useTiqueteStore()
+const router = useRouter();
+const useTiquete = useTiqueteStore();
 const useCliente = useClienteStore();
-const useRutas = useRutasStore()
-const useVendedor = useVendedorStore()
-const $q = useQuasar()
-const conVenta = ref('ruta')
+const useRutas = useRutasStore();
+const useVendedor = useVendedorStore();
+const $q = useQuasar();
+const conVenta = ref('ruta');
 const loadingruta = ref(true);
-const selectLoad = ref(true)
+const selectLoad = ref(true);
 
-const modalclientes = ref(false)
+const modalclientes = ref(false);
 const loadingmodalclientes = ref(false);
 const estado = ref("guardar");
 
-const data = ref({ num_asiento: 0 })
+const data = ref({ num_asiento: 0 });
 
 function fechaActual() {
     const fecha = new Date
@@ -263,13 +265,24 @@ async function verificarAsiento() {
 
 const asientoSel = ref(0)
 
-const vendedorTemp = "655bac195bb4d4c3c0171460"
+function obtenerVendedor() {
+    const token = localStorage.getItem("x-token")
+    const vendedor = localStorage.getItem("vendedor")
 
+    if (token && vendedor) {
+        return vendedor._id
+    }
+
+    notificar('negative', 'No hay token o vendedor')
+    router.push('/')
+    return false
+}
+const vendedorTemp = "655bac195bb4d4c3c0171460"
 
 async function buscarCliente() {
     console.log(dataCliente.value)
 
-    if(typeof dataCliente.value.cedula === 'string') {
+    if (typeof dataCliente.value.cedula === 'string') {
         if (dataCliente.value.cedula.trim() === "") {
             notificar('negative', 'Por favor ingrese la cedula')
             return false
@@ -278,9 +291,9 @@ async function buscarCliente() {
 
     let response
 
-    if(typeof dataCliente.value.cedula === 'string'){
+    if (typeof dataCliente.value.cedula === 'string') {
         response = await useCliente.buscarxCC(dataCliente.value.cedula)
-    }else response = await useCliente.buscarxCC(dataCliente.value.cedula.label)
+    } else response = await useCliente.buscarxCC(dataCliente.value.cedula.label)
 
     console.log(response);
     if (response.length <= 0) {
@@ -335,8 +348,12 @@ async function validarCampos() {
 
     console.log("h", data.value);
 
+    const idVendedor = obtenerVendedor()
+
+    if(idVendedor) return
+
     data.value.cliente = dataCliente.value._id
-    data.value.vendedor = vendedorTemp
+    data.value.vendedor = idVendedor
 
 
     console.log(data.value);
@@ -670,7 +687,8 @@ const opcionesclientes = {
 
                         <div>
                             <!-- <q-btn label="Buscar cliente" @click="buscarCliente" color="primary" class="btnbuscar" /> -->
-                            <q-btn @click="opcionesclientes.agregar" label="Nuevo cliente" class="btnagregar" icon="group_add" color="primary" />
+                            <q-btn @click="opcionesclientes.agregar" label="Nuevo cliente" class="btnagregar"
+                                icon="group_add" color="primary" />
                         </div>
 
                         <div>
@@ -681,7 +699,8 @@ const opcionesclientes = {
                                 <q-select filled v-model:model-value="dataCliente.cedula" use-input input-debounce="0"
                                     label="Cedula" :loading="selectLoad" :options="opcionesFiltro.cliente"
                                     @filter="filterFnCliente" behavior="menu" lazy-rules
-                                    :rules="[val => val != null || 'Por favor ingrese una cedula']" @update:model-value="buscarCliente">
+                                    :rules="[val => val != null || 'Por favor ingrese una cedula']"
+                                    @update:model-value="buscarCliente">
                                     <template v-slot:no-option>
                                         <q-item>
                                             <q-item-section class="text-grey">

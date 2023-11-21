@@ -69,12 +69,17 @@ const obtenerInfo = async () => {
   try {
     const bus = await useBus.obtener();
     loadingTable.value = false
-    if (bus) {
-      console.log(bus);
-      rows.value = bus.busPopulate;
-    } else {
-      console.log("No se pudieron obtener los datos.");
+
+    console.log(bus);
+
+    if(!bus) return 
+
+    if (bus.error) {
+      notificar('negative', bus.error)
+      return
     }
+
+    rows.value = bus.busPopulate;
   } catch (error) {
     console.error(error);
   }
@@ -90,10 +95,16 @@ const conductores = ref([]);
 
 const obtenerOptions = async () => {
   const responseConductores = await useConductor.obtener();
+  selectLoad.value.conductor = false
+
+  if (responseConductores.error) {
+    notificar('negative', responseConductores.error)
+    return
+  }
 
   options.value.conductores = responseConductores.map((c) => { return { label: c.nombre, value: c._id } });
   conductores.value = responseConductores;
-  selectLoad.value.conductor = false
+  
 };
 
 obtenerOptions();
@@ -138,6 +149,7 @@ const enviarInfo = {
 
       const response = await useBus.guardar(data.value);
       loading.value = false
+      loadingmodal.value = false;
       console.log(response);
       if (response.error) {
         notificar('negative', response.error)
@@ -150,7 +162,7 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
-    loadingmodal.value = false;
+    
   },
   editar: async () => {
     loadingmodal.value = true;
@@ -160,6 +172,12 @@ const enviarInfo = {
 
       const response = await useBus.editar(data.value._id, data.value);
       console.log(response);
+      loadingmodal.value = false;
+
+      if (response.error) {
+        notificar('negative', response.error)
+        return
+      }
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
       notificar('positive', "Editado exitosamente")
@@ -167,7 +185,7 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
-    loadingmodal.value = false;
+    
   },
 };
 
@@ -175,11 +193,20 @@ const in_activar = {
   activar: async (id) => {
     const response = await useBus.activar(id)
     console.log(response);
+
+    if (response.error) {
+        notificar('negative', response.error)
+        return
+      }
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   },
   inactivar: async (id) => {
     const response = await useBus.inactivar(id)
     console.log(response);
+    if (response.error) {
+        notificar('negative', response.error)
+        return
+      }
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   }
 }
@@ -274,22 +301,12 @@ function filterFn(val, update) {
           <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese una empresa']"></q-input>
 
-          <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese un numero',
-            val => val != '0' || 'Cantidad no válida']"></q-input>
+          <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules :rules="[val => val.trim() != '' || 'Ingrese un numero',
+          val => val != '0' || 'Cantidad no válida']"></q-input>
 
-          <q-btn
-            @click="validarCampos"
-            :loading="loadingmodal"
-            padding="10px"
-            :color="estado == 'editar' ? 'warning' : 'secondary'"
-            :label="estado"
-          >
-            <q-icon
-              :name="estado == 'editar' ? 'edit' : 'style'"
-              color="white"
-              right
-            />
+          <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
+            :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
+            <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
           </q-btn>
 
 
@@ -297,21 +314,11 @@ function filterFn(val, update) {
       </q-card>
     </q-dialog>
 
-    
+
     <div class="q-pa-md">
-      <q-table
-        :rows="rows"
-        :columns="columns"
-        class="tabla"
-        row-key="name"
-        :loading="loadingTable"
-        :filter="filter"
-        rows-per-page-label="visualización de filas"
-        page="2"
-        :rows-per-page-options="[10, 20, 40, 0]"
-        no-results-label="No hay resultados para la busqueda"
-        wrap-cells="false"
-      >
+      <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
+        rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        no-results-label="No hay resultados para la busqueda" wrap-cells="false">
         <template v-slot:top>
           <h4 class="titulo-cont">
             {{ modelo }}
@@ -319,14 +326,7 @@ function filterFn(val, update) {
               <q-icon name="style" color="white" right />
             </q-btn>
           </h4>
-          <q-input
-            borderless
-            dense
-            debounce="300"
-            color="primary"
-            v-model="filter"
-            class="buscar"
-          >
+          <q-input borderless dense debounce="300" color="primary" v-model="filter" class="buscar">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -335,12 +335,7 @@ function filterFn(val, update) {
 
         <template v-slot:header="props">
           <q-tr :props="props">
-            <q-th
-              v-for="col in props.cols"
-              :key="col.name"
-              :props="props"
-              class="encabezado"
-            >
+            <q-th v-for="col in props.cols" :key="col.name" :props="props" class="encabezado">
               {{ col.label }}
             </q-th>
           </q-tr>
@@ -348,38 +343,24 @@ function filterFn(val, update) {
 
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              class="botonv1"
-              text-size="1px"
-              padding="10px"
-              :label="
-                props.row.estado === 1
-                  ? 'Activo'
-                  : props.row.estado === 0
-                  ? 'Inactivo'
-                  : '‎  ‎   ‎   ‎   ‎ '
-              "
-              :color="props.row.estado === 1 ? 'positive' : 'accent'"
-              :loading="props.row.estado === 'load'"
-              loading-indicator-size="small"
-              @click="
+            <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1
+              ? 'Activo'
+              : props.row.estado === 0
+                ? 'Inactivo'
+                : '‎  ‎   ‎   ‎   ‎ '
+              " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
+              loading-indicator-size="small" @click="
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-                props.row.estado = 'load';
-              "
-            />
+              props.row.estado = 'load';
+              " />
           </q-td>
         </template>
 
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="warning"
-              icon="edit"
-              class="botonv1"
-              @click="opciones.editar(props.row)"
-            />
+            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
         </template>
       </q-table>
@@ -402,7 +383,7 @@ warning: Color para advertencias o mensajes importantes.
   padding: 0px;
 }
 
-.modal{
+.modal {
   width: 100%;
   max-width: 600px;
 }
