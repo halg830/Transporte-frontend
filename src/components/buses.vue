@@ -21,7 +21,7 @@ const columns = ref([
     name: "Placa",
     label: "Placa",
     align: "left",
-    field: (row) => row.placa,
+    field: (row) => row.placa.toUpperCase(),
     sort: true,
     sortOrder: "da",
   },
@@ -97,6 +97,8 @@ const obtenerOptions = async () => {
   const responseConductores = await useConductor.obtener();
   selectLoad.value.conductor = false
 
+  if(!responseConductores) return
+
   if (responseConductores.error) {
     notificar('negative', responseConductores.error)
     return
@@ -151,6 +153,9 @@ const enviarInfo = {
       loading.value = false
       loadingmodal.value = false;
       console.log(response);
+
+      if(!response) return
+
       if (response.error) {
         notificar('negative', response.error)
         return
@@ -174,6 +179,8 @@ const enviarInfo = {
       console.log(response);
       loadingmodal.value = false;
 
+      if(!response) return
+
       if (response.error) {
         notificar('negative', response.error)
         return
@@ -194,6 +201,8 @@ const in_activar = {
     const response = await useBus.activar(id)
     console.log(response);
 
+    if(!response) return
+
     if (response.error) {
         notificar('negative', response.error)
         return
@@ -203,6 +212,8 @@ const in_activar = {
   inactivar: async (id) => {
     const response = await useBus.inactivar(id)
     console.log(response);
+    if(!response) return
+
     if (response.error) {
         notificar('negative', response.error)
         return
@@ -240,7 +251,7 @@ function validarCampos() {
     }
   }
   console.log(data.value);
-  data.value.conductor = data.value.conductor.value
+  // data.value.conductor = data.value.conductor.value
 
   enviarInfo[estado.value]()
 }
@@ -289,7 +300,7 @@ function filterFn(val, update) {
 
           <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre"
             :options="opcionesFiltro.conductores" @filter="filterFn" behavior="menu"
-            :rules="[val => val != null || 'Ingrese un nombre']" :loading="selectLoad.conductor">
+            :rules="[val => val != null || 'Ingrese un nombre']" :loading="selectLoad.conductor" :disable="selectLoad.conductor">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">

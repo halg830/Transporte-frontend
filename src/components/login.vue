@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useQuasar } from 'quasar'
 import { useRouter } from "vue-router";
 import { useVendedorStore } from "../stores/vendedor.js";
+import Cookies from 'js-cookie'
 
 const $q = useQuasar()
 const useVendedor = useVendedorStore();
@@ -27,7 +28,7 @@ async function validarIngreso() {
     return;
   }
 
-  localStorage.setItem("x-token", response.data.token)
+  Cookies.set('x-token', response.data.token, {expires: 1})
   localStorage.setItem("vendedor", response.data.vendedor)
   notificar('positive', 'Sección exitosa')
   router.push("/home");

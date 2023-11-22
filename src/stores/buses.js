@@ -2,61 +2,71 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
+import Cookies from "js-cookie";
 
 export const useBusStore = defineStore("bus", () => {
-  const router = useRouter();
-  const $q = useQuasar()
-
   const model = "bus/";
+  const router = useRouter();
+  const $q = useQuasar();
 
-  function solicitarToken(){
-    const token = localStorage.getItem("x-token");
+  function solicitarToken() {
+    const token = Cookies.get("x-token");
 
     console.log(token);
-    if (token=='null') {
-      console.log('h');
-      notificar('Por favor inicie sesión')
-      router.push('/')
-      return false
+    if (token == "null") {
+      console.log("h");
+      notificar("Por favor inicie sesión");
+      router.push("/");
+      return false;
     }
 
-    return token
+    return token;
   }
 
   function notificar(msg) {
     $q.notify({
-      type: 'negative',
+      type: "negative",
       message: msg,
       position: "top",
     });
   }
 
-  function insertarToken(){
-    const token = solicitarToken()
+  function insertarToken() {
+    const token = solicitarToken();
 
-    if(!token) return false
+    if (!token) return false;
 
     const axiosInstance = axios.create({
       headers: {
-        'x-token': token
-      }
+        "x-token": token,
+      },
     });
 
-    return axiosInstance
+    return axiosInstance;
+  }
+
+  function salir() {
+    notificar("Por favor vuelva a iniciar sesión");
+    router.push("/");
   }
 
   const obtener = async () => {
     try {
-      const x = insertarToken()
-      if(!x) return null
+      const x = insertarToken();
+      if (!x) return null;
 
       const response = await x.get(`${model}all`);
+
       return response.data;
     } catch (error) {
       console.error(error);
-      if(error.message==="Network Error") {
-        notificar('Sin conexión, por favor intente recargar')
-        return null
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+
+      if (error.response.data.error === "Token no valido") {
+        salir();
       }
       return error.response.data;
     }
@@ -64,16 +74,19 @@ export const useBusStore = defineStore("bus", () => {
 
   const buscarId = async (id) => {
     try {
-      const x = insertarToken()
-      if(!x) return null
+      const x = insertarToken();
+      if (!x) return null;
 
-      const bus = await x.get(`${model}/buscar/${id}`);
-      return bus.data.busPopulate;
+      const response = await x.get(`${model}/buscar/${id}`);
+      return response.data.busPopulate;
     } catch (error) {
       console.log(error);
-      if(error.message==="Network Error") {
-        notificar('Sin conexión, por favor intente recargar')
-        return null
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+      if (error.response.data.error === "Token no valido") {
+        salir();
       }
       return error.response.data;
     }
@@ -81,17 +94,22 @@ export const useBusStore = defineStore("bus", () => {
 
   const guardar = async (data) => {
     try {
-      const x = insertarToken()
-      if(!x) return null
+      const x = insertarToken();
+      if (!x) return null;
+
+      data.conductor = data.conductor.value
 
       const response = await x.post(`${model}guardar`, data);
       console.log(response);
       return response.data.busPopulate;
     } catch (error) {
       console.log("e", error);
-      if(error.message==="Network Error") {
-        notificar('Sin conexión, por favor intente recargar')
-        return null
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+      if (error.response.data.error === "Token no valido") {
+        salir();
       }
       return error.response.data;
     }
@@ -99,8 +117,10 @@ export const useBusStore = defineStore("bus", () => {
 
   const editar = async (id, data) => {
     try {
-      const x = insertarToken()
-      if(!x) return null
+      const x = insertarToken();
+      if (!x) return null;
+
+      data.conductor = data.conductor.value
 
       console.log(id, data);
       const response = await x.put(`${model}editar/${id}`, data);
@@ -108,9 +128,12 @@ export const useBusStore = defineStore("bus", () => {
       return response.data.busPopulate;
     } catch (error) {
       console.log(error);
-      if(error.message==="Network Error") {
-        notificar('Sin conexión, por favor intente recargar')
-        return null
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+      if (error.response.data.error === "Token no valido") {
+        salir();
       }
       return error.response.data;
     }
@@ -118,17 +141,20 @@ export const useBusStore = defineStore("bus", () => {
 
   const activar = async (id) => {
     try {
-      const x = insertarToken()
-      if(!x) return null
+      const x = insertarToken();
+      if (!x) return null;
 
       const response = await x.put(`${model}activar/${id}`);
       console.log(response);
       return response.data.busPopulate;
     } catch (error) {
       console.log(error);
-      if(error.message==="Network Error") {
-        notificar('Sin conexión, por favor intente recargar')
-        return null
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+      if (error.response.data.error === "Token no valido") {
+        salir();
       }
       return error.response.data;
     }
@@ -136,17 +162,20 @@ export const useBusStore = defineStore("bus", () => {
 
   const inactivar = async (id) => {
     try {
-      const x = insertarToken()
-      if(!x) return null
+      const x = insertarToken();
+      if (!x) return null;
 
       const response = await x.put(`${model}inactivar/${id}`);
       console.log(response);
       return response.data.busPopulate;
     } catch (error) {
       console.log(error);
-      if(error.message==="Network Error") {
-        notificar('Sin conexión, por favor intente recargar')
-        return null
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+      if (error.response.data.error === "Token no valido") {
+        salir();
       }
       return error.response.data;
     }

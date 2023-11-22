@@ -1,3 +1,7 @@
+import { createRouter, createWebHashHistory } from "vue-router";
+import Cookies from 'js-cookie'
+import axios from 'axios'
+
 import login from "../components/login.vue";
 import home from "../components/home.vue";
 import menu from "../components/menu.vue";
@@ -9,7 +13,6 @@ import conductores from "../components/conductores.vue";
 import tiquete from "../components/tiquete.vue";
 import ventas from "../components/ventas.vue";
 import vendedor from "../components/vendedor.vue";
-import { createRouter, createWebHashHistory } from "vue-router";
 
 const isAuthenticated = () => {
     const token = localStorage.getItem("x-token")
@@ -19,7 +22,6 @@ const isAuthenticated = () => {
   return false;
 };
 
-// Guardia de navegación para verificar la autenticación
 const authGuard = (to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (!isAuthenticated()) {

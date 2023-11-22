@@ -1,8 +1,8 @@
 Validacion de modelos repetidos
 
+verificar si el modelo esta activo, si no, no dejar agregar
 boton de refrescar select si los datos no cargan
 validaciones de token
-proteccion de rutas
 al agregar, quede de primero en la tabla
 revisar validaciones de backend y notificarlas
 mejorar diseño al imprimir ticket

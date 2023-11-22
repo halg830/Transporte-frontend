@@ -10,6 +10,7 @@ import imgTiquetes from '../assets/tiquetes.png'
 import imgVentas from '../assets/ventas.png'
 import imgVendedores from '../assets/vendedores.png'
 import {useRouter} from 'vue-router'
+import Cookies from 'js-cookie'
 
 const router = useRouter()
 
@@ -38,6 +39,7 @@ const opcionesConImagenes = opciones;
 const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.slice(1);
 
 function cerrarCesion(){
+    Cookies.remove('x-token');
     router.push("/")
 }
 </script>
