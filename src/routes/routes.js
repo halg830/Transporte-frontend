@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import Cookies from 'js-cookie'
-import axios from 'axios'
+import Cookies from "js-cookie";
+import axios from "axios";
 
 import login from "../components/login.vue";
 import home from "../components/home.vue";
@@ -15,9 +15,9 @@ import ventas from "../components/ventas.vue";
 import vendedor from "../components/vendedor.vue";
 
 const isAuthenticated = () => {
-    const token = localStorage.getItem("x-token")
+  const token = Cookies.get("x-token");
 
-    if(token) return true
+  if (token) return true;
 
   return false;
 };
