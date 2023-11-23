@@ -235,9 +235,9 @@ function notificar(tipo, msg) {
           <q-input class="input1" outlined v-model="data.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
             :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
           <q-input class="input2" outlined v-model="data.cedula" label="Cedula" type="number"
-            :disable="estado === 'editar'" lazy-rules
+             lazy-rules
             :rules="[val => val != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']" maxlength="10"></q-input>
-          <q-input class="input3" outlined v-model="data.email" label="Email" type="email" :disable="estado === 'editar'"
+          <q-input class="input3" outlined v-model="data.email" label="Email" type="email"
             lazy-rules :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
 
 
@@ -248,10 +248,6 @@ function notificar(tipo, msg) {
         </q-card-section>
       </q-card>
     </q-dialog>
-
-
-
-
 
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"

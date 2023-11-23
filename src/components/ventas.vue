@@ -8,7 +8,6 @@ import { useRutasStore } from "../stores/rutas.js";
 import { useClienteStore } from "../stores/clientes.js";
 
 const modelo = "Ventas";
-const loading = ref(false)
 const loadingTable = ref(true)
 const $q = useQuasar()
 const router = useRouter()
@@ -30,7 +29,7 @@ const columns = ref([
     label: "Ruta",
     align: "left",
     field: (row) =>
-      row.ruta.ciudad_origen.nombre + " / " + row.ruta.ciudad_destino.nombre+" / "+convertirHora(row.ruta.hora_salida),
+      row.ruta.ciudad_origen.nombre + " / " + row.ruta.ciudad_destino.nombre + " / " + convertirHora(row.ruta.hora_salida),
   },
   {
     name: "Bus",
@@ -99,38 +98,60 @@ const models = ref({
 const obtenerInfo = async () => {
   try {
     const tiquete = await useTiquete.obtener();
-    if (tiquete) {
-      console.log(tiquete);
-      loadingTable.value = false
-      rows.value = tiquete;
-      loadingTable.value = false
-    } else {
-      console.log("No se pudieron obtener los datos.");
+
+    console.log(tiquete);
+    if (!tiquete) return;
+    if (tiquete.error) {
+      notificar('negative', tiquete.error)
     }
+    loadingTable.value = false
+    rows.value = tiquete;
+
   } catch (error) {
     console.error(error);
+  } finally {
+    loadingTable.value = false
   }
 };
 
 obtenerInfo();
 
 const obtenerOptions = async () => {
-  const responseVendedor = await useVendedor.obtener();
-  const responseRutas = await useRutas.obtener();
-  const responseCliente = await useCliente.obtener();
-  // const responseCiudad = await useCiudad.obtener()
-  // const responseBus = await useBus.obtener()
+  try {
+    const responseVendedor = await useVendedor.obtener();
+    const responseRutas = await useRutas.obtener();
+    const responseCliente = await useCliente.obtener();
+    // const responseCiudad = await useCiudad.obtener()
+    // const responseBus = await useBus.obtener()
 
-  console.log(responseVendedor);
-  console.log(responseRutas);
-  console.log(responseCliente);
+    console.log(responseVendedor);
+    console.log(responseRutas);
+    console.log(responseCliente);
 
-  options.value.vendedor = responseVendedor.vendedor.map((c) => c.nombre);
-  models.value.vendedor = responseVendedor.vendedor;
-  options.value.ruta = responseRutas.map((c) => c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre+"/"+convertirHora(c.hora_salida));
-  models.value.ruta = responseRutas;
-  options.value.cliente = responseCliente.cliente.map((c) => c.cedula);
-  models.value.cliente = responseCliente.cliente;
+    if (!responseVendedor || !responseRutas || !responseCliente) return;
+
+    if (responseVendedor.error) {
+      notificar('negative', responseVendedor.error)
+      return
+    };
+    if (responseRutas.error) {
+      notificar('negative', responseRutas.error)
+      return
+    };
+    if (responseCliente.error) {
+      notificar('negative', responseCliente.error)
+      return
+    };
+
+    options.value.vendedor = responseVendedor.vendedor.map((c) => c.nombre);
+    models.value.vendedor = responseVendedor.vendedor;
+    options.value.ruta = responseRutas.map((c) => c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida));
+    models.value.ruta = responseRutas;
+    options.value.cliente = responseCliente.cliente.map((c) => c.cedula);
+    models.value.cliente = responseCliente.cliente;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 obtenerOptions();
@@ -143,13 +164,9 @@ const opciones = {
   },
   editar: (info) => {
     data.value = {
-      ...info, vendedor: info.vendedor.cedula, ruta: info.ruta.ciudad_origen.nombre + "/" + info.ruta.ciudad_destino.nombre+"/" +convertirHora(info.ruta.hora_salida), cliente: info.cliente.cedula
+      ...info, vendedor: info.vendedor.cedula, ruta: info.ruta.ciudad_origen.nombre + "/" + info.ruta.ciudad_destino.nombre + "/" + convertirHora(info.ruta.hora_salida), cliente: info.cliente.cedula
     }
     date.value = info.fecha_salida
-    /* data.value = info;
-    data.value.vendedor = info.vendedor.cedula;
-    data.value.ruta = info.ruta.ciudad_origen.nombre + "/" + info.ruta.ciudad_destino.nombre;
-    data.value.cliente = info.cliente.cedula; */
     modal.value = true;
     estado.value = "editar";
   },
@@ -183,36 +200,7 @@ function idCliente(cedula) {
   return cedula;
 }
 
-function convertirFechaBD(fechaA) {
-  console.log(fechaA);
-  const partes = fechaA.split('/');
-
-  const fecha = new Date(
-    parseInt(partes[0]),
-    parseInt(partes[1]) - 1,
-    parseInt(partes[2])
-  );
-
-  // (ISO 8601)
-  const fechaFormateada = fecha.toISOString();
-
-  return fechaFormateada;
-}
-
 const enviarInfo = {
-  guardar: async () => {
-    try {
-      console.log(data.value);
-
-      const response = await useTiquete.guardar( data.value);
-      console.log(response);
-
-      rows.value.push(response);
-      modal.value = false;
-    } catch (error) {
-      console.log(error);
-    }
-  },
   editar: async () => {
     try {
       // data.value.hora_salida = convertirHora_Fecha(time.value)
@@ -220,6 +208,12 @@ const enviarInfo = {
 
       const response = await useTiquete.editar(data.value._id, data.value);
       console.log(response);
+
+      if (!response) return;
+      if (response.error) {
+        notificar('negative', response.error);
+        return;
+      }
 
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
       modal.value = false;
@@ -231,14 +225,34 @@ const enviarInfo = {
 
 const in_activar = {
   activar: async (id) => {
-    const response = await useTiquete.activar(id);
-    console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response);
+    try {
+      const response = await useTiquete.activar(id);
+      console.log(response);
+      if (!response) return;
+      if (response.error) {
+        notificar('negative', response.error);
+        return;
+      }
+      rows.value.splice(buscarIndexLocal(response._id), 1, response);
+      
+    } catch (error) {
+      console.log(error);
+    }
   },
   inactivar: async (id) => {
-    const response = await useTiquete.inactivar(id);
-    console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response);
+    try {
+      const response = await useTiquete.inactivar(id);
+      console.log(response);
+      if (!response) return;
+      if (response.error) {
+        notificar('negative', response.error);
+        return;
+      }
+      rows.value.splice(buscarIndexLocal(response._id), 1, response);
+      
+    } catch (error) {
+      console.log(error);
+    }
   },
 };
 
@@ -275,20 +289,20 @@ async function validarCampos() {
   console.log(arrData);
   for (const d of arrData) {
     console.log(d);
-    if(d[1]===null){
+    if (d[1] === null) {
       notificar('negative', 'Todos los campos son obligatorios')
       return
     }
 
-    if(typeof d[1] === "string"){
-      if ( d[1].trim() === "") {
+    if (typeof d[1] === "string") {
+      if (d[1].trim() === "") {
         notificar('negative', 'Todos los campos son obligatorios')
         return
       }
     }
 
-    if(typeof d[1] ==='object' && d[0]==='ruta'){
-      if(d[1].bus.asiento>data.value.num_asiento){
+    if (typeof d[1] === 'object' && d[0] === 'ruta') {
+      if (d[1].bus.asiento > data.value.num_asiento) {
         notificar('negative', 'Asiento no existente')
         return
       }
@@ -304,12 +318,12 @@ async function validarCampos() {
   enviarInfo[estado.value]()
 }
 
-function notificar(tipo, msg){
+function notificar(tipo, msg) {
   $q.notify({
-        type: tipo,
-        message: msg,
-        position: "top"
-      })
+    type: tipo,
+    message: msg,
+    position: "top"
+  })
 }
 </script>
 
@@ -323,7 +337,6 @@ function notificar(tipo, msg){
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <div class="text-negative">{{ errorform }}</div>
           <q-select rounded standout v-model="data.cliente" :options="options.cliente" label="Cliente" />
           <q-select rounded standout v-model="data.ruta" :options="options.ruta" label="Ruta" />
           <q-input filled v-model="date" mask="date" :rules="['date']">
@@ -345,13 +358,6 @@ function notificar(tipo, msg){
           <q-select rounded standout v-model="data.vendedor" :options="options.vendedor" label="Vendedor" />
 
           <q-btn @click="validarCampos()">Guardar</q-btn>
-
-          <!-- <q-btn
-            :color="typeform === 'agregar' ? 'primary' : 'warning'"
-            v-if="boxform.estado == 'load'"
-          >
-            <q-circular-progress indeterminate color="white" />
-          </q-btn> -->
         </q-card-section>
       </q-card>
     </q-dialog>

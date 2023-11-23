@@ -1,13 +1,12 @@
 <script setup>
-import axios from "axios";
 import { ref } from "vue";
-import { useVendedorStore } from '../stores/vendedor.js'
 import { useQuasar } from "quasar";
+import { useVendedorStore } from '../stores/vendedor.js';
 
-const modelo = "Vendedor"
+const modelo = "Vendedor";
 const useVendedor = useVendedorStore();
-const loadingTable = ref(true)
-const $q = useQuasar()
+const loadingTable = ref(true);
+const $q = useQuasar();
 const filter = ref("");
 const loadingmodal = ref(false);
 
@@ -73,15 +72,19 @@ const data = ref({
 const obtenerInfo = async () => {
   try {
     const vendedor = await useVendedor.obtener();
-    if (vendedor) {
-      console.log(vendedor);
-      rows.value = vendedor.vendedor;
-      loadingTable.value = false
-    } else {
-      console.log("No se pudieron obtener los datos.");
+    console.log(vendedor);
+
+    if (!vendedor) return
+    if (vendedor.error) {
+      notificar('negative', vendedor.error)
     }
+    rows.value = vendedor.vendedor;
+
   } catch (error) {
     console.error(error);
+  } finally {
+    loadingTable.value = false
+
   }
 };
 
@@ -119,7 +122,7 @@ const enviarInfo = {
     loadingmodal.value = true;
     try {
       const response = await useVendedor.guardar(data.value);
-      loadingmodal.value = false;
+      if (!response) return
       if (response.error) {
         notificar('negative', response.error)
       }
@@ -129,6 +132,8 @@ const enviarInfo = {
       notificar('positive', 'Guardado exitosamente')
     } catch (error) {
       console.log(error);
+    } finally {
+      loadingmodal.value = false;
     }
 
   },
@@ -138,27 +143,49 @@ const enviarInfo = {
       console.log(data.value);
       const response = await useVendedor.editar(data.value._id, data.value);
       console.log(response);
-
+      if (!response) return
+      if (response.error) {
+        notificar('negative', response.error)
+      }
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
       modal.value = false
       notificar('positive', 'Editado exitosamente')
     } catch (error) {
       console.log(error);
+    } finally {
+      loadingmodal.value = false;
     }
-    loadingmodal.value = false;
   },
 };
 
 const in_activar = {
   activar: async (id) => {
-    const response = await useVendedor.activar(id)
-    console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+    try {
+      const response = await useVendedor.activar(id)
+      console.log(response);
+      if (!response) return
+      if (response.error) {
+        notificar('negative', response.error)
+      }
+      rows.value.splice(buscarIndexLocal(response._id), 1, response)
+
+    } catch (error) {
+      console.log(error);
+    }
   },
   inactivar: async (id) => {
-    const response = await useVendedor.inactivar(id)
-    console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+    try {
+      const response = await useVendedor.inactivar(id)
+      console.log(response);
+      if (!response) return
+      if (response.error) {
+        notificar('negative', response.error)
+      }
+      rows.value.splice(buscarIndexLocal(response._id), 1, response)
+
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
@@ -269,10 +296,10 @@ function notificar(tipo, msg) {
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
             <q-btn class="botonv1" text-size="1px" padding="10px" :label="props.row.estado === 1
-                ? 'Activo'
-                : props.row.estado === 0
-                  ? 'Inactivo'
-                  : '‎  ‎   ‎   ‎   ‎ '
+              ? 'Activo'
+              : props.row.estado === 0
+                ? 'Inactivo'
+                : '‎  ‎   ‎   ‎   ‎ '
               " :color="props.row.estado === 1 ? 'positive' : 'accent'" :loading="props.row.estado === 'load'"
               loading-indicator-size="small" @click="
                 props.row.estado === 1

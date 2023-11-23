@@ -1,6 +1,7 @@
 Validacion de modelos repetidos
 
-verificar si el modelo esta activo, si no, no dejar agregar
+verificar si el modelo esta activo, si no, no dejar agregar <========
+
 boton de refrescar select si los datos no cargan
 validaciones de token
 al agregar, quede de primero en la tabla
