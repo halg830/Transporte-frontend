@@ -37,37 +37,58 @@ const options = ref({ ruta: [] })
 const models = ref({})
 
 const obtenerOptions = async () => {
-    loadingruta.value = true
-    const rutas = await useTiquete.continuarVentas()
-    console.log(rutas);
-    const responseRutas = await useRutas.obtener();
-    const responseCliente = await useCliente.obtener()
-    console.log(responseCliente);
+    try {
+        loadingruta.value = true
+        const rutas = await useTiquete.continuarVentas()
+        console.log(rutas);
+        const responseRutas = await useRutas.obtener();
+        const responseCliente = await useCliente.obtener()
+        console.log(responseCliente);
 
-    const rutasVentas = rutas.map(c => { return { label: c.ruta.ciudad_origen.nombre + "/" + c.ruta.ciudad_destino.nombre + "/" + convertirHora(c.ruta.hora_salida), value: c.ruta._id, fecha_salida: c.fecha_salida } })
-    loadingruta.value = false
+        if (!rutas || !responseRutas || !responseCliente) return
 
-    const conjuntoLabels = new Set();
-    const datosFiltrados = rutasVentas.filter((item) => {
-        if (conjuntoLabels.has(item.label)) {
-            return false;
+        if (rutas.error) {
+            notificar('negative', rutas.error)
+            return
+        }
+        if (responseRutas.error) {
+            notificar('negative', responseRutas.error)
+            return
+        }
+        if (responseCliente.error) {
+            notificar('negative', responseCliente.error)
+            return
         }
 
-        conjuntoLabels.add(item.label);
-        return true;
-    });
-    console.log(datosFiltrados);
+        const rutasVentas = rutas.map(c => { return { label: c.ruta.ciudad_origen.nombre + "/" + c.ruta.ciudad_destino.nombre + "/" + convertirHora(c.ruta.hora_salida), value: c.ruta._id, fecha_salida: c.fecha_salida } })
 
-    options.value.rutasVentas = datosFiltrados
-    models.value.rutasVentas = rutas;
+        const conjuntoLabels = new Set();
+        const datosFiltrados = rutasVentas.filter((item) => {
+            if (conjuntoLabels.has(item.label)) {
+                return false;
+            }
 
-    options.value.ruta = responseRutas.map((c) => { return { label: c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida), value: c._id } });
-    models.value.ruta = responseRutas;
+            conjuntoLabels.add(item.label);
+            return true;
+        });
+        console.log(datosFiltrados);
 
-    options.value.cliente = responseCliente.cliente.map(c => { return { label: c.cedula, value: c._id } })
-    models.value.cliente = responseCliente
+        options.value.rutasVentas = datosFiltrados
+        models.value.rutasVentas = rutas;
 
-    selectLoad.value = false
+        options.value.ruta = responseRutas.map((c) => { return { label: c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida), value: c._id } });
+        models.value.ruta = responseRutas;
+
+        options.value.cliente = responseCliente.cliente.map(c => { return { label: c.cedula, value: c._id } })
+        models.value.cliente = responseCliente
+
+    } catch (error) {
+
+    } finally {
+        selectLoad.value = false
+        loadingruta.value = false
+
+    }
 };
 obtenerOptions()
 
@@ -122,39 +143,6 @@ function idCliente(cedula) {
     if (buscar) return buscar._id;
 
     return cedula;
-}
-
-const asientos = ref(0)
-
-const componentes = ref({
-    inicio: false,
-    asiento: false,
-    fin: false
-})
-function continuar() {
-    if (options.value.cliente.includes(data.value.cliente)
-        && options.value.ruta.ciudad_origen.includes(data.value.ruta.ciudad_origen)
-        && options.value.ruta.ciudad_destino.includes(data.value.ruta.ciudad_destino)
-        && options.value.ruta.hora_salida.includes(data.value.ruta.hora_salida)
-        && date.value != "") {
-
-        componentes.value.inicio = false
-        componentes.value.asiento = true
-        const buscar = models.value.ruta.find(r => r._id === idRuta(data.value.ruta))
-        data.value.ruta = buscar._id
-        data.value.fecha_salida = date.value
-        data.value.cliente = idCliente(data.value.cliente)
-        asientos.value = buscar.bus.asiento
-        return
-    }
-
-    console.log("cliente erroneo");
-}
-
-function irFin(n) {
-    data.value.asiento = n
-    componentes.value.asiento = false
-    componentes.value.fin = true
 }
 
 function convertirHora(cadenaFecha) {
@@ -249,24 +237,33 @@ function convertirFechaBD(fechaA) {
 const asientosOcupados = ref([])
 
 async function verificarAsiento() {
-    console.log(data.value);
-    const idRuta = data.value.ruta.value
-    const fecha = data.value.fecha_salida
+    try {
+        console.log(data.value);
+        const idRuta = data.value.ruta.value
+        const fecha = data.value.fecha_salida
 
-    const response = await useTiquete.asientosOcupados(idRuta, fecha)
-    console.log(response);
+        const response = await useTiquete.asientosOcupados(idRuta, fecha)
+        console.log(response);
 
-    // response.forEach((t) => asientosOcupados.value.push(t.num_asiento))
-    asientosOcupados.value = response.map(t => t.num_asiento)
-    console.log(asientosOcupados.value);
+        if (!response) return
+        if (response.error) {
+            notificar('negative', response.error)
+            return
+        }
 
-    return true
+        // response.forEach((t) => asientosOcupados.value.push(t.num_asiento))
+        asientosOcupados.value = response.map(t => t.num_asiento)
+        console.log(asientosOcupados.value);
+
+        return true
+
+    } catch (error) {
+        console.log(error);
+    }
 }
 
-const asientoSel = ref(0)
-
 function obtenerVendedor() {
-    const token = localStorage.getItem("x-token")
+    const token = Cookies.get("x-token")
     const vendedor = localStorage.getItem("vendedor")
 
     if (token && vendedor) {
@@ -277,41 +274,63 @@ function obtenerVendedor() {
     router.push('/')
     return false
 }
-const vendedorTemp = "655bac195bb4d4c3c0171460"
 
 async function buscarCliente() {
-    console.log(dataCliente.value)
+    try {
+        console.log(dataCliente.value)
 
-    if (typeof dataCliente.value.cedula === 'string') {
-        if (dataCliente.value.cedula.trim() === "") {
-            notificar('negative', 'Por favor ingrese la cedula')
+        if (typeof dataCliente.value.cedula === 'string') {
+            if (dataCliente.value.cedula.trim() === "") {
+                notificar('negative', 'Por favor ingrese la cedula')
+                return false
+            }
+        }
+
+        let response
+
+        if (typeof dataCliente.value.cedula === 'string') {
+            response = await useCliente.buscarxCC(dataCliente.value.cedula)
+        } else response = await useCliente.buscarxCC(dataCliente.value.cedula.label)
+
+        console.log(response);
+
+        if (!response) return
+        if (response.error) {
+            notificar('negative', response.error)
+            return
+        }
+
+        if (response.length <= 0) {
+            notificar('negative', 'El cliente no esta registrado')
             return false
         }
+        dataCliente.value = response[0]
+        return true
+
+    } catch (error) {
+        console.log(error);
     }
-
-    let response
-
-    if (typeof dataCliente.value.cedula === 'string') {
-        response = await useCliente.buscarxCC(dataCliente.value.cedula)
-    } else response = await useCliente.buscarxCC(dataCliente.value.cedula.label)
-
-    console.log(response);
-    if (response.length <= 0) {
-        notificar('negative', 'El cliente no esta registrado')
-        return false
-    }
-    dataCliente.value = response[0]
-    return true
 }
 
 async function guardarCliente() {
-    if (!validar()) return
+    try {
+        if (!validar()) return
 
-    const response = await useCliente.guardar(dataCliente.value)
-    console.log(response);
+        const response = await useCliente.guardar(dataCliente.value)
+        console.log(response);
 
-    dataCliente.value = response.cliente
-    notificar('positive', 'Cliente guardado exitosamente')
+        if (!response) return
+        if (response.error) {
+            notificar('negative', response.error)
+            return
+        }
+
+        dataCliente.value = response.cliente
+        notificar('positive', 'Cliente guardado exitosamente')
+
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 function validar() {
@@ -340,9 +359,6 @@ async function validarCampos() {
     const resBuscar = await buscarCliente()
     console.log("r", resBuscar);
     if (!resBuscar) {
-        /* const res = await confirmarCliente()
-        console.log("r2", res);
-        if (!res) return  */
         return
     }
 
@@ -350,7 +366,7 @@ async function validarCampos() {
 
     const idVendedor = obtenerVendedor()
 
-    if(idVendedor) return
+    if (idVendedor) return
 
     data.value.cliente = dataCliente.value._id
     data.value.vendedor = idVendedor
@@ -368,6 +384,12 @@ async function generarTicket() {
 
         const response = await useTiquete.guardar(data.value);
         console.log(response);
+
+        if (!response) return
+        if (response.error) {
+            notificar('negative', response.error)
+            return
+        }
 
         if (!response.data.tiquetePopulate) {
             notificar("negative", response)
@@ -403,7 +425,7 @@ function regresar() {
     data.value.num_asiento = 0
 }
 
-async function confirmarCliente() {
+/* async function confirmarCliente() {
     $q.dialog({
         title: 'Cliente no registrado',
         message: '¿Desea guardar el cliente?',
@@ -418,7 +440,7 @@ async function confirmarCliente() {
     }).onDismiss(async () => {
         // notificar('negative', 'Seleccione una opción')
     })
-}
+} */
 
 function convertirFecha(cadenaFecha) {
     const fecha = new Date(cadenaFecha);
@@ -517,6 +539,8 @@ const enviarInfo = {
         try {
             const response = await useCliente.guardar(dataclientes.value);
             console.log(response);
+
+            if (!response) return
             if (response.error) {
                 notificar('negative', response.error)
                 return
@@ -526,8 +550,9 @@ const enviarInfo = {
             modalclientes.value = false;
         } catch (error) {
             console.log(error);
+        } finally {
+            loadingmodalclientes.value = false;
         }
-        loadingmodalclientes.value = false;
     }
 };
 
