@@ -58,7 +58,15 @@ export const useCiudadStore = defineStore("ciudad", () => {
       return response.data;
     } catch (error) {
       console.error(error);
-      return null;
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+
+      if (error.response.data.error === "Token no valido") {
+        salir();
+      }
+      return error.response.data;
     }
   };
 
@@ -70,6 +78,15 @@ export const useCiudadStore = defineStore("ciudad", () => {
           return ciudad.data
     } catch (error) {
       console.log(error);
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+
+      if (error.response.data.error === "Token no valido") {
+        salir();
+      }
+      return error.response.data
     }
   }
 
@@ -82,6 +99,14 @@ export const useCiudadStore = defineStore("ciudad", () => {
       return response.data
     } catch (error) {
       console.log(error.response.data);
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+
+      if (error.response.data.error === "Token no valido") {
+        salir();
+      }
       return error.response.data
     }
   };
@@ -95,6 +120,14 @@ export const useCiudadStore = defineStore("ciudad", () => {
       return response.data
     } catch (error) {
       console.log(error);
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+
+      if (error.response.data.error === "Token no valido") {
+        salir();
+      }
       return error.response.data
     }
   };
@@ -108,7 +141,15 @@ export const useCiudadStore = defineStore("ciudad", () => {
       return response.data
     } catch (error) {
       console.log(error);
-      return null
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+
+      if (error.response.data.error === "Token no valido") {
+        salir();
+      }
+      return error.response.data
     }
   };
   
@@ -121,7 +162,15 @@ export const useCiudadStore = defineStore("ciudad", () => {
       return response.data
     } catch (error) {
       console.log(error);
-      return null
+      if (error.message === "Network Error") {
+        notificar("Sin conexión, por favor intente recargar");
+        return null;
+      }
+
+      if (error.response.data.error === "Token no valido") {
+        salir();
+      }
+      return error.response.data
     }
   };
 

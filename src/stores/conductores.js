@@ -50,7 +50,6 @@ export const useConductorStore = defineStore("conductor", () => {
     router.push("/");
   }
 
-
   const obtener = async () => {
     try {
       const x = insertarToken();
@@ -69,7 +68,7 @@ export const useConductorStore = defineStore("conductor", () => {
       if (error.response.data.error === "Token no valido") {
         salir();
       }
-      return null;
+      return error.response.data;
     }
   };
 
@@ -80,7 +79,7 @@ export const useConductorStore = defineStore("conductor", () => {
 
       const response = await x.post(`${model}guardar`, data);
       console.log(response);
-      return response.data
+      return response.data;
     } catch (error) {
       console.log(error);
       if (error.message === "Network Error") {
@@ -91,7 +90,7 @@ export const useConductorStore = defineStore("conductor", () => {
       if (error.response.data.error === "Token no valido") {
         salir();
       }
-      return error.response.data
+      return error.response.data;
     }
   };
 
@@ -99,10 +98,10 @@ export const useConductorStore = defineStore("conductor", () => {
     try {
       const x = insertarToken();
       if (!x) return null;
-      
+
       const response = await x.put(`${model}editar/${id}`, data);
       console.log(response);
-      return response.data.conductor
+      return response.data.conductor;
     } catch (error) {
       console.log(error);
       if (error.message === "Network Error") {
@@ -113,7 +112,7 @@ export const useConductorStore = defineStore("conductor", () => {
       if (error.response.data.error === "Token no valido") {
         salir();
       }
-      return error.response.data
+      return error.response.data;
     }
   };
 
@@ -123,7 +122,7 @@ export const useConductorStore = defineStore("conductor", () => {
       if (!x) return null;
       const response = await x.put(`${model}activar/${id}`);
       console.log(response);
-      return response.data.conductor
+      return response.data.conductor;
     } catch (error) {
       console.log(error);
       if (error.message === "Network Error") {
@@ -134,10 +133,10 @@ export const useConductorStore = defineStore("conductor", () => {
       if (error.response.data.error === "Token no valido") {
         salir();
       }
-      return null
+      return error.response.data;
     }
   };
-  
+
   const inactivar = async (id) => {
     try {
       const x = insertarToken();
@@ -145,7 +144,7 @@ export const useConductorStore = defineStore("conductor", () => {
 
       const response = await x.put(`${model}inactivar/${id}`);
       console.log(response);
-      return response.data.conductor
+      return response.data.conductor;
     } catch (error) {
       console.log(error);
       if (error.message === "Network Error") {
@@ -156,11 +155,15 @@ export const useConductorStore = defineStore("conductor", () => {
       if (error.response.data.error === "Token no valido") {
         salir();
       }
-      return null
+      return error.response.data;
     }
   };
 
   return {
-    obtener, guardar, editar, activar, inactivar
+    obtener,
+    guardar,
+    editar,
+    activar,
+    inactivar,
   };
 });

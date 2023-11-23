@@ -1,6 +1,5 @@
 <script setup>
-import axios from "axios";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useRutasStore } from "../stores/rutas.js";
 import { useCiudadStore } from "../stores/ciudad.js";
 import { useBusStore } from "../stores/buses.js";
@@ -87,30 +86,51 @@ const obtenerInfo = async () => {
   console.log("Esperando datos...");
   try {
     const rutas = await useRutas.obtener();
-    loadingTable.value = false
-    if (rutas) {
-      console.log(rutas);
-      rows.value = rutas;
-    } else {
-      console.log("No se pudieron obtener los datos.");
+    console.log(rutas);
+
+    if (!rutas) return
+
+    if (rutas.error) {
+      notificar('negative', rutas.error)
+      return
     }
+    rows.value = rutas;
   } catch (error) {
     console.error(error);
+  } finally {
+    loadingTable.value = false
+
   }
 };
 
 obtenerInfo();
 
 const obtenerOptions = async () => {
-  const responseCiudad = await useCiudad.obtener();
-  const responseBus = await useBus.obtener();
+  try {
+    const responseCiudad = await useCiudad.obtener();
+    const responseBus = await useBus.obtener();
 
-  options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre, value: c._id, disable: false } });
-  models.value.ciudades = responseCiudad
-  options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id } });
-  models.value.buses = responseBus.busPopulate
+    if (!responseCiudad || !responseBus) return
 
-  selectLoad.value = false
+    if (responseBus.error) {
+      notificar('negative', responseBus.error)
+      return
+    }
+    if (responseCiudad.error) {
+      notificar('negative', responseCiudad.error)
+      return
+    }
+
+    options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre, value: c._id, disable: false } });
+    models.value.ciudades = responseCiudad
+    options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id } });
+    models.value.buses = responseBus.busPopulate
+
+  } catch (error) {
+    console.log(error);
+  } finally {
+    selectLoad.value = false
+  }
 };
 
 obtenerOptions();
@@ -136,10 +156,6 @@ const opciones = {
       bus: info.bus.placa, ciudad_destino: info.ciudad_destino.nombre, ciudad_origen: info.ciudad_origen.nombre
     }
     time.value = convertirHora(info.hora_salida)
-    /*  data.value = info;
-     data.value.bus = info.bus.placa
-     data.value.ciudad_destino = info.ciudad_destino.nombre
-     data.value.ciudad_origen = info.ciudad_origen.nombre */
     modal.value = true;
     estado.value = "editar";
   },
@@ -160,36 +176,25 @@ function convertirHora_Fecha(hora) {
   return fecha.toISOString();
 }
 
-function idBus(placa) {
-  console.log(models.value);
-  const buscar = models.value.buses.find((c) => c.placa === placa);
-  if (buscar) return buscar._id;
-
-  return placa
-}
-function idCiudad(nombre) {
-  const buscar = models.value.ciudades.find((c) => c.nombre === nombre);
-  if (buscar) return buscar._id;
-
-  return nombre
-}
-
 const enviarInfo = {
   guardar: async () => {
     loadingmodal.value = true;
     try {
       const response = await useRutas.guardar(data.value);
-      loadingmodal.value = false;
+
+      if(!response) return
       if (response.error) {
         notificar('negative', response.error)
         return
       }
       console.log(response);
       rows.value.push(response);
-      modal.value = false;
       notificar('positive', 'Guardado exitosamente')
+      modal.value = false;
     } catch (error) {
       console.log(error);
+    } finally{
+      loadingmodal.value = false;
     }
 
   },
@@ -198,7 +203,7 @@ const enviarInfo = {
     try {
       const response = await useRutas.editar(data.value._id, data.value);
       console.log(response);
-      loadingmodal.value = false;
+      if(!response) return
       if (response.error) {
         notificar('negative', response.error)
         return
@@ -209,20 +214,42 @@ const enviarInfo = {
       modal.value = false
     } catch (error) {
       console.log(error);
+    } finally{
+      loadingmodal.value = false;
     }
   },
 };
 
 const in_activar = {
   activar: async (id) => {
-    const response = await useRutas.activar(id)
-    console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+    try {
+      const response = await useRutas.activar(id)
+      console.log(response);
+      if(!response) return
+      if (response.error) {
+        notificar('negative', response.error)
+        return
+      }
+      rows.value.splice(buscarIndexLocal(response._id), 1, response)
+      
+    } catch (error) {
+      console.log(error);
+    }
   },
   inactivar: async (id) => {
-    const response = await useRutas.inactivar(id)
-    console.log(response);
-    rows.value.splice(buscarIndexLocal(response._id), 1, response)
+    try {
+      const response = await useRutas.inactivar(id)
+      console.log(response);
+      if(!response) return
+      if (response.error) {
+        notificar('negative', response.error)
+        return
+      }
+      rows.value.splice(buscarIndexLocal(response._id), 1, response)
+      
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
@@ -331,15 +358,15 @@ function filterFnCiudad(val, update) {
 function deshabilitarCiudad(val) {
 
   console.log(val);
-  
-    for(const c of options.value.ciudad){
-      console.log(c);
-      if(c.disable === true && data.value.ciudad_origen!=c.label || data.value.ciudad_destino!=c.label) {
-        c.disable=false
-        if(val===null) return
-      }
+
+  for (const c of options.value.ciudad) {
+    console.log(c);
+    if (c.disable === true && data.value.ciudad_origen != c.label || data.value.ciudad_destino != c.label) {
+      c.disable = false
+      if (val === null) return
     }
-  
+  }
+
 
   const buscar = options.value.ciudad.findIndex(c => c.label === val.label)
   console.log(buscar);
@@ -348,10 +375,6 @@ function deshabilitarCiudad(val) {
   options.value.ciudad[buscar].disable = true
   console.log(options.value.ciudad);
   return true
-}
-
-function prueba(val) {
-  console.log(val);
 }
 
 /* editado */

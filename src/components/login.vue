@@ -17,21 +17,28 @@ const data = ref({
 const loading = ref(false);
 
 async function validarIngreso() {
-  console.log("Esperando confirmación...");
-  loading.value = true;
-  const response = await useVendedor.login(data.value);
-  console.log(response);
-
-  loading.value = false
-  if (response.status != 200) {
-    notificar('negative', response.msg)
-    return;
+  try {
+    console.log("Esperando confirmación...");
+    loading.value = true;
+    const response = await useVendedor.login(data.value);
+    console.log(response);
+  
+    if(!response) return
+    
+    if (response.status != 200) {
+      notificar('negative', response.msg)
+      return;
+    }
+  
+    Cookies.set('x-token', response.data.token, {expires: 1})
+    localStorage.setItem("vendedor", response.data.vendedor)
+    notificar('positive', 'Sección exitosa')
+    router.push("/home");
+  } catch (error) {
+    
+  }finally{
+    loading.value = false
   }
-
-  Cookies.set('x-token', response.data.token, {expires: 1})
-  localStorage.setItem("vendedor", response.data.vendedor)
-  notificar('positive', 'Sección exitosa')
-  router.push("/home");
 }
 
 function validarCampos() {

@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import axios from "axios";
-import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useQuasar } from "quasar";
+import Cookies from "js-cookie";
 
 export const useVendedorStore = defineStore("vendedor", () => {
   const model = "vendedor/";
