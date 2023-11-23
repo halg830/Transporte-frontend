@@ -121,8 +121,6 @@ const obtenerOptions = async () => {
     const responseVendedor = await useVendedor.obtener();
     const responseRutas = await useRutas.obtener();
     const responseCliente = await useCliente.obtener();
-    // const responseCiudad = await useCiudad.obtener()
-    // const responseBus = await useBus.obtener()
 
     console.log(responseVendedor);
     console.log(responseRutas);

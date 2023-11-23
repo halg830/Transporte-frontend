@@ -1,11 +1,12 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
+import { useQuasar } from 'quasar';
+import { useRouter } from 'vue-router';
+import Cookies from 'js-cookie'
 import { useClienteStore } from "../stores/clientes.js";
 import { useRutasStore } from '../stores/rutas.js';
 import { useVendedorStore } from '../stores/vendedor.js';
-import { useQuasar, QSpinnerGears } from 'quasar';
 import { useTiqueteStore } from '../stores/tiquete';
-import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const useTiquete = useTiqueteStore();
@@ -156,49 +157,58 @@ function convertirHora(cadenaFecha) {
 
 const modal = ref(false)
 const opciones = ref(true)
+const loadRuta = ref(false)
 
 async function onSubmit() {
-    if (date.value.trim() === "") {
-        notificar('negative', "Por favor complete todos los campos")
-        return
-    }
-
-    data.value.fecha_salida = convertirFechaBD(date.value)
-
-    const arrData = Object.entries(data.value)
-    console.log(arrData);
-    for (const d of arrData) {
-        if (d[0] === null) {
+    loadRuta.value = true
+    try {
+        if (date.value.trim() === "") {
             notificar('negative', "Por favor complete todos los campos")
             return
         }
 
-        if (typeof d[0] === "string") {
-            if (d[0].trim() === "") {
+        data.value.fecha_salida = convertirFechaBD(date.value)
+
+        const arrData = Object.entries(data.value)
+        console.log(arrData);
+        for (const d of arrData) {
+            if (d[0] === null) {
                 notificar('negative', "Por favor complete todos los campos")
                 return
             }
+
+            if (typeof d[0] === "string") {
+                if (d[0].trim() === "") {
+                    notificar('negative', "Por favor complete todos los campos")
+                    return
+                }
+            }
         }
-    }
 
-    if (conVenta.value === 'rutasVentas') {
-        const buscar = models.value.rutasVentas.find(e => convertirFecha(e.fecha_salida) === date.value && e.ruta._id === data.value.ruta.value)
-        console.log(buscar);
+        if (conVenta.value === 'rutasVentas') {
+            const buscar = models.value.rutasVentas.find(e => convertirFecha(e.fecha_salida) === date.value && e.ruta._id === data.value.ruta.value)
+            console.log(buscar);
 
-        if (!buscar) {
-            notificar('negative', 'No se han generado ventas en esa fecha')
-            return
+            if (!buscar) {
+                notificar('negative', 'No se han generado ventas en esa fecha')
+                return
+            }
         }
+
+
+        const r = await buscarRuta(data.value.ruta.value)
+
+        if (!r) return
+        modal.value = false
+        opciones.value = false
+        console.log("onsubmit", data.value)
+        data.value.ruta = data.value.ruta.value
+
+    } catch (error) {
+        console.log(error);
+    } finally {
+        loadRuta.value = false
     }
-
-
-    const r = await buscarRuta(data.value.ruta.value)
-
-    if (!r) return
-    modal.value = false
-    opciones.value = false
-    console.log("onsubmit", data.value)
-    data.value.ruta = data.value.ruta.value
 }
 
 function notificar(tipo, msg) {
@@ -264,10 +274,12 @@ async function verificarAsiento() {
 
 function obtenerVendedor() {
     const token = Cookies.get("x-token")
-    const vendedor = localStorage.getItem("vendedor")
+    const vendedor = Cookies.get("vendedor")
+
+    console.log("t", token, vendedor);
 
     if (token && vendedor) {
-        return vendedor._id
+        return vendedor
     }
 
     notificar('negative', 'No hay token o vendedor')
@@ -312,27 +324,6 @@ async function buscarCliente() {
     }
 }
 
-async function guardarCliente() {
-    try {
-        if (!validar()) return
-
-        const response = await useCliente.guardar(dataCliente.value)
-        console.log(response);
-
-        if (!response) return
-        if (response.error) {
-            notificar('negative', response.error)
-            return
-        }
-
-        dataCliente.value = response.cliente
-        notificar('positive', 'Cliente guardado exitosamente')
-
-    } catch (error) {
-        console.log(error);
-    }
-}
-
 function validar() {
     const arrData = Object.entries(dataCliente.value)
     console.log(arrData);
@@ -365,8 +356,10 @@ async function validarCampos() {
     console.log("h", data.value);
 
     const idVendedor = obtenerVendedor()
+    console.log('v', idVendedor);
 
-    if (idVendedor) return
+    if (!idVendedor) return
+
 
     data.value.cliente = dataCliente.value._id
     data.value.vendedor = idVendedor
@@ -388,18 +381,18 @@ async function generarTicket() {
         if (!response) return
         if (response.error) {
             notificar('negative', response.error)
-            return
+            return { error: response.error }
         }
 
         if (!response.data.tiquetePopulate) {
             notificar("negative", response)
-            return
+            return { error: response }
         }
         const resData = response.data.tiquetePopulate
         notificar("positive", "Guardado exitosamente")
         asientosOcupados.value.push(resData.num_asiento)
         ticket.value = resData
-
+        return 'todo bien'
     } catch (error) {
         console.log(error);
     }
@@ -425,23 +418,6 @@ function regresar() {
     data.value.num_asiento = 0
 }
 
-/* async function confirmarCliente() {
-    $q.dialog({
-        title: 'Cliente no registrado',
-        message: '¿Desea guardar el cliente?',
-        cancel: true,
-        persistent: true
-    }).onOk(async () => {
-        await guardarCliente()
-        return true
-    }).onCancel(async () => {
-        // console.log('>>>> Cancel')
-        return false
-    }).onDismiss(async () => {
-        // notificar('negative', 'Seleccione una opción')
-    })
-} */
-
 function convertirFecha(cadenaFecha) {
     const fecha = new Date(cadenaFecha);
     const año = fecha.getFullYear();
@@ -453,15 +429,32 @@ function convertirFecha(cadenaFecha) {
 }
 
 async function showCustom() {
+
+    const t = await generarTicket()
+
+    console.log(t);
+    if (!t) return
+
+    if (t.error) {
+        dialog.update({
+            title: 'Error!!',
+            message: t.error,
+            progress: false,
+            ok: true
+        }).onOk(() => {
+
+        })
+
+        return
+    }
+
     const dialog = $q.dialog({
         title: 'Generando',
         dark: false,
         progress: true,
-        persistent: true, // we want the user to not be able to close it
-        ok: false // we want the user to not be able to close it
+        persistent: true,
+        ok: false
     })
-
-    await generarTicket()
 
     console.log(ticket.value);
 
@@ -532,10 +525,12 @@ function continuarVenta() {
     conVenta.value = 'rutasVentas'
 }
 
+const loadingClienteNuevo = ref(false)
 
 const enviarInfo = {
     guardar: async () => {
         loadingmodalclientes.value = true;
+        loadingClienteNuevo.value = true
         try {
             const response = await useCliente.guardar(dataclientes.value);
             console.log(response);
@@ -552,6 +547,7 @@ const enviarInfo = {
             console.log(error);
         } finally {
             loadingmodalclientes.value = false;
+            loadingClienteNuevo.value = false
         }
     }
 };
@@ -599,7 +595,7 @@ const opcionesclientes = {
     agregar: () => {
         dataclientes.value = {
             nombre: "",
-            cedula: "",
+            cedula: dataclientes.value.cedula,
             email: "",
         };
         modalclientes.value = true;
@@ -627,7 +623,7 @@ const opcionesclientes = {
                         <!-- <span>Ruta: </span> -->
                         <q-select filled v-model:model-value="data.ruta" use-input input-debounce="0" label="Ruta"
                             :loading="loadingruta" :options="opcionesFiltro.ruta" @filter="filterFnRuta" behavior="menu"
-                            lazy-rules :rules="[val => val != null || 'Por favor ingrese una ruta']">
+                            lazy-rules :rules="[val => val != null || 'Por favor ingrese una ruta']" :disable="loadingruta">
                             <template v-slot:no-option>
                                 <q-item>
                                     <q-item-section class="text-grey">
@@ -654,8 +650,8 @@ const opcionesclientes = {
                         </q-input>
 
                         <div>
-                            <q-btn label="Ver asientos" type="submit" color="primary" />
-                            <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
+                            <q-btn label="Ver asientos" type="submit" color="primary" :loading="loadRuta" />
+                            <q-btn label="" type="reset" color="primary" icon="delete" class="btnDelete" />
                         </div>
                     </q-form>
                 </q-card-section>
@@ -671,21 +667,24 @@ const opcionesclientes = {
                 </q-toolbar>
 
                 <q-card-section class="q-gutter-md">
-                    <q-input class="input1" outlined v-model="dataclientes.nombre" label="Nombre" type="text" maxlength="15"
-                        lazy-rules :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
-                    <q-input class="input2" outlined v-model="dataclientes.cedula" label="Cedula" type="number"
-                        :disable="estado === 'editar'" lazy-rules
-                        :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
+                    <q-form @submit="validarCamposCliente" @reset="onResetCliente" class="q-gutter-md">
+                        <q-input class="input1" outlined v-model="dataclientes.nombre" label="Nombre" type="text"
+                            maxlength="15" lazy-rules :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
+                        <q-input class="input2" outlined v-model="dataclientes.cedula" label="Cedula" type="number"
+                            :disable="estado === 'editar'" lazy-rules
+                            :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
 
-                    <q-input class="input3" outlined v-model="dataclientes.email" label="Email" type="email"
-                        :disable="estado === 'editar'" lazy-rules
-                        :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
+                        <q-input class="input3" outlined v-model="dataclientes.email" label="Email" type="email"
+                            :disable="estado === 'editar'" lazy-rules
+                            :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
 
 
-                    <q-btn @click="validarCamposCliente" :loading="loadingmodal" padding="10px"
-                        :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
-                        <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
-                    </q-btn>
+                        <q-btn :loading="loadingClienteNuevo" padding="10px"
+                            :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado" type="submit">
+                            <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
+                        </q-btn>
+                        <q-btn label="" type="reset" color="secondary" padding="10px" icon="delete" />
+                    </q-form>
                 </q-card-section>
             </q-card>
         </q-dialog>
@@ -754,6 +753,10 @@ const opcionesclientes = {
 </template>
 
 <style scoped>
+.btnDelete {
+    margin: 10px;
+}
+
 #contRegresar {
     display: flex;
 }
@@ -863,6 +866,12 @@ const opcionesclientes = {
 @media (max-width:1100px) {
     #contAsientos {
         margin-top: 30px;
+    }
+}
+
+@media (max-width:660px) {
+    #contAsientos {
+        flex-direction: column;
     }
 }
 </style>

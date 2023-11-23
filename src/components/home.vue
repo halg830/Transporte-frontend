@@ -40,6 +40,7 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
 
 function cerrarCesion(){
     Cookies.remove('x-token');
+    Cookies.remove('vendedor');
     router.push("/")
 }
 </script>

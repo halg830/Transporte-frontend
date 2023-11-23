@@ -79,12 +79,10 @@ const obtenerInfo = async () => {
       notificar('negative', vendedor.error)
     }
     rows.value = vendedor.vendedor;
-
   } catch (error) {
     console.error(error);
   } finally {
     loadingTable.value = false
-
   }
 };
 
@@ -236,8 +234,6 @@ function notificar(tipo, msg) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <div class="text-negative">{{ errorform }}</div>
-
           <q-input outlined v-model="data.nombre" label="Nombre" type="text"
             :rules="[val => !!val || 'Ingrese un nombre']"></q-input>
 
@@ -248,13 +244,13 @@ function notificar(tipo, msg) {
             :rules="[val => !!val || 'Ingrese una cédula']"></q-input>
 
           <q-input outlined v-model="data.telefono" label="Teléfono" type="number" maxlength="10"
-            :rules="[val => !!val || 'Ingrese un teléfono']"></q-input>
+            :rules="[val => !!val || 'Ingrese un teléfono', val=>val.length<11 || 'Ingrese menos de 10 digitos']"></q-input>
 
           <q-input outlined v-model="data.usuario" label="Usuario" type="text"
             :rules="[val => !!val || 'Ingrese un usuario']"></q-input>
 
           <q-input outlined v-model="data.contrasena" label="Contraseña" type="password"
-            :rules="[val => !!val || 'Ingrese una contraseña']"></q-input>
+            :rules="[val => !!val || 'Ingrese una contraseña']" :disable="estado==='editar'"></q-input>
 
           <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
             :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
