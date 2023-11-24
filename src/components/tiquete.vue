@@ -288,7 +288,10 @@ function obtenerVendedor() {
     return false
 }
 
+const loadBuscarCliente = ref(false)
+
 async function buscarCliente() {
+    loadBuscarCliente.value = true
     try {
         console.log(dataCliente.value)
 
@@ -322,6 +325,8 @@ async function buscarCliente() {
 
     } catch (error) {
         console.log(error);
+    } finally{
+        loadBuscarCliente.value = false
     }
 }
 
@@ -801,10 +806,10 @@ async function generarPDF() {
                                     </template>
                                 </q-select>
                                 <q-input outlined v-model="dataCliente.email" label="Email" type="email" lazy-rules
-                                    :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable></q-input>
+                                    :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable :loading="loadBuscarCliente"></q-input>
                                 <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15"
                                     lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']"
-                                    disable></q-input>
+                                    disable :loading="loadBuscarCliente"></q-input>
 
                                 <q-btn label="Confirmar" type="submit" color="secondary" />
                                 <q-btn label="" type="reset" color="secondary" icon="delete" />
