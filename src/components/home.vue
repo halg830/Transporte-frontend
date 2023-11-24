@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from "vue";
+import { useRouter } from 'vue-router'
+import Cookies from 'js-cookie'
 import imgMenu from '../assets/menu.png'
 import imgBuses from '../assets/buses.png'
 import imgCiudades from '../assets/ciudades.png'
@@ -9,8 +11,6 @@ import imgRutas from '../assets/rutas.png'
 import imgTiquetes from '../assets/tiquetes.png'
 import imgVentas from '../assets/ventas.png'
 import imgVendedores from '../assets/vendedores.png'
-import {useRouter} from 'vue-router'
-import Cookies from 'js-cookie'
 
 const router = useRouter()
 
@@ -26,19 +26,15 @@ const opciones = [
     { nombre: "Vendedores", imagen: imgVendedores }
 ];
 
-const ocultar = ref(true);
-
 const leftDrawerOpen = ref(false);
 
 function toggleLeftDrawer() {
     leftDrawerOpen.value = !leftDrawerOpen.value;
 }
 
-const opcionesConImagenes = opciones;
-
 const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.slice(1);
 
-function cerrarCesion(){
+function cerrarCesion() {
     Cookies.remove('x-token');
     Cookies.remove('vendedor');
     router.push("/")
@@ -58,22 +54,24 @@ function cerrarCesion(){
                         EMPRESA DE BUSES
                     </q-toolbar-title>
                     <q-btn dense flat @click="cerrarCesion">
-                        <q-icon size="md" name="logout" color="white" right/>
+                        <q-icon size="md" name="logout" color="white" right />
                     </q-btn>
-                    
+
                 </q-toolbar>
             </q-header>
             <!-- 🍻menu desplegable🍻 -->
-            <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="mobile" bordered class="menudesplegable bg-primary" >
+            <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="mobile" bordered
+                class="menudesplegable bg-primary">
                 <div class="opcionescont">
-                    
-                    <router-link v-for="(opcion, i) in opciones" :key="i" class="opcioncont" :to="'/' + primeraMinuscula(opcion.nombre)" >
-                        <button class="opcion" onclick="pagina()">
-                        <img :src="opcion.imagen" alt="Imagen" class="opcion-imagen" />
-                        <div class="opcion-text">{{opcion.nombre }}</div>
+
+                    <router-link v-for="(opcion, i) in opciones" :key="i" class="opcioncont"
+                        :to="'/' + primeraMinuscula(opcion.nombre)">
+                        <button class="opcion">
+                            <img :src="opcion.imagen" alt="Imagen" class="opcion-imagen" />
+                            <div class="opcion-text">{{ opcion.nombre }}</div>
                         </button>
                     </router-link>
-                    
+
                 </div>
             </q-drawer>
 
@@ -87,11 +85,10 @@ function cerrarCesion(){
 
 <style scoped>
 .paleta {
-  background-color:
-    #3f497f
-    #29a19c
-    #a3f7bf
-;}
+    background-color:
+        #3f497f #29a19c #a3f7bf;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -100,9 +97,11 @@ function cerrarCesion(){
         "Lucida Sans", Arial, sans-serif;
     text-align: center;
 }
-.imagencerrar{
+
+.imagencerrar {
     width: 30px;
 }
+
 .menu-header {
     background-color: #3f497f;
 }
@@ -140,22 +139,18 @@ function cerrarCesion(){
     margin: auto;
 }
 
-.opcion-text{
+.opcion-text {
     text-align: center;
     margin: auto;
-    font-weight: bold; 
+    font-weight: bold;
     text-decoration: underline;
     color: black;
 
 }
 
 .paleta {
-  background-color:
-    #3f497f
-    #29a19c
-    #a3f7bf
-;}
-
-
+    background-color:
+        #3f497f #29a19c #a3f7bf;
+}
 </style>
 

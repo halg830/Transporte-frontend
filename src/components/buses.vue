@@ -131,13 +131,6 @@ const opciones = {
   },
 };
 
-function idConductor(nombre) {
-  const buscar = conductores.value.find((c) => c.nombre === nombre);
-  if (buscar) return buscar._id;
-
-  return nombre
-}
-
 function buscarIndexLocal(id) {
   return rows.value.findIndex((r) => r._id === id);
 }

@@ -1,6 +1,5 @@
 <script setup>
-import { ref } from "vue";
-import imgMenu from '../assets/menu.png'
+import { useRouter } from 'vue-router'
 import imgBuses from '../assets/buses.png'
 import imgCiudades from '../assets/ciudades.png'
 import imgClientes from '../assets/clientes.png'
@@ -9,6 +8,9 @@ import imgRutas from '../assets/rutas.png'
 import imgTiquetes from '../assets/tiquetes.png'
 import imgVentas from '../assets/ventas.png'
 import imgVendedores from '../assets/vendedores.png'
+
+const router = useRouter()
+console.log(router.getRoutes());
 
 
 const opciones = [
@@ -31,7 +33,7 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
 <template>
   <div class="opcionescont">
     <router-link v-for="(opcion, i) in opciones" :key="i" class="opcioncont" :to="'/' + primeraMinuscula(opcion.nombre)">
-      <button class="opcion" @click="pagina()">
+      <button class="opcion">
         <div class="opcion-text">{{ opcion.nombre }}</div>
         <img :src="opcion.imagen" alt="Imagen" class="opcion-imagen" />
       </button>

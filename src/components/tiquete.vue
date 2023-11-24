@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import Cookies from 'js-cookie'
+import { PDFDocument, rgb } from 'pdf-lib';
 import { useClienteStore } from "../stores/clientes.js";
 import { useRutasStore } from '../stores/rutas.js';
 import { useVendedorStore } from '../stores/vendedor.js';
@@ -499,9 +500,11 @@ async function showCustom() {
         <span>------------------------------------------</span>
     </main>`
 
+    generarPDF()
+
     dialog.update({
         title: 'Ticket',
-        message: mensaje,
+        message: 'Presione ok para continuar',
         progress: false,
         html: true,
         ok: true
@@ -603,6 +606,70 @@ const opcionesclientes = {
     }
 };
 
+async function generarPDF() {
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([400, 440]);
+    const { width, height } = page.getSize();
+    const size = 10
+
+    const lineasHorizontales = [70, 120, 165, 210, 240, 270, 315, 345];
+    lineasHorizontales.forEach((y) => {
+        page.drawLine({ start: { x: 40, y: height - y }, end: { x: width - 50, y: height - y }, color: rgb(0, 0, 0) });
+    });
+
+    /* const lineasVerticales = [[190, 70, 120],[140, 120, 165], [220, 120, 165], [190, 165, 210],]
+    lineasVerticales.forEach(y => {
+        page.drawLine({ start: { x: y[0], y: height - y[1] }, end: { x: y[0], y: height - y[2] }, color: rgb(0, 0, 0) })
+    }) */
+
+    const dataT = [
+        ["Fecha de venta:", 50, 90],
+        [convertirFecha(ticket.value.createdAt), 50, 105],
+        ["Vendedor:", 190, 90],
+        [ticket.value.vendedor.nombre, 190, 105],
+        ["Cliente:", 50, 135],
+        [ticket.value.cliente.nombre, 50, 150],
+        ["Cedula:", 130, 135],
+        [ticket.value.cliente.cedula, 130, 150],
+        ["Email:", 230, 135],
+        [ticket.value.cliente.email, 230, 150],
+        ["Fecha de viaje:", 50, 180],
+        [convertirFecha(ticket.value.fecha_salida), 50, 195],
+        ["Hora:", 200, 180],
+        [convertirHora(ticket.value.ruta.hora_salida), 200, 195],
+        [`Ciudad origen: ${ticket.value.ruta.ciudad_origen.nombre}`, 50, 225],
+        [`Ciudad destino: ${ticket.value.ruta.ciudad_destino.nombre}`, 50, 255],
+        ["Puesto:", 50, 285],
+        [ticket.value.num_asiento, 50, 300],
+        [`Bus(Placa): ${ticket.value.ruta.bus.placa}`, 190, 285],
+        [`Empresa: ${ticket.value.ruta.bus.empresa}`, 190, 300],
+        [`Precio: ${ticket.value.ruta.valor}`, 50, 330],
+        ["¡Gracias por su compra!", 150, 375],
+        ["¡¡Feliz viaje!!", 150, 395],
+    ];
+    dataT.forEach(d => {
+        page.drawText(d[0], { x: d[1], y: height - d[2], size });
+    })
+
+    page.drawLine({ start: { x: 40, y: height - 70 }, end: { x: 40, y: height - 345 }, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: 350, y: height - 70 }, end: { x: 350, y: height - 345 }, color: rgb(0, 0, 0) });
+
+    page.drawText('PASAJE BUS', { x: 150, y: height - 50, size: 15 });
+
+    const pdfBytes = await pdfDoc.save();
+    const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    const printWindow = window.open(pdfUrl, '_blank');
+    if (printWindow) {
+        printWindow.onload = () => {
+            printWindow.print();
+        };
+    } else {
+        notificar('negative', 'Error, no se pudo abrir la ventana de impresión')
+    }
+}
 
 </script>
 <template>
