@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import { useRouter } from 'vue-router'
 import Cookies from 'js-cookie'
-import imgMenu from '../assets/menu.png'
 import imgBuses from '../assets/buses.png'
 import imgCiudades from '../assets/ciudades.png'
 import imgClientes from '../assets/clientes.png'
@@ -11,11 +10,11 @@ import imgRutas from '../assets/rutas.png'
 import imgTiquetes from '../assets/tiquetes.png'
 import imgVentas from '../assets/ventas.png'
 import imgVendedores from '../assets/vendedores.png'
+import iconPerfil from '../assets/perfil.png'
 
 const router = useRouter()
 
 const opciones = [
-    { nombre: "Menu", imagen: imgMenu },
     { nombre: "Buses", imagen: imgBuses },
     { nombre: "Ciudades", imagen: imgCiudades },
     { nombre: "Clientes", imagen: imgClientes },
@@ -37,8 +36,11 @@ const primeraMinuscula = (cadena) => cadena.charAt(0).toLowerCase() + cadena.sli
 function cerrarCesion() {
     Cookies.remove('x-token');
     Cookies.remove('vendedor');
+    Cookies.remove('nombreVendedor');
     router.push("/")
 }
+
+const nombreVendedor = Cookies.get('nombreVendedor')
 </script>
 
 
@@ -62,6 +64,10 @@ function cerrarCesion() {
             <!-- 🍻menu desplegable🍻 -->
             <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="mobile" bordered
                 class="menudesplegable bg-primary">
+                <div id="contPerfil">
+                    <img :src="iconPerfil" alt="Icon perfil" id="iconPerfil" />
+                    <span style="font-size: x-large">{{ nombreVendedor }}</span>
+                </div>
                 <div class="opcionescont">
 
                     <router-link v-for="(opcion, i) in opciones" :key="i" class="opcioncont"
@@ -98,6 +104,24 @@ function cerrarCesion() {
     text-align: center;
 }
 
+#iconPerfil {
+    width: 80px;
+    border-radius: 100%;
+}
+
+#contPerfil {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    background-color: #29a19c;
+    padding: 30px;
+    background-image: url('../assets/fondo.png');
+    background-position: center;
+    background-size: cover;
+}
+
 .imagencerrar {
     width: 30px;
 }
@@ -108,7 +132,7 @@ function cerrarCesion() {
 
 .opcionescont {
     height: 100%;
-    padding: 30px;
+    padding: 10px 30px 30px 30px;
     display: grid;
     grid-template-columns: 100%;
     justify-content: center;

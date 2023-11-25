@@ -32,6 +32,7 @@ async function validarIngreso() {
   
     Cookies.set('x-token', response.data.token, {expires: 1})
     Cookies.set("vendedor", response.data.vendedor._id, {expires: 1})
+    Cookies.set('nombreVendedor', response.data.vendedor.usuario)
     notificar('positive', 'Sección exitosa')
     router.push("/home");
   } catch (error) {
