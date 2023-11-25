@@ -325,7 +325,7 @@ async function buscarCliente() {
 
     } catch (error) {
         console.log(error);
-    } finally{
+    } finally {
         loadBuscarCliente.value = false
     }
 }
@@ -771,7 +771,7 @@ async function generarPDF() {
                 </div>
 
                 <div id="contAsientos">
-                    <div v-if="verificarAsiento" class="asientos">
+                    <div v-if="verificarAsiento" class="asientos" :id="data.num_asiento != 0 ? 'asientos': ''">
                         <q-btn v-for="a in cantAsientos" icon="chair" class="asiento"
                             :class="asientosOcupados.includes(String(a)) ? 'ocupado' : 'desocupado'"
                             @click="data.num_asiento = a" :label="a" :disable="asientosOcupados.includes(String(a))" />
@@ -806,10 +806,11 @@ async function generarPDF() {
                                     </template>
                                 </q-select>
                                 <q-input outlined v-model="dataCliente.email" label="Email" type="email" lazy-rules
-                                    :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable :loading="loadBuscarCliente"></q-input>
+                                    :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable
+                                    :loading="loadBuscarCliente"></q-input>
                                 <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15"
-                                    lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']"
-                                    disable :loading="loadBuscarCliente"></q-input>
+                                    lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']" disable
+                                    :loading="loadBuscarCliente"></q-input>
 
                                 <q-btn label="Confirmar" type="submit" color="secondary" />
                                 <q-btn label="" type="reset" color="secondary" icon="delete" />
@@ -835,6 +836,7 @@ async function generarPDF() {
 
 #contAsientos {
     display: flex;
+    padding: 40px;
 }
 
 .asiento {
@@ -941,9 +943,15 @@ async function generarPDF() {
     }
 }
 
-@media (max-width:660px) {
+@media (max-width:760px) {
     #contAsientos {
         flex-direction: column;
+
+    }
+
+    #asientos {
+        overflow-x: scroll;
+        max-height: 100px;
     }
 }
 </style>
