@@ -62,7 +62,7 @@ const data = ref({
   placa: "",
   conductor: "",
   empresa: "",
-  asiento: 0,
+  asiento: '',
 });
 
 const obtenerInfo = async () => {
@@ -72,14 +72,14 @@ const obtenerInfo = async () => {
 
     console.log(bus);
 
-    if(!bus) return 
+    if (!bus) return
 
     if (bus.error) {
       notificar('negative', bus.error)
       return
     }
 
-    rows.value = bus.busPopulate;
+    rows.value = bus.busPopulate.reverse();
   } catch (error) {
     console.error(error);
   }
@@ -97,7 +97,7 @@ const obtenerOptions = async () => {
   const responseConductores = await useConductor.obtener();
   selectLoad.value.conductor = false
 
-  if(!responseConductores) return
+  if (!responseConductores) return
 
   if (responseConductores.error) {
     notificar('negative', responseConductores.error)
@@ -106,7 +106,7 @@ const obtenerOptions = async () => {
 
   options.value.conductores = responseConductores.map((c) => { return { label: c.nombre, value: c._id } });
   conductores.value = responseConductores;
-  
+
 };
 
 obtenerOptions();
@@ -119,7 +119,7 @@ const opciones = {
       placa: "",
       conductor: "",
       empresa: "",
-      asiento: 0,
+      asiento: '',
     };
     modal.value = true;
     estado.value = "guardar";
@@ -147,20 +147,20 @@ const enviarInfo = {
       loadingmodal.value = false;
       console.log(response);
 
-      if(!response) return
+      if (!response) return
 
       if (response.error) {
         notificar('negative', response.error)
         return
       }
 
-      rows.value.push(response);
+      rows.value.unshift(response);
       notificar('positive', "Guardado exitosamente")
       modal.value = false;
     } catch (error) {
       console.log(error);
     }
-    
+
   },
   editar: async () => {
     loadingmodal.value = true;
@@ -172,7 +172,7 @@ const enviarInfo = {
       console.log(response);
       loadingmodal.value = false;
 
-      if(!response) return
+      if (!response) return
 
       if (response.error) {
         notificar('negative', response.error)
@@ -185,7 +185,7 @@ const enviarInfo = {
     } catch (error) {
       console.log(error);
     }
-    
+
   },
 };
 
@@ -194,23 +194,23 @@ const in_activar = {
     const response = await useBus.activar(id)
     console.log(response);
 
-    if(!response) return
+    if (!response) return
 
     if (response.error) {
-        notificar('negative', response.error)
-        return
-      }
+      notificar('negative', response.error)
+      return
+    }
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   },
   inactivar: async (id) => {
     const response = await useBus.inactivar(id)
     console.log(response);
-    if(!response) return
+    if (!response) return
 
     if (response.error) {
-        notificar('negative', response.error)
-        return
-      }
+      notificar('negative', response.error)
+      return
+    }
     rows.value.splice(buscarIndexLocal(response._id), 1, response)
   }
 }
@@ -286,34 +286,37 @@ function filterFn(val, update) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
+          <q-form @submit="validarCampos" class="q-gutter-md">
 
-          <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado === 'editar'" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese una placa',
-            val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
+            <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado === 'editar'" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese una placa',
+              val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
 
-          <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre"
-            :options="opcionesFiltro.conductores" @filter="filterFn" behavior="menu"
-            :rules="[val => val != null || 'Ingrese un nombre']" :loading="selectLoad.conductor" :disable="selectLoad.conductor">
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  Sin resultados
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
-          <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese una empresa']"></q-input>
+            <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre"
+              :options="opcionesFiltro.conductores" @filter="filterFn" behavior="menu"
+              :rules="[val => val != null || 'Seleccione un nombre', val => val != '' || 'Seleccione un nombre']"
+              :loading="selectLoad.conductor" :disable="selectLoad.conductor">
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    Sin resultados
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+            <q-input outlined v-model="data.empresa" label="Empresa" type="text" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese una empresa']"></q-input>
 
-          <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules :rules="[val => val.trim() != '' || 'Ingrese un numero',
-          val => val != '0' || 'Cantidad no válida']"></q-input>
+            <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules :rules="[val => val != '' || 'Ingrese un numero',
+            val => val>0 || 'Cantidad no válida']"></q-input>
 
-          <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
-            :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
-            <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
-          </q-btn>
-
-
+            <div>
+              <q-btn :label="estado" type="submit" :color="estado == 'editar' ? 'warning' : 'secondary'"
+                :loading="loadingmodal">
+                <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
+              </q-btn>
+            </div>
+          </q-form>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -321,7 +324,7 @@ function filterFn(val, update) {
 
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
-        rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]" loading-label="Cargando..."
         no-results-label="No hay resultados para la busqueda" wrap-cells="false">
         <template v-slot:top>
           <h4 class="titulo-cont">
@@ -385,6 +388,10 @@ warning: Color para advertencias o mensajes importantes.
 * {
   margin: 0px;
   padding: 0px;
+}
+
+#btnBorrar{
+  margin-left: 10px;
 }
 
 .modal {

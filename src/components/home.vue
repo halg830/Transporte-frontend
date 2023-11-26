@@ -131,13 +131,11 @@ const nombreVendedor = Cookies.get('nombreVendedor')
 }
 
 .opcionescont {
-    height: 100%;
-    padding: 10px 30px 30px 30px;
+    padding: 10px 30px 10px 30px;
     display: grid;
     grid-template-columns: 100%;
     justify-content: center;
     align-items: center;
-
 }
 
 .opcioncont {

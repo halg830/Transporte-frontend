@@ -78,7 +78,7 @@ const obtenerInfo = async () => {
     if (vendedor.error) {
       notificar('negative', vendedor.error)
     }
-    rows.value = vendedor.vendedor;
+    rows.value = vendedor.vendedor.reverse();
   } catch (error) {
     console.error(error);
   } finally {
@@ -125,7 +125,7 @@ const enviarInfo = {
         notificar('negative', response.error)
       }
       console.log(response);
-      rows.value.push(response.vendedor)
+      rows.value.unshift(response.vendedor)
       modal.value = false
       notificar('positive', 'Guardado exitosamente')
     } catch (error) {
@@ -265,8 +265,8 @@ function notificar(tipo, msg) {
 
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
-        rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
-        no-results-label="No hay resultados para la busqueda" wrap-cells="false">
+        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        no-results-label="No hay resultados para la busqueda" wrap-cells="false" loading-label="Cargando...">
         <template v-slot:top>
           <h4 class="titulo-cont">
             {{ modelo }}

@@ -58,7 +58,7 @@ const obtenerInfo = async () => {
       return
     }
 
-    rows.value = conductor;
+    rows.value = conductor.reverse();
 
   } catch (error) {
     console.error(error);
@@ -103,7 +103,7 @@ const enviarInfo = {
         notificar('negative', response.error)
         return
       }
-      rows.value.push(response.conductor)
+      rows.value.unshift(response.conductor)
       modal.value = false
     } catch (error) {
       console.log(error);
@@ -218,7 +218,7 @@ function notificar(tipo, msg) {
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
         rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
-        no-results-label="No hay resultados para la busqueda" wrap-cells="false">
+        no-results-label="No hay resultados para la busqueda" wrap-cells="false" loading-label="Cargando...">
         <template v-slot:top>
           <h4 class="titulo-cont">
             {{ modelo }}

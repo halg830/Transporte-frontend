@@ -105,7 +105,7 @@ const obtenerInfo = async () => {
       notificar('negative', tiquete.error)
     }
     loadingTable.value = false
-    rows.value = tiquete;
+    rows.value = tiquete.reverse();
 
   } catch (error) {
     console.error(error);
@@ -323,6 +323,8 @@ function notificar(tipo, msg) {
     position: "top"
   })
 }
+
+const filter = ref("");
 </script>
 
 <template>
@@ -361,13 +363,21 @@ function notificar(tipo, msg) {
     </q-dialog>
 
     <div class="q-pa-md">
-      <q-table :title="modelo" :rows="rows" :columns="columns" row-key="name" :loading="loadingTable">
-        <template v-slot:top-right>
-          <q-tr>
+      <q-table :rows="rows" :columns="columns" row-key="name" :loading="loadingTable" loading-label="Cargando..." :filter="filter"
+        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        no-results-label="No hay resultados para la busqueda" wrap-cells="false">
+        <template v-slot:top>
+          <h4 class="titulo-cont">
+            {{ modelo }}
             <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
               <q-icon name="style" color="white" right />
             </q-btn>
-          </q-tr>
+          </h4>
+          <q-input borderless dense debounce="300" color="primary" v-model="filter" class="buscar">
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
         </template>
         <template v-slot:body-cell-Estado="props">
           <q-td :props="props" class="botones">
@@ -394,5 +404,18 @@ function notificar(tipo, msg) {
 <style scoped>
 .cont {
   color: rgb(69, 255, 125);
+}
+
+.titulo-cont {
+  margin: auto;
+}
+
+.buscar {
+  display: inline-block;
+  margin: auto;
+  margin-top: 8px;
+  padding: 0px 15px;
+  border: 1px solid rgb(212, 212, 212);
+  border-radius: 5px;
 }
 </style>

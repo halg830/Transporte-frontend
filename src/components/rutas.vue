@@ -94,7 +94,7 @@ const obtenerInfo = async () => {
       notificar('negative', rutas.error)
       return
     }
-    rows.value = rutas;
+    rows.value = rutas.reverse();
   } catch (error) {
     console.error(error);
   } finally {
@@ -188,7 +188,7 @@ const enviarInfo = {
         return
       }
       console.log(response);
-      rows.value.push(response);
+      rows.value.unshift(response);
       notificar('positive', 'Guardado exitosamente')
       modal.value = false;
     } catch (error) {
@@ -460,7 +460,7 @@ function deshabilitarCiudad(val) {
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
         rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
-        no-results-label="No hay resultados para la busqueda" wrap-cells="false">
+        no-results-label="No hay resultados para la busqueda" wrap-cells="false" loading-label="Cargando...">
         <template v-slot:top>
           <h4 class="titulo-cont">
             {{ modelo }}

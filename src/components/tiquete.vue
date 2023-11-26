@@ -895,12 +895,6 @@ async function generarPDF() {
     margin: 10px;
 }
 
-
-
-
-
-
-
 .modal {
     width: 100%;
     max-width: 600px;

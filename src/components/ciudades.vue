@@ -49,7 +49,7 @@ const obtenerInfo = async () => {
     }
 
     console.log(ciudad);
-    rows.value = ciudad;
+    rows.value = ciudad.reverse();
     loadingTable.value = false;
 
   } catch (error) {
@@ -95,7 +95,7 @@ const enviarInfo = {
         notificar('negative', response.error)
         return
       }
-      rows.value.push(response);
+      rows.value.unshift(response);
       modal.value = false;
       notificar('positive', 'Guardado exitosamente')
     } catch (error) {
@@ -204,11 +204,11 @@ function notificar(tipo, msg) {
 
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
-        rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
-        no-results-label="No hay resultados para la busqueda" wrap-cells="false">
+        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        no-results-label="No hay resultados para la busqueda" wrap-cells="false" loading-label="Cargando...">
         <template v-slot:top>
           <h4 class="titulo-cont">
-            {{ modelo }}
+            Ciudades
             <q-btn @click="opciones.agregar" label="Añadir" color="secondary">
               <q-icon name="style" color="white" right />
             </q-btn>
