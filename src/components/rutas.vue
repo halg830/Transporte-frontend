@@ -121,9 +121,9 @@ const obtenerOptions = async () => {
       return
     }
 
-    options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre, value: c._id, disable: false } });
+    options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre, value: c._id, disable: false, estado: c.estado } });
     models.value.ciudades = responseCiudad
-    options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id } });
+    options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id, estado: b.estado } });
     models.value.buses = responseBus.busPopulate
 
   } catch (error) {
@@ -268,6 +268,21 @@ function validarCampos() {
   if (time.value.trim() === "") {
     notificar('negative', "Por favor complete todos los campos")
     return
+  }
+
+  if(data.value.ciudad_origen.estado===0){
+    notificar('negative', 'La ciudad de origen esta inactiva')
+    return
+  }
+  if(data.value.ciudad_destino.estado===0){
+    notificar('negative', 'La ciudad de destino esta inactiva')
+    return
+  }
+  if(data.value.bus.estado===0){
+    {
+    notificar('negative', 'El bus esta inactiva')
+    return
+  }
   }
 
   const hora = time.value.split(':')
