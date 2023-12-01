@@ -21,13 +21,13 @@ const columns = ref([
   {
     name: "Cedula",
     label: "Cedula",
-    align: "left",
+    align: "center",
     field: (row) => row.cliente.cedula,
   },
   {
     name: "Ruta",
     label: "Ruta",
-    align: "left",
+    align: "center",
     field: (row) =>
       row.ruta.ciudad_origen.nombre + " / " + row.ruta.ciudad_destino.nombre + " / " + convertirHora(row.ruta.hora_salida),
   },
@@ -64,13 +64,14 @@ const columns = ref([
   {
     name: "Estado",
     label: "Estado",
+    align: "center",
     field: (row) => row.estado,
   },
-  {
+  /* {
     name: "opciones",
     label: "Opciones",
     field: "opciones",
-  },
+  }, */
 ]);
 const rows = ref([]);
 
@@ -392,11 +393,11 @@ const filter = ref("");
               props.row.estado = 'load'" />
           </q-td>
         </template>
-        <template v-slot:body-cell-opciones="props">
+        <!-- <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
             <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
           </q-td>
-        </template>
+        </template> -->
       </q-table>
     </div>
   </div>

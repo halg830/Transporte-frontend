@@ -78,7 +78,8 @@ const obtenerOptions = async () => {
         options.value.rutasVentas = datosFiltrados
         models.value.rutasVentas = rutas;
 
-        options.value.ruta = responseRutas.map((c) => { return { label: c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida), value: c._id } });
+        options.value.ruta = responseRutas.map((c) => { 
+            return { label: c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida), value: c._id, estado: c.estado } });
         models.value.ruta = responseRutas;
 
         options.value.cliente = responseCliente.cliente.map(c => { return { label: c.cedula, value: c._id } })
@@ -165,6 +166,11 @@ async function onSubmit() {
     try {
         if (date.value.trim() === "") {
             notificar('negative', "Por favor complete todos los campos")
+            return
+        }
+
+        if(data.value.ruta.estado===0) {
+            notificar('negative', 'La ruta esta inactiva')
             return
         }
 
