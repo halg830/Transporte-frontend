@@ -153,7 +153,7 @@ const opciones = {
   editar: (info) => {
     data.value = {
       ...info,
-      bus: info.bus.placa, ciudad_destino: info.ciudad_destino.nombre, ciudad_origen: info.ciudad_origen.nombre
+      bus: { label: info.bus.placa, value: info.bus._id }, ciudad_destino: { label: info.ciudad_destino.nombre, value: info.ciudad_destino._id }, ciudad_origen: { label: info.ciudad_origen.nombre, value: info.ciudad_origen._id }
     }
     time.value = convertirHora(info.hora_salida)
     modal.value = true;
@@ -182,7 +182,7 @@ const enviarInfo = {
     try {
       const response = await useRutas.guardar(data.value);
 
-      if(!response) return
+      if (!response) return
       if (response.error) {
         notificar('negative', response.error)
         return
@@ -193,7 +193,7 @@ const enviarInfo = {
       modal.value = false;
     } catch (error) {
       console.log(error);
-    } finally{
+    } finally {
       loadingmodal.value = false;
     }
 
@@ -201,9 +201,10 @@ const enviarInfo = {
   editar: async () => {
     loadingmodal.value = true;
     try {
+      console.log("a", data.value);
       const response = await useRutas.editar(data.value._id, data.value);
       console.log(response);
-      if(!response) return
+      if (!response) return
       if (response.error) {
         notificar('negative', response.error)
         return
@@ -214,7 +215,7 @@ const enviarInfo = {
       modal.value = false
     } catch (error) {
       console.log(error);
-    } finally{
+    } finally {
       loadingmodal.value = false;
     }
   },
@@ -225,13 +226,13 @@ const in_activar = {
     try {
       const response = await useRutas.activar(id)
       console.log(response);
-      if(!response) return
+      if (!response) return
       if (response.error) {
         notificar('negative', response.error)
         return
       }
       rows.value.splice(buscarIndexLocal(response._id), 1, response)
-      
+
     } catch (error) {
       console.log(error);
     }
@@ -240,13 +241,13 @@ const in_activar = {
     try {
       const response = await useRutas.inactivar(id)
       console.log(response);
-      if(!response) return
+      if (!response) return
       if (response.error) {
         notificar('negative', response.error)
         return
       }
       rows.value.splice(buscarIndexLocal(response._id), 1, response)
-      
+
     } catch (error) {
       console.log(error);
     }
@@ -303,9 +304,13 @@ function validarCampos() {
     }
   }
 
+
   data.value.ciudad_origen = data.value.ciudad_origen.value
   data.value.ciudad_destino = data.value.ciudad_destino.value
   data.value.bus = data.value.bus.value
+
+
+
 
   enviarInfo[estado.value]()
 }
