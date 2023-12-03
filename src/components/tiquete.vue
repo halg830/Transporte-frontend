@@ -189,6 +189,8 @@ const modal = ref(false)
 const opciones = ref(true)
 const loadRuta = ref(false)
 
+const informacion = ref({})
+
 async function onSubmit() {
     loadRuta.value = true
     try {
@@ -241,6 +243,8 @@ async function onSubmit() {
         modal.value = false
         opciones.value = false
         console.log("onsubmit", data.value)
+        informacion.value = {...data.value}
+        buscarBus(data.value.bus.value)
         // data.value.ruta = data.value.ruta.value
 
     } catch (error) {
@@ -766,6 +770,14 @@ async function generarPDF() {
     }
 }
 
+function buscarBus(id){
+    const buscar = models.value.bus.find(b=>b._id===id)
+
+    if(buscar){
+        informacion.value.bus = buscar
+    }
+}
+
 </script>
 <template>
     <div>
@@ -872,6 +884,11 @@ async function generarPDF() {
             <div class="contopciones">
                 <div id="contRegresar">
                     <q-btn label="Regresar" @click="regresar" class="regresar" color="accent" icon="arrow_back_ios"></q-btn>
+                    <span><b>Ruta: </b>{{ informacion.ruta.label }} </span>
+                    <span><b>Bus (placa): </b>{{ informacion.bus.placa }} </span>
+                    <span><b>Bus (número): </b>{{ informacion.bus.numero }} </span>
+                    <span><b>Conductor: </b>{{ informacion.bus.conductor.nombre }} </span>
+                    <span><b>Fecha salida: </b>{{ convertirFecha(informacion.fecha_salida) }} </span>
                 </div>
 
                 <div id="contAsientos">

@@ -26,6 +26,12 @@ const columns = ref([
     field: (row) => row.cedula,
   },
   {
+    name: "telefono",
+    label: "Teléfono",
+    align: "left",
+    field: 'telefono',
+  },
+  {
     name: "Email",
     label: "Email",
     align: "left",
@@ -234,7 +240,7 @@ function notificar(tipo, msg) {
         <q-card-section class="q-gutter-md">
           <q-form @submit="validarCampos" class="q-gutter-md">
 
-            <q-input class="input1" outlined v-model="data.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
+            <q-input class="input1" outlined v-model="data.nombre" label="Nombre" type="text" lazy-rules
               :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
             <q-input class="input2" outlined v-model="data.cedula" label="Cedula" type="number" lazy-rules
               :rules="[val => val != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"

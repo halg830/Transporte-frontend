@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
+import { PDFDocument, rgb } from 'pdf-lib';
 import { useTiqueteStore } from "../stores/tiquete.js";
 import { useVendedorStore } from "../stores/vendedor.js";
 import { useRutasStore } from "../stores/rutas.js";
@@ -19,6 +20,12 @@ const useCliente = useClienteStore();
 
 const columns = ref([
   {
+    name: "fecha venta",
+    label: "Fecha venta",
+    align: "center",
+    field: (row) => convertirFecha(row.createdAt),
+  },
+  {
     name: "Cedula",
     label: "Cedula",
     align: "center",
@@ -33,9 +40,9 @@ const columns = ref([
   },
   {
     name: "Bus",
-    label: "Bus",
+    label: "Bus (placa / numero)",
     align: "center",
-    field: (row) => row.bus.placa,
+    field: (row) => row.bus.placa + ' / ' + row.bus.numero,
   },
   {
     name: "Valor",
@@ -46,25 +53,25 @@ const columns = ref([
   {
     name: "Asiento",
     label: "Asiento",
-    align: "left",
+    align: "center",
     field: (row) => row.num_asiento,
   },
   {
     name: "Hora salida",
     label: "Hora salida",
-    align: "left",
+    align: "center",
     field: (row) => convertirHora(row.ruta.hora_salida),
   },
   {
     name: "Fecha salida",
     label: "Fecha salida",
-    align: "left",
+    align: "center",
     field: (row) => convertirFecha(row.fecha_salida),
   },
   {
     name: "Vendedor",
     label: "Vendedor",
-    align: "left",
+    align: "center",
     field: (row) => row.vendedor.nombre,
   },
   {
@@ -73,11 +80,12 @@ const columns = ref([
     align: "center",
     field: (row) => row.estado,
   },
-  /* {
+  {
     name: "opciones",
     label: "Opciones",
+    align: 'center',
     field: "opciones",
-  }, */
+  },
 ]);
 const rows = ref([]);
 
@@ -160,7 +168,7 @@ const obtenerOptions = async () => {
 };
 
 obtenerOptions();
-
+const ticket = ref({})
 const estado = ref("guardar");
 const modal = ref(false);
 const opciones = {
@@ -175,6 +183,10 @@ const opciones = {
     modal.value = true;
     estado.value = "editar";
   },
+  imprimir: (info)=>{
+    ticket.value = {...info}
+    generarPDF()
+  }
 };
 
 function buscarIndexLocal(id) {
@@ -239,7 +251,7 @@ const in_activar = {
         return;
       }
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
-      
+
     } catch (error) {
       console.log(error);
     }
@@ -254,7 +266,7 @@ const in_activar = {
         return;
       }
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
-      
+
     } catch (error) {
       console.log(error);
     }
@@ -332,6 +344,74 @@ function notificar(tipo, msg) {
 }
 
 const filter = ref("");
+
+async function generarPDF() {
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([400, 470]);
+    const { width, height } = page.getSize();
+    const size = 10
+
+    const lineasHorizontales = [70, 120, 165, 195, 240, 270, 300, 345, 375];
+    lineasHorizontales.forEach((y) => {
+        page.drawLine({ start: { x: 40, y: height - y }, end: { x: width - 50, y: height - y }, color: rgb(0, 0, 0) });
+    });
+
+    /* const lineasVerticales = [[190, 70, 120],[140, 120, 165], [220, 120, 165], [190, 165, 210],]
+    lineasVerticales.forEach(y => {
+        page.drawLine({ start: { x: y[0], y: height - y[1] }, end: { x: y[0], y: height - y[2] }, color: rgb(0, 0, 0) })
+    }) */
+
+    const dataT = [
+        ["Fecha de venta:", 50, 90],
+        [convertirFecha(ticket.value.createdAt), 50, 105],
+        ["Vendedor:", 190, 90],
+        [ticket.value.vendedor.nombre + ' '+ ticket.value.vendedor.apellido, 190, 105],
+        ["Cliente:", 50, 140],
+        [ticket.value.cliente.nombre, 50, 155],
+        ["Cedula:", 150, 140],
+        [ticket.value.cliente.cedula, 150, 155],
+        ["Teléfono:", 250, 140],
+        [ticket.value.cliente.telefono, 250, 155],
+        [`Email: ${ticket.value.cliente.email}`, 50, 185],
+        ["Fecha de viaje:", 50, 215],
+        [convertirFecha(ticket.value.fecha_salida), 50, 230],
+        ["Hora:", 200, 215],
+        [convertirHora(ticket.value.ruta.hora_salida), 200, 230],
+        [`Ciudad origen: ${ticket.value.ruta.ciudad_origen.nombre}`, 50, 260],
+        [`Ciudad destino: ${ticket.value.ruta.ciudad_destino.nombre}`, 50, 290],
+        ["Puesto:", 50, 320],
+        [ticket.value.num_asiento, 50, 335],
+        ["Número bus:", 110, 320],
+        [ticket.value.bus.numero, 110, 335],
+        [`Bus(Placa): ${ticket.value.bus.placa}`, 190, 320],
+        [`Empresa: ${ticket.value.bus.empresa}`, 190, 335],
+        [`Precio: ${ticket.value.valor}`, 50, 365],
+        ["¡Gracias por su compra!", 140, 400],
+        ["¡¡Feliz viaje!!", 160, 425],
+    ];
+    dataT.forEach(d => {
+        page.drawText(d[0], { x: d[1], y: height - d[2], size });
+    })
+
+    page.drawLine({ start: { x: 40, y: height - lineasHorizontales[0] }, end: { x: 40, y: height - lineasHorizontales[lineasHorizontales.length-1] }, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: 350, y: height - lineasHorizontales[0] }, end: { x: 350, y: height - lineasHorizontales[lineasHorizontales.length-1] }, color: rgb(0, 0, 0) });
+
+    page.drawText('PASAJE BUS', { x: 150, y: height - 50, size: 15 });
+
+    const pdfBytes = await pdfDoc.save();
+    const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    const printWindow = window.open(pdfUrl, '_blank');
+    if (printWindow) {
+        printWindow.onload = () => {
+            printWindow.print();
+        };
+    } else {
+        notificar('negative', 'Error, no se pudo abrir la ventana de impresión')
+    }
+}
 </script>
 
 <template>
@@ -370,8 +450,8 @@ const filter = ref("");
     </q-dialog>
 
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" row-key="name" :loading="loadingTable" loading-label="Cargando..." :filter="filter"
-        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+      <q-table :rows="rows" :columns="columns" row-key="name" :loading="loadingTable" loading-label="Cargando..."
+        :filter="filter" rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
         no-results-label="No hay resultados para la busqueda" wrap-cells="false">
         <template v-slot:top>
           <h4 class="titulo-cont">
@@ -399,11 +479,12 @@ const filter = ref("");
               props.row.estado = 'load'" />
           </q-td>
         </template>
-        <!-- <template v-slot:body-cell-opciones="props">
+        <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" />
+            <!-- <q-btn color="warning" icon="edit" class="botonv1" @click="opciones.editar(props.row)" /> -->
+            <q-btn color="warning" icon="print" class="botonv1" @click="opciones.imprimir(props.row)" />
           </q-td>
-        </template> -->
+        </template>
       </q-table>
     </div>
   </div>
