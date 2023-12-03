@@ -71,14 +71,15 @@ export const useTiqueteStore = defineStore("tiquete", () => {
     }
   };
 
-  const asientosOcupados = async (idRuta, fecha_salida) => {
+  const asientosOcupados = async (info) => {
     try {
       const x = insertarToken();
       if (!x) return null;
-      console.log(idRuta);
-      console.log(fecha_salida);
+
+      console.log(info);
+      const {idBus, idRuta, fecha_salida} = info
       const response = await x.get(
-        `${model}asientosOcupados/${idRuta}/${fecha_salida}`
+        `${model}asientosOcupados/${idBus}/${idRuta}/${fecha_salida}`
       );
 
       console.log(response);

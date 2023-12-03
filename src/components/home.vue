@@ -14,16 +14,16 @@ import iconPerfil from '../assets/perfil.png'
 
 const router = useRouter()
 
-const opciones = [
-    { nombre: "Buses", imagen: imgBuses },
-    { nombre: "Ciudades", imagen: imgCiudades },
-    { nombre: "Clientes", imagen: imgClientes },
-    { nombre: "Conductores", imagen: imgConductores },
-    { nombre: "Rutas", imagen: imgRutas },
-    { nombre: "Tiquetes", imagen: imgTiquetes },
-    { nombre: "Ventas", imagen: imgVentas },
-    { nombre: "Vendedores", imagen: imgVendedores }
-];
+const opciones = ref([
+    { nombre: "Buses", imagen: imgBuses, estado: false },
+    { nombre: "Ciudades", imagen: imgCiudades, estado: false },
+    { nombre: "Clientes", imagen: imgClientes, estado: false },
+    { nombre: "Conductores", imagen: imgConductores, estado: false },
+    { nombre: "Rutas", imagen: imgRutas, estado: false },
+    { nombre: "Tiquetes", imagen: imgTiquetes, estado: false},
+    { nombre: "Ventas", imagen: imgVentas, estado: false },
+    { nombre: "Vendedores", imagen: imgVendedores, estado: false }
+]);
 
 const leftDrawerOpen = ref(false);
 
@@ -41,6 +41,11 @@ function cerrarCesion() {
 }
 
 const nombreVendedor = Cookies.get('nombreVendedor')
+
+function desactivarBtn(i){
+    opciones.value.forEach(o=>o.estado=false)
+    opciones.value[i].estado = true
+}
 </script>
 
 
@@ -71,8 +76,8 @@ const nombreVendedor = Cookies.get('nombreVendedor')
                 <div class="opcionescont">
 
                     <router-link v-for="(opcion, i) in opciones" :key="i" class="opcioncont"
-                        :to="'/' + primeraMinuscula(opcion.nombre)">
-                        <button class="opcion">
+                        :to="'/' + primeraMinuscula(opcion.nombre)" @click="desactivarBtn(i)">
+                        <button class="opcion" :disabled="opcion.estado">
                             <img :src="opcion.imagen" alt="Imagen" class="opcion-imagen" />
                             <div class="opcion-text">{{ opcion.nombre }}</div>
                         </button>

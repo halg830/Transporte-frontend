@@ -232,26 +232,32 @@ function notificar(tipo, msg) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <q-input class="input1" outlined v-model="data.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
-          <q-input class="input2" outlined v-model="data.cedula" label="Cedula" type="number"
-             lazy-rules
-            :rules="[val => val != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']" maxlength="10"></q-input>
-          <q-input class="input3" outlined v-model="data.email" label="Email" type="email"
-            lazy-rules :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
+          <q-form @submit="validarCampos" class="q-gutter-md">
+
+            <q-input class="input1" outlined v-model="data.nombre" label="Nombre" type="text" maxlength="15" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
+            <q-input class="input2" outlined v-model="data.cedula" label="Cedula" type="number" lazy-rules
+              :rules="[val => val != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"
+              maxlength="10"></q-input>
+            <q-input class="input2" outlined v-model="data.telefono" label="Teléfono" type="number" lazy-rules
+              :rules="[val => val != '' || 'Ingrese una teléfono', val => val.length==10 || 'Número de teléfono no válido']"
+              maxlength="10"></q-input>
+            <q-input class="input3" outlined v-model="data.email" label="Email" type="email" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
 
 
-          <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
-            :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
-            <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
-          </q-btn>
+            <q-btn :loading="loadingmodal" padding="10px" type="submit"
+              :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
+              <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
+            </q-btn>
+          </q-form>
         </q-card-section>
       </q-card>
     </q-dialog>
 
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
-        rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
         no-results-label="No hay resultados para la busqueda" wrap-cells="false" loading-label="Cargando...">
         <template v-slot:top>
           <h4 class="titulo-cont">

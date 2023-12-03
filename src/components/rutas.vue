@@ -31,22 +31,10 @@ const columns = ref([
     field: (row) => row.ciudad_destino.nombre,
   },
   {
-    name: "Bus",
-    label: "Bus",
-    align: "center",
-    field: (row) => row.bus.placa,
-  },
-  {
     name: "Hora salida",
     label: "Hora salida",
     align: "center",
     field: (row) => convertirHora(row.hora_salida),
-  },
-  {
-    name: "Valor",
-    label: "Valor",
-    align: "center",
-    field: (row) => row.valor,
   },
   {
     name: "Estado",
@@ -66,9 +54,7 @@ const rows = ref([]);
 const data = ref({
   ciudad_origen: "",
   ciudad_destino: "",
-  bus: "",
   hora_salida: "",
-  valor: "",
 });
 const time = ref('')
 
@@ -108,23 +94,23 @@ obtenerInfo();
 const obtenerOptions = async () => {
   try {
     const responseCiudad = await useCiudad.obtener();
-    const responseBus = await useBus.obtener();
+    // const responseBus = await useBus.obtener();
 
-    if (!responseCiudad || !responseBus) return
+    if (!responseCiudad) return
 
-    if (responseBus.error) {
-      notificar('negative', responseBus.error)
-      return
-    }
+    /*   if (responseBus.error) {
+        notificar('negative', responseBus.error)
+        return
+      } */
     if (responseCiudad.error) {
       notificar('negative', responseCiudad.error)
       return
     }
 
-    options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre, value: c._id, disable: false, estado: c.estado } });
+    options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre + `${c.estado === 0 ? ' - Inactiva' : ''}`, value: c._id, disable: c.estado === 0, estado: c.estado } });
     models.value.ciudades = responseCiudad
-    options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id, estado: b.estado } });
-    models.value.buses = responseBus.busPopulate
+    /*     options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id, estado: b.estado } });
+        models.value.buses = responseBus.busPopulate */
 
   } catch (error) {
     console.log(error);
@@ -142,9 +128,7 @@ const opciones = {
     data.value = {
       ciudad_origen: "",
       ciudad_destino: "",
-      bus: "",
       hora_salida: "",
-      valor: "",
     };
     time.value = ""
     modal.value = true;
@@ -153,7 +137,7 @@ const opciones = {
   editar: (info) => {
     data.value = {
       ...info,
-      bus: { label: info.bus.placa, value: info.bus._id }, ciudad_destino: { label: info.ciudad_destino.nombre, value: info.ciudad_destino._id }, ciudad_origen: { label: info.ciudad_origen.nombre, value: info.ciudad_origen._id }
+      ciudad_destino: { label: info.ciudad_destino.nombre, value: info.ciudad_destino._id }, ciudad_origen: { label: info.ciudad_origen.nombre, value: info.ciudad_origen._id }
     }
     time.value = convertirHora(info.hora_salida)
     modal.value = true;
@@ -180,7 +164,11 @@ const enviarInfo = {
   guardar: async () => {
     loadingmodal.value = true;
     try {
-      const response = await useRutas.guardar(data.value);
+      const info = {
+        ...data.value, ciudad_origen: data.value.ciudad_origen.value,
+        ciudad_destino: data.value.ciudad_destino.value
+      }
+      const response = await useRutas.guardar(info);
 
       if (!response) return
       if (response.error) {
@@ -202,7 +190,11 @@ const enviarInfo = {
     loadingmodal.value = true;
     try {
       console.log("a", data.value);
-      const response = await useRutas.editar(data.value._id, data.value);
+      const info = {
+        ...data.value, ciudad_origen: data.value.ciudad_origen.value,
+        ciudad_destino: data.value.ciudad_destino.value
+      }
+      const response = await useRutas.editar(data.value._id, info);
       console.log(response);
       if (!response) return
       if (response.error) {
@@ -270,19 +262,13 @@ function validarCampos() {
     return
   }
 
-  if(data.value.ciudad_origen.estado===0){
+  if (data.value.ciudad_origen.estado === 0) {
     notificar('negative', 'La ciudad de origen esta inactiva')
     return
   }
-  if(data.value.ciudad_destino.estado===0){
+  if (data.value.ciudad_destino.estado === 0) {
     notificar('negative', 'La ciudad de destino esta inactiva')
     return
-  }
-  if(data.value.bus.estado===0){
-    {
-    notificar('negative', 'El bus esta inactiva')
-    return
-  }
   }
 
   const hora = time.value.split(':')
@@ -320,9 +306,9 @@ function validarCampos() {
   }
 
 
-  data.value.ciudad_origen = data.value.ciudad_origen.value
-  data.value.ciudad_destino = data.value.ciudad_destino.value
-  data.value.bus = data.value.bus.value
+  // data.value.ciudad_origen = data.value.ciudad_origen.value
+  // data.value.ciudad_destino = data.value.ciudad_destino.value
+  // data.value.bus = data.value.bus.value
 
 
 
@@ -343,10 +329,9 @@ function notificar(tipo, msg) {
 }) */
 
 const opcionesFiltro = ref({
-  bus: options.value.bus,
   ciudad: options.value.ciudad
 })
-function filterFnBus(val, update) {
+/* function filterFnBus(val, update) {
 
   if (val === '') {
     update(() => {
@@ -359,7 +344,7 @@ function filterFnBus(val, update) {
     const needle = val.toLowerCase()
     opcionesFiltro.value.bus = options.value.bus.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
   })
-}
+} */
 
 function filterFnCiudad(val, update) {
   if (val === '') {
@@ -381,7 +366,7 @@ function deshabilitarCiudad(val) {
 
   for (const c of options.value.ciudad) {
     console.log(c);
-    if (c.disable === true && data.value.ciudad_origen != c.label || data.value.ciudad_destino != c.label) {
+    if (c.disable === true && data.value.ciudad_origen != c.label && data.value.ciudad_destino != c.label) {
       c.disable = false
       if (val === null) return
     }
@@ -410,35 +395,37 @@ function deshabilitarCiudad(val) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <!-- <q-select rounded standout v-model="data.ciudad_origen" :options="validarCiudad" label="Ciudad origen"
+          <q-form @submit="validarCampos" class="q-gutter-md">
+
+            <!-- <q-select rounded standout v-model="data.ciudad_origen" :options="validarCiudad" label="Ciudad origen"
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
-          <q-select outlined v-model:model-value="data.ciudad_origen" use-input input-debounce="0" label="Ciudad origen"
-            :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
-            @update:model-value="deshabilitarCiudad" :loading="selectLoad">
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  Sin resultados
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
-          <!-- <q-select rounded standout v-model="data.ciudad_destino" :options="validarCiudad" label="Ciudad destino"
+            <q-select outlined v-model:model-value="data.ciudad_origen" use-input input-debounce="0" label="Ciudad origen"
+              :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
+              @update:model-value="deshabilitarCiudad" :loading="selectLoad">
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    Sin resultados
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+            <!-- <q-select rounded standout v-model="data.ciudad_destino" :options="validarCiudad" label="Ciudad destino"
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
-          <q-select outlined v-model:model-value="data.ciudad_destino" use-input input-debounce="0" label="Ciudad destino"
-            :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
-            @update:model-value="deshabilitarCiudad" :loading="selectLoad">
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  Sin resultados
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
-          <!-- <q-select rounded standout v-model="data.bus" :options="options.bus" label="Bus" lazy-rules
+            <q-select outlined v-model:model-value="data.ciudad_destino" use-input input-debounce="0"
+              label="Ciudad destino" :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
+              @update:model-value="deshabilitarCiudad" :loading="selectLoad">
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    Sin resultados
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+            <!-- <q-select rounded standout v-model="data.bus" :options="options.bus" label="Bus" lazy-rules
             :rules="[val => val != '' || 'Ingrese un bus']" /> -->
-          <q-select outlined v-model:model-value="data.bus" use-input input-debounce="0" label="Placa"
+            <!-- <q-select outlined v-model:model-value="data.bus" use-input input-debounce="0" label="Placa"
             :options="opcionesFiltro.bus" @filter="filterFnBus" behavior="menu" :loading="selectLoad">
             <template v-slot:no-option>
               <q-item>
@@ -447,30 +434,31 @@ function deshabilitarCiudad(val) {
                 </q-item-section>
               </q-item>
             </template>
-          </q-select>
-          <q-input outlined label="Hora de salida" v-model="time" mask="time"
-            :rules="[val => val.trim() != '' || 'Ingrese una hora']">
-            <template v-slot:append>
-              <q-icon name="access_time" class="cursor-pointer">
-                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                  <q-time v-model="time">
-                    <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="Close" color="primary" flat />
-                    </div>
-                  </q-time>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
+          </q-select> -->
+            <q-input outlined label="Hora de salida" v-model="time" mask="time"
+              :rules="[val => val.trim() != '' || 'Ingrese una hora']">
+              <template v-slot:append>
+                <q-icon name="access_time" class="cursor-pointer">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-time v-model="time">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup label="Close" color="primary" flat />
+                      </div>
+                    </q-time>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
 
-          <q-input outlined v-model="data.valor" label="Valor" type="number" lazy-rules
-            :rules="[val => val != '' || 'Ingrese un valor', val => val > 0 || 'Valor invalido']" />
+            <!-- <q-input outlined v-model="data.valor" label="Valor" type="number" lazy-rules
+            :rules="[val => val != '' || 'Ingrese un valor', val => val > 0 || 'Valor invalido']" /> -->
 
 
-          <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
-            :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
-            <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
-          </q-btn>
+            <q-btn type="submit" :loading="loadingmodal" padding="10px"
+              :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
+              <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
+            </q-btn>
+          </q-form>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -479,7 +467,7 @@ function deshabilitarCiudad(val) {
 
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
-        rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
         no-results-label="No hay resultados para la busqueda" wrap-cells="false" loading-label="Cargando...">
         <template v-slot:top>
           <h4 class="titulo-cont">

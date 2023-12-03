@@ -8,14 +8,17 @@ import { useClienteStore } from "../stores/clientes.js";
 import { useRutasStore } from '../stores/rutas.js';
 import { useVendedorStore } from '../stores/vendedor.js';
 import { useTiqueteStore } from '../stores/tiquete';
+import { useBusStore } from '../stores/buses';
 
 const router = useRouter();
 const useTiquete = useTiqueteStore();
 const useCliente = useClienteStore();
 const useRutas = useRutasStore();
+const useBus = useBusStore();
 const useVendedor = useVendedorStore();
 const $q = useQuasar();
 const conVenta = ref('ruta');
+const conVentaBus = ref('bus')
 const loadingruta = ref(true);
 const selectLoad = ref(true);
 
@@ -23,7 +26,7 @@ const modalclientes = ref(false);
 const loadingmodalclientes = ref(false);
 const estado = ref("guardar");
 
-const data = ref({ num_asiento: 0 });
+const data = ref({ num_asiento: 0, valor: '' });
 
 function fechaActual() {
     const fecha = new Date
@@ -45,9 +48,11 @@ const obtenerOptions = async () => {
         console.log(rutas);
         const responseRutas = await useRutas.obtener();
         const responseCliente = await useCliente.obtener()
+        const responseBus = await useBus.obtener()
         console.log(responseCliente);
+        console.log(responseBus);
 
-        if (!rutas || !responseRutas || !responseCliente) return
+        if (!rutas || !responseRutas || !responseCliente || !responseBus) return
 
         if (rutas.error) {
             notificar('negative', rutas.error)
@@ -58,6 +63,10 @@ const obtenerOptions = async () => {
             return
         }
         if (responseCliente.error) {
+            notificar('negative', responseCliente.error)
+            return
+        }
+        if (responseBus.error) {
             notificar('negative', responseCliente.error)
             return
         }
@@ -78,26 +87,27 @@ const obtenerOptions = async () => {
         options.value.rutasVentas = datosFiltrados
         models.value.rutasVentas = rutas;
 
-        options.value.ruta = responseRutas.map((c) => { 
-            return { label: c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida), value: c._id, estado: c.estado } });
+        options.value.ruta = responseRutas.map((c) => {
+            return { label: c.ciudad_origen.nombre + "/" + c.ciudad_destino.nombre + "/" + convertirHora(c.hora_salida) + `${c.estado === 0 ? ' - inactiva' : ''}`, value: c._id, estado: c.estado, disable: c.estado === 0 }
+        });
         models.value.ruta = responseRutas;
 
-        options.value.cliente = responseCliente.cliente.map(c => { return { label: c.cedula, value: c._id } })
-        models.value.cliente = responseCliente
+        options.value.cliente = responseCliente.cliente.map(c => { return { label: c.cedula + `${c.estado === 0 ? ' - inactivo' : ''}`, value: c._id, disable: c.estado === 0, estado: c.estado } })
+        models.value.cliente = responseCliente.cliente
+
+        options.value.bus = responseBus.busPopulate.map(b => { return { label: b.placa + `${b.estado === 0 ? ' - inactivo' : ''}`, value: b._id, estado: b.estado, disable: b.estado === 0 } })
+        models.value.bus = responseBus.busPopulate
 
     } catch (error) {
 
     } finally {
         selectLoad.value = false
         loadingruta.value = false
-
     }
 };
 obtenerOptions()
 
-const opcionesFiltro = ref({
-    bus: options.value[conVenta.value],
-})
+const opcionesFiltro = ref({})
 function filterFnRuta(val, update) {
     if (val === '') {
         update(() => {
@@ -111,42 +121,60 @@ function filterFnRuta(val, update) {
         opcionesFiltro.value.ruta = options.value[conVenta.value].filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
     })
 }
+function filterFnBus(val, update) {
+    if (val === '') {
+        update(() => {
+            opcionesFiltro.value.bus = options.value[conVentaBus.value]
+        })
+        return
+    }
+
+    update(() => {
+        const needle = val.toLowerCase()
+        opcionesFiltro.value.bus = options.value[conVentaBus.value].filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+    })
+}
+
+
 
 function filterFnCliente(val, update) {
+    console.log(options.value.cliente);
     if (val === '') {
+        onResetCliente()
         update(() => opcionesFiltro.value.cliente = options.value.cliente)
         return
     }
 
     update(() => {
         const needle = val.toLowerCase()
-        opcionesFiltro.value.ruta = options.value.cliente.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+        opcionesFiltro.value.cliente = options.value.cliente.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
     })
 }
 
 const cantAsientos = ref(0)
 
-async function buscarRuta(id) {
+async function cargarAsientos(id) {
     await verificarAsiento()
+    console.log(models.value);
 
-    const buscar = models.value.ruta.find(r => r._id === id)
-    console.log("a", asientosOcupados.value.length, "b", buscar.bus.asiento);
-    if (asientosOcupados.value.length == buscar.bus.asiento) {
+    const buscar = models.value.bus.find(r => r._id === id)
+    // console.log("a", asientosOcupados.value.length, "b", buscar.bus.asiento);
+    if (asientosOcupados.value.length == buscar.asiento) {
         notificar('negative', 'Ya no hay asientos disponibles')
         return false
     }
-    cantAsientos.value = buscar.bus.asiento
-    if (buscar) return buscar.bus.asiento
+    cantAsientos.value = buscar.asiento
+    if (buscar) return buscar.asiento
 
     return id
 }
 
-function idCliente(cedula) {
+/* function idCliente(cedula) {
     const buscar = models.value.cliente.find((c) => c.cedula === cedula);
     if (buscar) return buscar._id;
 
     return cedula;
-}
+} */
 
 function convertirHora(cadenaFecha) {
     const fecha = new Date(cadenaFecha);
@@ -169,7 +197,11 @@ async function onSubmit() {
             return
         }
 
-        if(data.value.ruta.estado===0) {
+        if (data.value.ruta.estado === 0) {
+            notificar('negative', 'La ruta esta inactiva')
+            return
+        }
+        if (data.value.bus.estado === 0) {
             notificar('negative', 'La ruta esta inactiva')
             return
         }
@@ -203,13 +235,13 @@ async function onSubmit() {
         }
 
 
-        const r = await buscarRuta(data.value.ruta.value)
+        const r = await cargarAsientos(data.value.bus.value)
 
         if (!r) return
         modal.value = false
         opciones.value = false
         console.log("onsubmit", data.value)
-        data.value.ruta = data.value.ruta.value
+        // data.value.ruta = data.value.ruta.value
 
     } catch (error) {
         console.log(error);
@@ -232,7 +264,7 @@ function onReset() {
 }
 
 function onResetCliente() {
-    dataCliente.value = { cedula: "" }
+    dataCliente.value = {}
 }
 
 function convertirFechaBD(fechaA) {
@@ -256,10 +288,15 @@ const asientosOcupados = ref([])
 async function verificarAsiento() {
     try {
         console.log(data.value);
-        const idRuta = data.value.ruta.value
-        const fecha = data.value.fecha_salida
 
-        const response = await useTiquete.asientosOcupados(idRuta, fecha)
+        const info = {
+            idBus: data.value.bus.value,
+            idRuta: data.value.ruta.value,
+            fecha_salida: data.value.fecha_salida
+        }
+        console.log('i', info);
+
+        const response = await useTiquete.asientosOcupados(info)
         console.log(response);
 
         if (!response) return
@@ -300,6 +337,10 @@ async function buscarCliente() {
     loadBuscarCliente.value = true
     try {
         console.log(dataCliente.value)
+        if (dataCliente.value.cedula === null) {
+            onResetCliente()
+            return
+        }
 
         if (typeof dataCliente.value.cedula === 'string') {
             if (dataCliente.value.cedula.trim() === "") {
@@ -307,6 +348,8 @@ async function buscarCliente() {
                 return false
             }
         }
+
+
 
         let response
 
@@ -337,7 +380,7 @@ async function buscarCliente() {
 }
 
 function validar() {
-    const arrData = Object.entries(dataCliente.value)
+    let arrData = Object.entries(dataCliente.value)
     console.log(arrData);
     for (const d of arrData) {
         if (d[0] === null) {
@@ -356,9 +399,35 @@ function validar() {
     return true
 }
 
+const loadingTicket = ref(false)
+
+const valor = ref('')
+
 async function validarCampos() {
 
+
     if (!validar()) return
+    const arrData = Object.entries(data.value)
+    console.log("d", data.value);
+    console.log(arrData);
+    for (const d of arrData) {
+        if (d[0] === null) {
+            notificar('negative', "Por favor complete todos los campos")
+            return
+        }
+
+        if (typeof d[0] === "string") {
+            if (d[0].trim() === "") {
+                notificar('negative', "Por favor complete todos los campos")
+                return
+            }
+        }
+    }
+    if (valor.value === '') {
+        notificar('negative', "Por favor complete todos los campos")
+        return
+    }
+
     const resBuscar = await buscarCliente()
     console.log("r", resBuscar);
     if (!resBuscar) {
@@ -375,7 +444,9 @@ async function validarCampos() {
 
     data.value.cliente = dataCliente.value._id
     data.value.vendedor = idVendedor
-
+    data.value.ruta = data.value.ruta.value
+    data.value.bus = data.value.bus.value
+    data.value.valor = valor.value
 
     console.log(data.value);
 
@@ -441,36 +512,37 @@ function convertirFecha(cadenaFecha) {
 }
 
 async function showCustom() {
+    loadingTicket.value = true
+    try {
+        const t = await generarTicket()
 
-    const t = await generarTicket()
+        console.log(t);
+        if (!t) return
 
-    console.log(t);
-    if (!t) return
+        if (t.error) {
+            dialog.update({
+                title: 'Error!!',
+                message: t.error,
+                progress: false,
+                ok: true
+            }).onOk(() => {
 
-    if (t.error) {
-        dialog.update({
-            title: 'Error!!',
-            message: t.error,
-            progress: false,
-            ok: true
-        }).onOk(() => {
+            })
 
+            return
+        }
+
+        const dialog = $q.dialog({
+            title: 'Generando',
+            dark: false,
+            progress: true,
+            persistent: true,
+            ok: false
         })
 
-        return
-    }
+        console.log(ticket.value);
 
-    const dialog = $q.dialog({
-        title: 'Generando',
-        dark: false,
-        progress: true,
-        persistent: true,
-        ok: false
-    })
-
-    console.log(ticket.value);
-
-    const mensaje = `
+        /* const mensaje = `
     <main>
         <span>------------------------------------------</span>
         <section>
@@ -509,19 +581,26 @@ async function showCustom() {
             <span>Vendedor: ${ticket.value.vendedor.nombre}</span>
         </section>
         <span>------------------------------------------</span>
-    </main>`
+    </main>` */
 
-    generarPDF()
+        generarPDF()
 
-    dialog.update({
-        title: 'Ticket',
-        message: 'Presione ok para continuar',
-        progress: false,
-        html: true,
-        ok: true
-    }).onOk(() => {
-        formatear()
-    })
+        dialog.update({
+            title: 'Ticket',
+            message: 'Presione ok para continuar',
+            progress: false,
+            html: true,
+            ok: true
+        }).onOk(() => {
+            formatear()
+        })
+    } catch (error) {
+        console.log(error);
+    } finally {
+        loadingTicket.value = false
+    }
+
+
 }
 
 
@@ -556,6 +635,10 @@ const enviarInfo = {
             }
 
             notificar('positive', 'Guardado exitosamente')
+            const cedula = { label: response.cliente.cedula, value: response.cliente._id }
+            options.value.cliente.push(cedula)
+            models.value.cliente.push(response.cliente)
+            dataCliente.value = { ...response.cliente, cedula }
             modalclientes.value = false;
         } catch (error) {
             console.log(error);
@@ -601,15 +684,13 @@ function validarCamposCliente() {
     enviarInfo[estado.value]()
 }
 const dataclientes = ref({
-    nombre: "",
-    cedula: "",
-    email: "",
+
 });
 const opcionesclientes = {
     agregar: () => {
         dataclientes.value = {
             nombre: "",
-            cedula: dataclientes.value.cedula,
+            cedula: '',
             email: "",
         };
         modalclientes.value = true;
@@ -619,11 +700,11 @@ const opcionesclientes = {
 
 async function generarPDF() {
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([400, 440]);
+    const page = pdfDoc.addPage([400, 470]);
     const { width, height } = page.getSize();
     const size = 10
 
-    const lineasHorizontales = [70, 120, 165, 210, 240, 270, 315, 345];
+    const lineasHorizontales = [70, 120, 165, 195, 240, 270, 300, 345, 375];
     lineasHorizontales.forEach((y) => {
         page.drawLine({ start: { x: 40, y: height - y }, end: { x: width - 50, y: height - y }, color: rgb(0, 0, 0) });
     });
@@ -637,33 +718,36 @@ async function generarPDF() {
         ["Fecha de venta:", 50, 90],
         [convertirFecha(ticket.value.createdAt), 50, 105],
         ["Vendedor:", 190, 90],
-        [ticket.value.vendedor.nombre, 190, 105],
-        ["Cliente:", 50, 135],
-        [ticket.value.cliente.nombre, 50, 150],
-        ["Cedula:", 130, 135],
-        [ticket.value.cliente.cedula, 130, 150],
-        ["Email:", 230, 135],
-        [ticket.value.cliente.email, 230, 150],
-        ["Fecha de viaje:", 50, 180],
-        [convertirFecha(ticket.value.fecha_salida), 50, 195],
-        ["Hora:", 200, 180],
-        [convertirHora(ticket.value.ruta.hora_salida), 200, 195],
-        [`Ciudad origen: ${ticket.value.ruta.ciudad_origen.nombre}`, 50, 225],
-        [`Ciudad destino: ${ticket.value.ruta.ciudad_destino.nombre}`, 50, 255],
-        ["Puesto:", 50, 285],
-        [ticket.value.num_asiento, 50, 300],
-        [`Bus(Placa): ${ticket.value.ruta.bus.placa}`, 190, 285],
-        [`Empresa: ${ticket.value.ruta.bus.empresa}`, 190, 300],
-        [`Precio: ${ticket.value.ruta.valor}`, 50, 330],
-        ["¡Gracias por su compra!", 150, 375],
-        ["¡¡Feliz viaje!!", 150, 395],
+        [ticket.value.vendedor.nombre + ' '+ ticket.value.vendedor.apellido, 190, 105],
+        ["Cliente:", 50, 140],
+        [ticket.value.cliente.nombre, 50, 155],
+        ["Cedula:", 150, 140],
+        [ticket.value.cliente.cedula, 150, 155],
+        ["Teléfono:", 250, 140],
+        [ticket.value.cliente.telefono, 250, 155],
+        [`Email: ${ticket.value.cliente.email}`, 50, 185],
+        ["Fecha de viaje:", 50, 215],
+        [convertirFecha(ticket.value.fecha_salida), 50, 230],
+        ["Hora:", 200, 215],
+        [convertirHora(ticket.value.ruta.hora_salida), 200, 230],
+        [`Ciudad origen: ${ticket.value.ruta.ciudad_origen.nombre}`, 50, 260],
+        [`Ciudad destino: ${ticket.value.ruta.ciudad_destino.nombre}`, 50, 290],
+        ["Puesto:", 50, 320],
+        [ticket.value.num_asiento, 50, 335],
+        ["Número bus:", 110, 320],
+        [ticket.value.bus.numero, 110, 335],
+        [`Bus(Placa): ${ticket.value.bus.placa}`, 190, 320],
+        [`Empresa: ${ticket.value.bus.empresa}`, 190, 335],
+        [`Precio: ${ticket.value.valor}`, 50, 365],
+        ["¡Gracias por su compra!", 140, 400],
+        ["¡¡Feliz viaje!!", 160, 425],
     ];
     dataT.forEach(d => {
         page.drawText(d[0], { x: d[1], y: height - d[2], size });
     })
 
-    page.drawLine({ start: { x: 40, y: height - 70 }, end: { x: 40, y: height - 345 }, color: rgb(0, 0, 0) });
-    page.drawLine({ start: { x: 350, y: height - 70 }, end: { x: 350, y: height - 345 }, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: 40, y: height - lineasHorizontales[0] }, end: { x: 40, y: height - lineasHorizontales[lineasHorizontales.length-1] }, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: 350, y: height - lineasHorizontales[0] }, end: { x: 350, y: height - lineasHorizontales[lineasHorizontales.length-1] }, color: rgb(0, 0, 0) });
 
     page.drawText('PASAJE BUS', { x: 150, y: height - 50, size: 15 });
 
@@ -702,6 +786,17 @@ async function generarPDF() {
                         <q-select filled v-model:model-value="data.ruta" use-input input-debounce="0" label="Ruta"
                             :loading="loadingruta" :options="opcionesFiltro.ruta" @filter="filterFnRuta" behavior="menu"
                             lazy-rules :rules="[val => val != null || 'Por favor ingrese una ruta']" :disable="loadingruta">
+                            <template v-slot:no-option>
+                                <q-item>
+                                    <q-item-section class="text-grey">
+                                        Sin resultados
+                                    </q-item-section>
+                                </q-item>
+                            </template>
+                        </q-select>
+                        <q-select filled v-model:model-value="data.bus" use-input input-debounce="0" label="Bus (placa)"
+                            :loading="loadingruta" :options="opcionesFiltro.bus" @filter="filterFnBus" behavior="menu"
+                            lazy-rules :rules="[val => val != null || 'Por favor ingrese un bus']" :disable="loadingruta">
                             <template v-slot:no-option>
                                 <q-item>
                                     <q-item-section class="text-grey">
@@ -755,7 +850,10 @@ async function generarPDF() {
                         <q-input class="input3" outlined v-model="dataclientes.email" label="Email" type="email"
                             :disable="estado === 'editar'" lazy-rules
                             :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
-
+                        <q-input class="input2" outlined v-model="dataclientes.telefono" label="Teléfono" type="number"
+                            lazy-rules
+                            :rules="[val => val != '' || 'Ingrese una teléfono', val => val.length == 10 || 'Número de teléfono no válido']"
+                            maxlength="10"></q-input>
 
                         <q-btn :loading="loadingClienteNuevo" padding="10px"
                             :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado" type="submit">
@@ -777,7 +875,7 @@ async function generarPDF() {
                 </div>
 
                 <div id="contAsientos">
-                    <div v-if="verificarAsiento" class="asientos" :id="data.num_asiento != 0 ? 'asientos': ''">
+                    <div v-if="verificarAsiento" class="asientos" :id="data.num_asiento != 0 ? 'asientos' : ''">
                         <q-btn v-for="a in cantAsientos" icon="chair" class="asiento"
                             :class="asientosOcupados.includes(String(a)) ? 'ocupado' : 'desocupado'"
                             @click="data.num_asiento = a" :label="a" :disable="asientosOcupados.includes(String(a))" />
@@ -811,14 +909,19 @@ async function generarPDF() {
                                         </q-item>
                                     </template>
                                 </q-select>
-                                <q-input outlined v-model="dataCliente.email" label="Email" type="email" lazy-rules
-                                    :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable
-                                    :loading="loadBuscarCliente"></q-input>
                                 <q-input outlined v-model="dataCliente.nombre" label="Nombre" type="text" maxlength="15"
                                     lazy-rules :rules="[val => val.trim() != '' || 'Por favor ingrese un nombre']" disable
                                     :loading="loadBuscarCliente"></q-input>
+                                <q-input outlined v-model="dataCliente.email" label="Email" type="text" lazy-rules
+                                    :rules="[val => val.trim() != '' || 'Por favor ingrese un email']" disable
+                                    :loading="loadBuscarCliente"></q-input>
+                                <q-input outlined v-model="dataCliente.telefono" label="Teléfono" type="number" lazy-rules
+                                    :rules="[val => val != '' || 'Ingrese una teléfono', val => val.length == 10 || 'Número de teléfono no válido']"
+                                    maxlength="10" disable :loading="loadBuscarCliente"></q-input>
+                                <q-input outlined v-model="valor" label="Valor" type="number" lazy-rules
+                                    :rules="[val => val != '' || 'Ingrese un valor']"></q-input>
 
-                                <q-btn label="Confirmar" type="submit" color="secondary" />
+                                <q-btn label="Confirmar" type="submit" color="secondary" :loading="loadingTicket" />
                                 <q-btn label="" type="reset" color="secondary" icon="delete" />
                             </q-form>
                         </div>

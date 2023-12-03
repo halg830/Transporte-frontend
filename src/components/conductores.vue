@@ -27,6 +27,24 @@ const columns = ref([
     field: (row) => row.cedula,
   },
   {
+    name: "telefono",
+    label: "Teléfono",
+    align: "center",
+    field: 'telefono',
+  },
+  {
+    name: "email",
+    label: "Email",
+    align: "center",
+    field: 'email',
+  },
+  {
+    name: "num_licencia",
+    label: "Número de licencia",
+    align: "center",
+    field: 'num_licencia',
+  },
+  {
     name: "Estado",
     label: "Estado",
     align: "center",
@@ -197,16 +215,24 @@ function notificar(tipo, msg) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <q-input outlined v-model="data.nombre" label="Nombre" type="text" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
-          <q-input outlined v-model="data.cedula" label="Cedula" type="number" max-length="10" lazy-rules
-            :rules="[val => val.trim() != '' || 'Ingrese una cedula']"></q-input>
+          <q-form @submit="validarCampos" @reset="onReset" class="q-gutter-md">
 
+            <q-input outlined v-model="data.nombre" label="Nombre" type="text" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
+            <q-input outlined v-model="data.cedula" label="Cedula" type="number" max-length="10" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese una cedula']"></q-input>
+            <q-input outlined v-model="data.telefono" label="Teléfono" type="number" max-length="10" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese un teléfono', val => val.length == 10 || 'Número no válido']"></q-input>
+            <q-input outlined v-model="data.email" label="Email" type="text" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
+            <q-input outlined v-model="data.num_licencia" label="Número de licencia" type="number" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese un número de licencia']"></q-input>
 
-          <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
-            :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
-            <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
-          </q-btn>
+            <q-btn :loading="loadingmodal" padding="10px"
+              :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado" type="submit">
+              <q-icon :name="estado == 'editar' ? 'edit' : 'style'" color="white" right />
+            </q-btn>
+          </q-form>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -217,7 +243,7 @@ function notificar(tipo, msg) {
 
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
-        rows-per-page-label="visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
         no-results-label="No hay resultados para la busqueda" wrap-cells="false" loading-label="Cargando...">
         <template v-slot:top>
           <h4 class="titulo-cont">

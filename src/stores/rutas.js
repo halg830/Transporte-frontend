@@ -74,6 +74,7 @@ export const useRutasStore = defineStore("ruta", () => {
     try {
       const x = insertarToken();
       if (!x) return null;
+
       const response = await x.post(`${model}guardar`, data);
       console.log(response);
       return response.data.rutasPopulate

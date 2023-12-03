@@ -301,8 +301,8 @@ function notificar(tipo, msg) {
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-              props.row.estado = 'load';
-              " />
+              props.row.estado = 'load'; 
+              " :disable="props.row._id==='656b51a1981c8c022fa4ece0'"/>
           </q-td>
         </template>
 

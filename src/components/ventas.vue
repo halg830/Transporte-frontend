@@ -34,8 +34,14 @@ const columns = ref([
   {
     name: "Bus",
     label: "Bus",
-    align: "left",
-    field: (row) => row.ruta.bus.placa,
+    align: "center",
+    field: (row) => row.bus.placa,
+  },
+  {
+    name: "Valor",
+    label: "Valor",
+    align: "center",
+    field: (row) => row.valor,
   },
   {
     name: "Asiento",

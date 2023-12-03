@@ -20,16 +20,22 @@ const columns = ref([
   {
     name: "Placa",
     label: "Placa",
-    align: "left",
+    align: "center",
     field: (row) => row.placa.toUpperCase(),
     sort: true,
     sortOrder: "da",
   },
   {
+    name: "numero",
+    label: "Número bus",
+    align: "center",
+    field: 'numero'
+  },
+  {
     name: "Conductor",
     label: "Conductor",
     align: "left",
-    field: (row) => row.conductor?.nombre || "-",
+    field: (row) => row.conductor?.nombre +' / ' + row.conductor.cedula,
   },
   {
     name: "Empresa",
@@ -63,6 +69,7 @@ const data = ref({
   conductor: "",
   empresa: "",
   asiento: '',
+  numero: ''
 });
 
 const obtenerInfo = async () => {
@@ -104,7 +111,8 @@ const obtenerOptions = async () => {
     return
   }
 
-  options.value.conductores = responseConductores.map((c) => { return { label: c.nombre, value: c._id } });
+  console.log(responseConductores);
+  options.value.conductores = responseConductores.map((c) => { return { label: c.nombre + " / CC: " + c.cedula + `${ c.estado===0 ? ' - Inactivo': ''}`, value: c._id, disable: c.estado===0 } });
   conductores.value = responseConductores;
 
 };
@@ -120,12 +128,13 @@ const opciones = {
       conductor: "",
       empresa: "",
       asiento: '',
+      numero: ''
     };
     modal.value = true;
     estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = { ...info, conductor: info.conductor.nombre }
+    data.value = { ...info, conductor: info.conductor.nombre + ' / CC: ' +info.conductor.cedula }
     modal.value = true;
     estado.value = "editar";
   },
@@ -142,7 +151,9 @@ const enviarInfo = {
       loading.value = true
       console.log(data.value);
 
-      const response = await useBus.guardar(data.value);
+      const info = { ...data.value, conductor: data.value.conductor.value }
+
+      const response = await useBus.guardar(info);
       loading.value = false
       loadingmodal.value = false;
       console.log(response);
@@ -168,7 +179,9 @@ const enviarInfo = {
 
       console.log(data.value);
 
-      const response = await useBus.editar(data.value._id, data.value);
+      const info = { ...data.value, conductor: data.value.conductor.value }
+
+      const response = await useBus.editar(data.value._id, info);
       console.log(response);
       loadingmodal.value = false;
 
@@ -288,11 +301,13 @@ function filterFn(val, update) {
         <q-card-section class="q-gutter-md">
           <q-form @submit="validarCampos" class="q-gutter-md">
 
-            <q-input outlined v-model="data.placa" label="Placa" type="text" :disable="estado === 'editar'" lazy-rules
+            <q-input outlined v-model="data.placa" label="Placa" type="text" lazy-rules
               :rules="[val => val.trim() != '' || 'Ingrese una placa',
               val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
+            <q-input outlined v-model="data.numero" label="Número bus" type="number" lazy-rules :rules="[val => val != '' || 'Ingrese el número del bus',
+            val => val > 0 || 'Cantidad no válida']"></q-input>
 
-            <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre"
+            <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre del conductor"
               :options="opcionesFiltro.conductores" @filter="filterFn" behavior="menu"
               :rules="[val => val != null || 'Seleccione un nombre', val => val != '' || 'Seleccione un nombre']"
               :loading="selectLoad.conductor" :disable="selectLoad.conductor">
@@ -308,7 +323,8 @@ function filterFn(val, update) {
               :rules="[val => val.trim() != '' || 'Ingrese una empresa']"></q-input>
 
             <q-input outlined v-model="data.asiento" label="Asientos" type="number" lazy-rules :rules="[val => val != '' || 'Ingrese un numero',
-            val => val>0 || 'Cantidad no válida']"></q-input>
+            val => val > 0 || 'Cantidad no válida']"></q-input>
+
 
             <div>
               <q-btn :label="estado" type="submit" :color="estado == 'editar' ? 'warning' : 'secondary'"
@@ -324,8 +340,8 @@ function filterFn(val, update) {
 
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
-        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]" loading-label="Cargando..."
-        no-results-label="No hay resultados para la busqueda" wrap-cells="false">
+        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
+        loading-label="Cargando..." no-results-label="No hay resultados para la busqueda" wrap-cells="false">
         <template v-slot:top>
           <h4 class="titulo-cont">
             {{ modelo }}
@@ -390,7 +406,7 @@ warning: Color para advertencias o mensajes importantes.
   padding: 0px;
 }
 
-#btnBorrar{
+#btnBorrar {
   margin-left: 10px;
 }
 

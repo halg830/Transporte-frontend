@@ -97,8 +97,6 @@ export const useBusStore = defineStore("bus", () => {
       const x = insertarToken();
       if (!x) return null;
 
-      data.conductor = data.conductor.value
-
       const response = await x.post(`${model}guardar`, data);
       console.log(response);
       return response.data.busPopulate;
@@ -119,8 +117,6 @@ export const useBusStore = defineStore("bus", () => {
     try {
       const x = insertarToken();
       if (!x) return null;
-
-      data.conductor = data.conductor.value
 
       console.log(id, data);
       const response = await x.put(`${model}editar/${id}`, data);
