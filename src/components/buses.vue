@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useBusStore } from "../stores/buses.js";
 import { useConductorStore } from "../stores/conductores.js";
 import { useQuasar } from "quasar";
+import helpersGeneral from '../helpers/general.js'
 
 const modelo = "Buses";
 const useBus = useBusStore();
@@ -35,7 +36,7 @@ const columns = ref([
     name: "Conductor",
     label: "Conductor",
     align: "left",
-    field: (row) => row.conductor?.nombre +' / ' + row.conductor.cedula,
+    field: (row) => row.conductor?.nombre + ' / ' + row.conductor.cedula,
   },
   {
     name: "Empresa",
@@ -112,7 +113,7 @@ const obtenerOptions = async () => {
   }
 
   console.log(responseConductores);
-  options.value.conductores = responseConductores.map((c) => { return { label: c.nombre + " / CC: " + c.cedula + `${ c.estado===0 ? ' - Inactivo': ''}`, value: c._id, disable: c.estado===0 } });
+  options.value.conductores = responseConductores.map((c) => { return { label: c.nombre + " / CC: " + c.cedula + `${c.estado === 0 ? ' - Inactivo' : ''}`, value: c._id, disable: c.estado === 0 } });
   conductores.value = responseConductores;
 
 };
@@ -134,7 +135,7 @@ const opciones = {
     estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = { ...info, conductor: info.conductor.nombre + ' / CC: ' +info.conductor.cedula }
+    data.value = { ...info, conductor: info.conductor.nombre + ' / CC: ' + info.conductor.cedula }
     modal.value = true;
     estado.value = "editar";
   },
@@ -287,6 +288,10 @@ function filterFn(val, update) {
     opcionesFiltro.value.conductores = options.value.conductores.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
   })
 }
+
+// const primeraMayuscula = (cadena) =>
+//   cadena.charAt(0).toUpperCase() + cadena.slice(1)
+
 </script>
 
 <template>
@@ -294,21 +299,20 @@ function filterFn(val, update) {
     <q-dialog v-model="modal">
       <q-card class="modal">
         <q-toolbar>
-          <q-toolbar-title>Agregar {{ modelo }}</q-toolbar-title>
+          <q-toolbar-title> {{ helpersGeneral.primeraMayuscula(estado) + ' bus' }}</q-toolbar-title>
           <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
           <q-form @submit="validarCampos" class="q-gutter-md">
 
-            <q-input outlined v-model="data.placa" label="Placa" type="text" lazy-rules
-              :rules="[val => val.trim() != '' || 'Ingrese una placa',
-              val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
+            <q-input outlined v-model="data.placa" label="Placa" type="text" lazy-rules :rules="[val => val.trim() != '' || 'Ingrese una placa',
+            val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
             <q-input outlined v-model="data.numero" label="Número bus" type="number" lazy-rules :rules="[val => val != '' || 'Ingrese el número del bus',
             val => val > 0 || 'Cantidad no válida']"></q-input>
 
-            <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0" label="Nombre del conductor"
-              :options="opcionesFiltro.conductores" @filter="filterFn" behavior="menu"
+            <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0"
+              label="Nombre del conductor" :options="opcionesFiltro.conductores" @filter="filterFn" behavior="menu"
               :rules="[val => val != null || 'Seleccione un nombre', val => val != '' || 'Seleccione un nombre']"
               :loading="selectLoad.conductor" :disable="selectLoad.conductor">
               <template v-slot:no-option>

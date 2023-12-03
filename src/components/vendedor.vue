@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useQuasar } from "quasar";
+import helpersGeneral from '../helpers/general.js'
 import { useVendedorStore } from '../stores/vendedor.js';
 
 const modelo = "Vendedor";
@@ -229,7 +230,7 @@ function notificar(tipo, msg) {
     <q-dialog v-model="modal">
       <q-card class="modal">
         <q-toolbar>
-          <q-toolbar-title>Agregar {{ modelo }}</q-toolbar-title>
+          <q-toolbar-title>{{ helpersGeneral.primeraMayuscula(estado) }} vendedor</q-toolbar-title>
           <q-btn class="botonv1" flat dense icon="close" v-close-popup />
         </q-toolbar>
 

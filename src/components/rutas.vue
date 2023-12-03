@@ -4,6 +4,7 @@ import { useRutasStore } from "../stores/rutas.js";
 import { useCiudadStore } from "../stores/ciudad.js";
 import { useBusStore } from "../stores/buses.js";
 import { useQuasar } from "quasar";
+import helpersGeneral from '../helpers/general.js'
 
 const modelo = "Rutas"
 
@@ -390,7 +391,7 @@ function deshabilitarCiudad(val) {
     <q-dialog v-model="modal">
       <q-card class="modal">
         <q-toolbar>
-          <q-toolbar-title>Agregar ruta</q-toolbar-title>
+          <q-toolbar-title>{{ helpersGeneral.primeraMayuscula(estado) }} ruta</q-toolbar-title>
           <q-btn class="botonv1" flat dense icon="close" v-close-popup />
         </q-toolbar>
 

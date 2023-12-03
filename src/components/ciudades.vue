@@ -3,6 +3,7 @@ import axios from "axios";
 import { ref } from "vue";
 import { useCiudadStore } from "../stores/ciudad.js";
 import { useQuasar } from "quasar";
+import helpersGeneral from "../helpers/general";
 
 const useCiudad = useCiudadStore();
 const loadingTable = ref(true);
@@ -179,7 +180,7 @@ function notificar(tipo, msg) {
     <q-dialog v-model="modal">
       <q-card class="modal">
         <q-toolbar>
-          <q-toolbar-title>Agregar ciudad</q-toolbar-title>
+          <q-toolbar-title>{{ helpersGeneral.primeraMayuscula(estado) }} ciudad</q-toolbar-title>
           <q-btn class="botonv1" flat round dense icon="close" v-close-popup />
         </q-toolbar>
 
