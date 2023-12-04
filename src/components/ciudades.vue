@@ -185,7 +185,7 @@ function notificar(tipo, msg) {
         </q-toolbar>
 
         <q-card-section class="q-gutter-md">
-          <q-input outlined v-model="data.nombre" label="Nombre" type="text"></q-input>
+          <q-input outlined v-model="data.nombre" label="Nombre" type="text" autofocus></q-input>
 
           <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
             :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">

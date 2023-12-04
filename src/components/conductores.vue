@@ -219,7 +219,7 @@ function notificar(tipo, msg) {
           <q-form @submit="validarCampos" @reset="onReset" class="q-gutter-md">
 
             <q-input outlined v-model="data.nombre" label="Nombre" type="text" lazy-rules
-              :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
+              :rules="[val => val.trim() != '' || 'Ingrese un nombre']" autofocus></q-input>
             <q-input outlined v-model="data.cedula" label="Cedula" type="number" max-length="10" lazy-rules
               :rules="[val => val.trim() != '' || 'Ingrese una cedula']"></q-input>
             <q-input outlined v-model="data.telefono" label="Teléfono" type="number" max-length="10" lazy-rules

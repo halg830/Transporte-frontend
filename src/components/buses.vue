@@ -28,7 +28,7 @@ const columns = ref([
   },
   {
     name: "numero",
-    label: "Número bus",
+    label: "Numero bus",
     align: "center",
     field: 'numero'
   },
@@ -135,7 +135,7 @@ const opciones = {
     estado.value = "guardar";
   },
   editar: (info) => {
-    data.value = { ...info, conductor: info.conductor.nombre + ' / CC: ' + info.conductor.cedula }
+    data.value = { ...info, conductor: {label: info.conductor.nombre + ' / CC: ' + info.conductor.cedula, value:info.conductor._id} }
     modal.value = true;
     estado.value = "editar";
   },
@@ -308,7 +308,7 @@ function filterFn(val, update) {
 
             <q-input outlined v-model="data.placa" label="Placa" type="text" lazy-rules :rules="[val => val.trim() != '' || 'Ingrese una placa',
             val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
-            <q-input outlined v-model="data.numero" label="Número bus" type="number" lazy-rules :rules="[val => val != '' || 'Ingrese el número del bus',
+            <q-input outlined v-model="data.numero" label="Numero bus" type="number" lazy-rules :rules="[val => val != '' || 'Ingrese el numero del bus',
             val => val > 0 || 'Cantidad no válida']"></q-input>
 
             <q-select outlined v-model:model-value="data.conductor" use-input input-debounce="0"
