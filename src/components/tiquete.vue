@@ -109,6 +109,7 @@ obtenerOptions()
 
 const opcionesFiltro = ref({})
 function filterFnRuta(val, update) {
+    val = val.trim()
     if (val === '') {
         update(() => {
             opcionesFiltro.value.ruta = options.value[conVenta.value]
@@ -122,6 +123,8 @@ function filterFnRuta(val, update) {
     })
 }
 function filterFnBus(val, update) {
+    val = val.trim()
+
     if (val === '') {
         update(() => {
             opcionesFiltro.value.bus = options.value[conVentaBus.value]
@@ -138,6 +141,8 @@ function filterFnBus(val, update) {
 
 
 function filterFnCliente(val, update) {
+    val = val.trim()
+
     console.log(options.value.cliente);
     if (val === '') {
         onResetCliente()
@@ -743,7 +748,7 @@ async function generarPDF() {
         [ticket.value.bus.numero, 110, 335],
         [`Bus(Placa): ${ticket.value.bus.placa}`, 190, 320],
         [`Empresa: ${ticket.value.bus.empresa}`, 190, 335],
-        [`Precio: ${ticket.value.valor}`, 50, 365],
+        [`Precio: ${formatearMoneda(ticket.value.valor)}`, 50, 365],
         ["¡Gracias por su compra!", 140, 400],
         ["¡¡Feliz viaje!!", 160, 425],
     ];
@@ -784,6 +789,19 @@ function limitarLongitud(input, maxLength) {
     if (dataclientes.value[input] > maxLength) {
         dataclientes.value[input] = dataclientes.value[input].slice(0, maxLength);
     }
+}
+
+function formatearMoneda(numero) {
+  const numeroRedondeado = Math.round(numero);
+  const partes = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).formatToParts(numeroRedondeado);
+  
+  return partes.map(part => {
+    if (part.type === 'fraction') {
+      return ''; 
+    } else {
+      return part.value;
+    }
+  }).join('');
 }
 
 </script>
@@ -894,8 +912,8 @@ function limitarLongitud(input, maxLength) {
                     <q-btn label="Regresar" @click="regresar" class="regresar" color="accent" icon="arrow_back_ios"></q-btn>
                     <div id="info">
                         <span><b>Ruta: </b>{{ informacion.ruta.label }} </span>
-                        <span><b>Bus (placa): </b>{{ informacion.bus.placa }} </span>
-                        <span><b>Bus (número): </b>{{ informacion.bus.numero }} </span>
+                        <span><b>Placa del bus: </b>{{ informacion.bus.placa }} </span>
+                        <span><b>Numero del bus: </b>{{ informacion.bus.numero }} </span>
                         <span><b>Conductor: </b>{{ informacion.bus.conductor.nombre }} </span>
                         <span><b>Fecha salida: </b>{{ convertirFecha(informacion.fecha_salida) }} </span>
                     </div>

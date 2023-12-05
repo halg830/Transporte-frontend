@@ -276,6 +276,7 @@ const opcionesFiltro = ref({
 })
 
 function filterFn(val, update) {
+  val=val.trim()
   if (val === '') {
     update(() => {
       opcionesFiltro.value.conductores = options.value.conductores

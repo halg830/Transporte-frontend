@@ -48,7 +48,7 @@ const columns = ref([
     name: "Valor",
     label: "Valor",
     align: "center",
-    field: (row) => row.valor,
+    field: (row) => formatearMoneda(row.valor),
   },
   {
     name: "Asiento",
@@ -385,7 +385,7 @@ async function generarPDF() {
         [ticket.value.bus.numero, 110, 335],
         [`Bus(Placa): ${ticket.value.bus.placa}`, 190, 320],
         [`Empresa: ${ticket.value.bus.empresa}`, 190, 335],
-        [`Precio: ${ticket.value.valor}`, 50, 365],
+        [`Precio: ${formatearMoneda(ticket.value.valor)}`, 50, 365],
         ["¡Gracias por su compra!", 140, 400],
         ["¡¡Feliz viaje!!", 160, 425],
     ];
@@ -411,6 +411,19 @@ async function generarPDF() {
     } else {
         notificar('negative', 'Error, no se pudo abrir la ventana de impresión')
     }
+}
+
+function formatearMoneda(numero) {
+  const numeroRedondeado = Math.round(numero);
+  const partes = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).formatToParts(numeroRedondeado);
+  
+  return partes.map(part => {
+    if (part.type === 'fraction') {
+      return ''; 
+    } else {
+      return part.value;
+    }
+  }).join('');
 }
 </script>
 

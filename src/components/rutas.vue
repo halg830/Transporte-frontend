@@ -134,6 +134,7 @@ const opciones = {
     time.value = ""
     modal.value = true;
     estado.value = "guardar";
+    deshabilitarCiudad('')
   },
   editar: (info) => {
     data.value = {
@@ -143,6 +144,8 @@ const opciones = {
     time.value = convertirHora(info.hora_salida)
     modal.value = true;
     estado.value = "editar";
+    deshabilitarCiudad('')
+
   },
 };
 
@@ -348,6 +351,7 @@ const opcionesFiltro = ref({
 } */
 
 function filterFnCiudad(val, update) {
+  val=val.trim()
   if (val === '') {
     update(() => {
       opcionesFiltro.value.ciudad = options.value.ciudad

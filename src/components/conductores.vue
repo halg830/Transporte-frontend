@@ -126,6 +126,8 @@ const enviarInfo = {
         return
       }
       rows.value.unshift(response.conductor)
+      notificar('positive', 'Guardado exitosamente')
+
       modal.value = false
     } catch (error) {
       console.log(error);
@@ -148,6 +150,8 @@ const enviarInfo = {
         return
       }
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
+      notificar('positive', 'Editado exitosamente')
+
       modal.value = false
     } catch (error) {
       console.log(error);
