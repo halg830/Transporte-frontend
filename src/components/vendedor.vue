@@ -223,6 +223,13 @@ function notificar(tipo, msg) {
     position: "top"
   })
 }
+
+function limitarLongitud(input, maxLength) {
+  
+  if (data.value[input] > maxLength) {
+    data.value[input] = data.value[input].slice(0, maxLength);
+  }
+}
 </script>
 
 <template>
@@ -242,9 +249,9 @@ function notificar(tipo, msg) {
             :rules="[val => !!val || 'Ingrese un apellido']"></q-input>
 
           <q-input outlined v-model="data.cedula" label="Cedula" type="number" maxlength="10"
-            :rules="[val => !!val || 'Ingrese una cédula']"></q-input>
+            :rules="[val => !!val || 'Ingrese una cédula']" :oninput="limitarLongitud('cedula', 10)"></q-input>
 
-          <q-input outlined v-model="data.telefono" label="Teléfono" type="number" maxlength="10"
+          <q-input outlined v-model="data.telefono" label="Teléfono" type="number" :oninput="limitarLongitud('telefono', 10)"
             :rules="[val => !!val || 'Ingrese un teléfono', val=>val.length<11 || 'Ingrese menos de 10 digitos']"></q-input>
 
           <q-input outlined v-model="data.usuario" label="Usuario" type="text"

@@ -89,6 +89,7 @@ const opciones = {
       nombre: "",
       cedula: "",
       email: "",
+      telefono: ''
     };
     modal.value = true;
     estado.value = "guardar";
@@ -227,6 +228,13 @@ function notificar(tipo, msg) {
     position: "top"
   })
 }
+
+function limitarLongitud(input, maxLength) {
+  
+  if (data.value[input] > maxLength) {
+    data.value[input] = data.value[input].slice(0, maxLength);
+  }
+}
 </script>
 
 <template>
@@ -245,10 +253,10 @@ function notificar(tipo, msg) {
               :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
             <q-input class="input2" outlined v-model="data.cedula" label="Cedula" type="number" lazy-rules
               :rules="[val => val != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"
-              maxlength="10"></q-input>
+              :oninput="limitarLongitud('cedula', 10)"></q-input>
             <q-input class="input2" outlined v-model="data.telefono" label="Teléfono" type="number" lazy-rules
               :rules="[val => val != '' || 'Ingrese una teléfono', val => val.length==10 || 'Número de teléfono no válido']"
-              maxlength="10"></q-input>
+              :oninput="limitarLongitud('telefono', 10)"></q-input>
             <q-input class="input3" outlined v-model="data.email" label="Email" type="email" lazy-rules
               :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
 

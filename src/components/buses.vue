@@ -307,7 +307,7 @@ function filterFn(val, update) {
           <q-form @submit="validarCampos" class="q-gutter-md">
 
             <q-input outlined v-model="data.placa" label="Placa" type="text" lazy-rules :rules="[val => val.trim() != '' || 'Ingrese una placa',
-            val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']"></q-input>
+            val => val.length <= 6 || 'La placa debe tener 6 o menos carácteres']" maxlength="6"></q-input>
             <q-input outlined v-model="data.numero" label="Numero bus" type="number" lazy-rules :rules="[val => val != '' || 'Ingrese el numero del bus',
             val => val > 0 || 'Cantidad no válida']"></q-input>
 

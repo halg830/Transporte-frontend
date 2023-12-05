@@ -95,6 +95,8 @@ const opciones = {
     data.value = {
       nombre: "",
       cedula: "",
+      telefono: '',
+      email: ''
     };
     modal.value = true;
     estado.value = "guardar";
@@ -114,6 +116,7 @@ const enviarInfo = {
   guardar: async () => {
     loadingmodal.value = true;
     try {
+      data.value.num_licencia = data.value.cedula
       const response = await useConductor.guardar(data.value);
       console.log(response.conductor);
       if (!response) return
@@ -134,6 +137,7 @@ const enviarInfo = {
   editar: async () => {
     loadingmodal.value = true;
     try {
+      data.value.num_licencia = data.value.cedula
       console.log(data.value);
       const response = await useConductor.editar(data.value._id, data.value);
       console.log(response);
@@ -204,6 +208,14 @@ function notificar(tipo, msg) {
     position: "top"
   })
 }
+
+function limitarLongitud(input, maxLength) {
+  
+  if (data.value[input] > maxLength) {
+    data.value[input] = data.value[input].slice(0, maxLength);
+  }
+}
+
 </script>
 
 <template>
@@ -220,14 +232,14 @@ function notificar(tipo, msg) {
 
             <q-input outlined v-model="data.nombre" label="Nombre" type="text" lazy-rules
               :rules="[val => val.trim() != '' || 'Ingrese un nombre']" autofocus></q-input>
-            <q-input outlined v-model="data.cedula" label="Cedula" type="number" max-length="10" lazy-rules
-              :rules="[val => val.trim() != '' || 'Ingrese una cedula']"></q-input>
-            <q-input outlined v-model="data.telefono" label="Teléfono" type="number" max-length="10" lazy-rules
-              :rules="[val => val.trim() != '' || 'Ingrese un teléfono', val => val.length == 10 || 'Número no válido']"></q-input>
+            <q-input outlined v-model="data.cedula" label="Cedula" type="number" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese una cedula']" :oninput="limitarLongitud('cedula', 10)"></q-input>
+            <q-input outlined v-model="data.telefono" label="Teléfono" type="number"  lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese un teléfono', val => val.length == 10 || 'Número no válido']" :oninput="limitarLongitud('telefono', 10)"></q-input>
             <q-input outlined v-model="data.email" label="Email" type="text" lazy-rules
-              :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
-            <q-input outlined v-model="data.num_licencia" label="Número de licencia" type="number" lazy-rules
-              :rules="[val => val.trim() != '' || 'Ingrese un número de licencia']"></q-input>
+              :rules="[val => val.trim() != '' || 'Ingrese un email']" ></q-input>
+            <q-input outlined v-model="data.cedula" label="Número de licencia" type="number" lazy-rules
+              :rules="[val => val.trim() != '' || 'Ingrese un número de licencia']" disable maxlength="10"></q-input>
 
             <q-btn :loading="loadingmodal" padding="10px"
               :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado" type="submit">

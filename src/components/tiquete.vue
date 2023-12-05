@@ -243,7 +243,7 @@ async function onSubmit() {
         modal.value = false
         opciones.value = false
         console.log("onsubmit", data.value)
-        informacion.value = {...data.value}
+        informacion.value = { ...data.value }
         buscarBus(data.value.bus.value)
         // data.value.ruta = data.value.ruta.value
 
@@ -696,6 +696,7 @@ const opcionesclientes = {
             nombre: "",
             cedula: '',
             email: "",
+            telefono:'',
         };
         modalclientes.value = true;
         estado.value = "guardar";
@@ -722,7 +723,7 @@ async function generarPDF() {
         ["Fecha de venta:", 50, 90],
         [convertirFecha(ticket.value.createdAt), 50, 105],
         ["Vendedor:", 190, 90],
-        [ticket.value.vendedor.nombre + ' '+ ticket.value.vendedor.apellido, 190, 105],
+        [ticket.value.vendedor.nombre + ' ' + ticket.value.vendedor.apellido, 190, 105],
         ["Cliente:", 50, 140],
         [ticket.value.cliente.nombre, 50, 155],
         ["Cedula:", 150, 140],
@@ -750,8 +751,8 @@ async function generarPDF() {
         page.drawText(d[0], { x: d[1], y: height - d[2], size });
     })
 
-    page.drawLine({ start: { x: 40, y: height - lineasHorizontales[0] }, end: { x: 40, y: height - lineasHorizontales[lineasHorizontales.length-1] }, color: rgb(0, 0, 0) });
-    page.drawLine({ start: { x: 350, y: height - lineasHorizontales[0] }, end: { x: 350, y: height - lineasHorizontales[lineasHorizontales.length-1] }, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: 40, y: height - lineasHorizontales[0] }, end: { x: 40, y: height - lineasHorizontales[lineasHorizontales.length - 1] }, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: 350, y: height - lineasHorizontales[0] }, end: { x: 350, y: height - lineasHorizontales[lineasHorizontales.length - 1] }, color: rgb(0, 0, 0) });
 
     page.drawText('PASAJE BUS', { x: 150, y: height - 50, size: 15 });
 
@@ -770,11 +771,18 @@ async function generarPDF() {
     }
 }
 
-function buscarBus(id){
-    const buscar = models.value.bus.find(b=>b._id===id)
+function buscarBus(id) {
+    const buscar = models.value.bus.find(b => b._id === id)
 
-    if(buscar){
+    if (buscar) {
         informacion.value.bus = buscar
+    }
+}
+
+function limitarLongitud(input, maxLength) {
+
+    if (dataclientes.value[input] > maxLength) {
+        dataclientes.value[input] = dataclientes.value[input].slice(0, maxLength);
     }
 }
 
@@ -856,16 +864,16 @@ function buscarBus(id){
                         <q-input class="input1" outlined v-model="dataclientes.nombre" label="Nombre" type="text"
                             maxlength="15" lazy-rules :rules="[val => val.trim() != '' || 'Ingrese un nombre']"></q-input>
                         <q-input class="input2" outlined v-model="dataclientes.cedula" label="Cedula" type="number"
-                            :disable="estado === 'editar'" lazy-rules
+                            :disable="estado === 'editar'" lazy-rules :oninput="limitarLongitud('cedula', 10)"
                             :rules="[val => val.trim() != '' || 'Ingrese una cedula', val => val.length < 11 || 'Cedula debe tener 10 o menos carácteres']"></q-input>
 
+                        <q-input class="input2" outlined v-model="dataclientes.telefono" label="Teléfono" type="number"
+                            lazy-rules :oninput="limitarLongitud('telefono', 10)"
+                            :rules="[val => val != '' || 'Ingrese una teléfono', val => val.length == 10 || 'Número de teléfono no válido']"
+                            maxlength="10"></q-input>
                         <q-input class="input3" outlined v-model="dataclientes.email" label="Email" type="email"
                             :disable="estado === 'editar'" lazy-rules
                             :rules="[val => val.trim() != '' || 'Ingrese un email']"></q-input>
-                        <q-input class="input2" outlined v-model="dataclientes.telefono" label="Teléfono" type="number"
-                            lazy-rules
-                            :rules="[val => val != '' || 'Ingrese una teléfono', val => val.length == 10 || 'Número de teléfono no válido']"
-                            maxlength="10"></q-input>
 
                         <q-btn :loading="loadingClienteNuevo" padding="10px"
                             :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado" type="submit">
@@ -884,11 +892,13 @@ function buscarBus(id){
             <div class="contopciones">
                 <div id="contRegresar">
                     <q-btn label="Regresar" @click="regresar" class="regresar" color="accent" icon="arrow_back_ios"></q-btn>
-                    <span><b>Ruta: </b>{{ informacion.ruta.label }} </span>
-                    <span><b>Bus (placa): </b>{{ informacion.bus.placa }} </span>
-                    <span><b>Bus (número): </b>{{ informacion.bus.numero }} </span>
-                    <span><b>Conductor: </b>{{ informacion.bus.conductor.nombre }} </span>
-                    <span><b>Fecha salida: </b>{{ convertirFecha(informacion.fecha_salida) }} </span>
+                    <div id="info">
+                        <span><b>Ruta: </b>{{ informacion.ruta.label }} </span>
+                        <span><b>Bus (placa): </b>{{ informacion.bus.placa }} </span>
+                        <span><b>Bus (número): </b>{{ informacion.bus.numero }} </span>
+                        <span><b>Conductor: </b>{{ informacion.bus.conductor.nombre }} </span>
+                        <span><b>Fecha salida: </b>{{ convertirFecha(informacion.fecha_salida) }} </span>
+                    </div>
                 </div>
 
                 <div id="contAsientos">
@@ -956,8 +966,20 @@ function buscarBus(id){
     margin: 10px;
 }
 
-#contRegresar {
+#info{
     display: flex;
+    justify-content: center;
+    width:100%
+}
+
+#info>*{
+    margin-right: 20px;
+}
+
+#contRegresar {
+    padding-top: 20px;
+    display: flex;
+    align-items: center;
 }
 
 #contAsientos {
@@ -978,9 +1000,10 @@ function buscarBus(id){
 }
 
 .regresar {
+    width: 200px;
     position: relative;
-    top: 20px;
-    left: 20;
+    top: 0px;
+    left: 20px;
     /* margin: 20px auto; */
 }
 

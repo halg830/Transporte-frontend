@@ -8,8 +8,8 @@ import "@quasar/extras/material-icons/material-icons.css";
 import "quasar/src/css/index.sass";
 import axios from "axios";
 
-axios.defaults.baseURL = "http://localhost:3000/api/";
-// axios.defaults.baseURL = "https://transporte-el2a.onrender.com/api/";
+// axios.defaults.baseURL = "http://localhost:3000/api/";
+axios.defaults.baseURL = "https://transporte-el2a.onrender.com/api/";
 
 const app = createApp(App);
 const pinia = createPinia();

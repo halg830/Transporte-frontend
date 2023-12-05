@@ -367,7 +367,7 @@ function deshabilitarCiudad(val) {
 
   for (const c of options.value.ciudad) {
     console.log(c);
-    if (c.disable === true && data.value.ciudad_origen != c.label && data.value.ciudad_destino != c.label) {
+    if (c.disable === true && data.value.ciudad_origen != c.label && data.value.ciudad_destino != c.label && c.estado!=0) {
       c.disable = false
       if (val === null) return
     }
