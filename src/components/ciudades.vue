@@ -214,7 +214,7 @@ function notificar(tipo, msg) {
               <q-icon name="style" color="white" right />
             </q-btn>
           </h4>
-          <q-input borderless dense debounce="300" color="primary" v-model="filter" class="buscar">
+          <q-input borderless dense debounce="300" color="primary" v-model="filter" class="buscar" placeholder="Buscar cualquier campo">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
