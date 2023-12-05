@@ -40,12 +40,12 @@ const columns = ref([
     align: "left",
     field: (row) => row.telefono,
   },
-  {
+  /* {
     name: "Usuario",
     label: "Usuario",
     align: "left",
     field: (row) => row.usuario,
-  },
+  }, */
   {
     name: "Estado",
     label: "Estado",
@@ -66,7 +66,7 @@ const data = ref({
   apellido: "",
   cedula: "",
   telefono: "",
-  usuario: "",
+  // usuario: "",
   contrasena: ""
 });
 
@@ -98,7 +98,7 @@ const opciones = {
       apellido: "",
       cedula: "",
       telefono: "",
-      usuario: "",
+      // usuario: "",
       contrasena: ""
     };
     modal.value = true;
@@ -124,6 +124,7 @@ const enviarInfo = {
       if (!response) return
       if (response.error) {
         notificar('negative', response.error)
+        return
       }
       console.log(response);
       rows.value.unshift(response.vendedor)
@@ -145,6 +146,7 @@ const enviarInfo = {
       if (!response) return
       if (response.error) {
         notificar('negative', response.error)
+        return
       }
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
       modal.value = false
@@ -254,10 +256,10 @@ function limitarLongitud(input, maxLength) {
           <q-input outlined v-model="data.telefono" label="Teléfono" type="number" :oninput="limitarLongitud('telefono', 10)"
             :rules="[val => !!val || 'Ingrese un teléfono', val=>val.length<11 || 'Ingrese menos de 10 digitos']"></q-input>
 
-          <q-input outlined v-model="data.usuario" label="Usuario" type="text"
+          <q-input v-if="estado==='guardar'" outlined v-model="data.usuario" label="Usuario" type="text"
             :rules="[val => !!val || 'Ingrese un usuario']"></q-input>
 
-          <q-input outlined v-model="data.contrasena" label="Contraseña" type="password"
+          <q-input v-if="estado==='guardar'" outlined v-model="data.contrasena" label="Contraseña" type="password"
             :rules="[val => !!val || 'Ingrese una contraseña']" :disable="estado==='editar'"></q-input>
 
           <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
