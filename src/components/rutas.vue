@@ -139,13 +139,14 @@ const opciones = {
   editar: (info) => {
     data.value = {
       ...info,
-      ciudad_destino: { label: info.ciudad_destino.nombre, value: info.ciudad_destino._id }, ciudad_origen: { label: info.ciudad_origen.nombre, value: info.ciudad_origen._id }
+      ciudad_destino: { label: info.ciudad_destino.nombre, value: info.ciudad_destino._id }, 
+      ciudad_origen: { label: info.ciudad_origen.nombre, value: info.ciudad_origen._id }
     }
     time.value = convertirHora(info.hora_salida)
     modal.value = true;
     estado.value = "editar";
-    deshabilitarCiudad('')
-
+    deshabilitarCiudad(data.value.ciudad_origen)
+    deshabilitarCiudad(data.value.ciudad_destino)
   },
 };
 
@@ -371,7 +372,7 @@ function deshabilitarCiudad(val) {
 
   for (const c of options.value.ciudad) {
     console.log(c);
-    if (c.disable === true && data.value.ciudad_origen != c.label && data.value.ciudad_destino != c.label && c.estado!=0) {
+    if (c.disable === true && data.value.ciudad_origen.label != c.label && data.value.ciudad_destino.label != c.label && c.estado!=0) {
       c.disable = false
       if (val === null) return
     }

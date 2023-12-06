@@ -710,11 +710,11 @@ const opcionesclientes = {
 
 async function generarPDF() {
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([400, 470]);
+    const page = pdfDoc.addPage([400, 500]);
     const { width, height } = page.getSize();
     const size = 10
 
-    const lineasHorizontales = [70, 120, 165, 195, 240, 270, 300, 345, 375];
+    const lineasHorizontales = [70, 120, 150, 195, 225, 270, 300, 330, 375, 405];
     lineasHorizontales.forEach((y) => {
         page.drawLine({ start: { x: 40, y: height - y }, end: { x: width - 50, y: height - y }, color: rgb(0, 0, 0) });
     });
@@ -728,36 +728,35 @@ async function generarPDF() {
         ["Fecha de venta:", 50, 90],
         [convertirFecha(ticket.value.createdAt), 50, 105],
         ["Vendedor:", 190, 90],
-        [ticket.value.vendedor.nombre + ' ' + ticket.value.vendedor.apellido, 190, 105],
-        ["Cliente:", 50, 140],
-        [ticket.value.cliente.nombre, 50, 155],
-        ["Cedula:", 150, 140],
-        [ticket.value.cliente.cedula, 150, 155],
-        ["Teléfono:", 250, 140],
-        [ticket.value.cliente.telefono, 250, 155],
-        [`Email: ${ticket.value.cliente.email}`, 50, 185],
-        ["Fecha de viaje:", 50, 215],
-        [convertirFecha(ticket.value.fecha_salida), 50, 230],
-        ["Hora:", 200, 215],
-        [convertirHora(ticket.value.ruta.hora_salida), 200, 230],
-        [`Ciudad origen: ${ticket.value.ruta.ciudad_origen.nombre}`, 50, 260],
-        [`Ciudad destino: ${ticket.value.ruta.ciudad_destino.nombre}`, 50, 290],
-        ["Puesto:", 50, 320],
-        [ticket.value.num_asiento, 50, 335],
-        ["Número bus:", 110, 320],
-        [ticket.value.bus.numero, 110, 335],
-        [`Bus(Placa): ${ticket.value.bus.placa}`, 190, 320],
-        [`Empresa: ${ticket.value.bus.empresa}`, 190, 335],
-        [`Precio: ${formatearMoneda(ticket.value.valor)}`, 50, 365],
-        ["¡Gracias por su compra!", 140, 400],
-        ["¡¡Feliz viaje!!", 160, 425],
+        [ticket.value.vendedor.nombre + ' '+ ticket.value.vendedor.apellido, 190, 105],
+        [`Cliente: ${ticket.value.cliente.nombre}`, 50, 140],
+        ["Cedula:", 50, 170],
+        [ticket.value.cliente.cedula, 50, 185],
+        ["Teléfono:", 190, 170],
+        [ticket.value.cliente.telefono, 190, 185],
+        [`Email: ${ticket.value.cliente.email}`, 50, 215],
+        ["Fecha de viaje:", 50, 245],
+        [convertirFecha(ticket.value.fecha_salida), 50, 260],
+        ["Hora:", 190, 245],
+        [convertirHora(ticket.value.ruta.hora_salida), 190, 260],
+        [`Ciudad origen: ${ticket.value.ruta.ciudad_origen.nombre}`, 50, 290],
+        [`Ciudad destino: ${ticket.value.ruta.ciudad_destino.nombre}`, 50, 320],
+        ["Puesto:", 50, 350],
+        [ticket.value.num_asiento, 50, 365],
+        ["Número bus:", 110, 350],
+        [ticket.value.bus.numero, 110, 365],
+        [`Placa bus: ${ticket.value.bus.placa}`, 190, 350],
+        [`Empresa: ${ticket.value.bus.empresa}`, 190, 365],
+        [`Precio: ${formatearMoneda(ticket.value.valor)}`, 50, 395],
+        ["¡Gracias por su compra!", 140, 430],
+        ["¡¡Feliz viaje!!", 160, 455],
     ];
     dataT.forEach(d => {
         page.drawText(d[0], { x: d[1], y: height - d[2], size });
     })
 
-    page.drawLine({ start: { x: 40, y: height - lineasHorizontales[0] }, end: { x: 40, y: height - lineasHorizontales[lineasHorizontales.length - 1] }, color: rgb(0, 0, 0) });
-    page.drawLine({ start: { x: 350, y: height - lineasHorizontales[0] }, end: { x: 350, y: height - lineasHorizontales[lineasHorizontales.length - 1] }, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: 40, y: height - lineasHorizontales[0] }, end: { x: 40, y: height - lineasHorizontales[lineasHorizontales.length-1] }, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: 350, y: height - lineasHorizontales[0] }, end: { x: 350, y: height - lineasHorizontales[lineasHorizontales.length-1] }, color: rgb(0, 0, 0) });
 
     page.drawText('PASAJE BUS', { x: 150, y: height - 50, size: 15 });
 
