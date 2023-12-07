@@ -108,7 +108,8 @@ const obtenerOptions = async () => {
       return
     }
 
-    options.value.ciudad = responseCiudad.map((c) => { return { label: c.nombre + `${c.estado === 0 ? ' - Inactiva' : ''}`, value: c._id, disable: c.estado === 0, estado: c.estado } });
+    options.value.ciudad_origen = responseCiudad.map((c) => { return { label: c.nombre + `${c.estado === 0 ? ' - Inactiva' : ''}`, value: c._id, disable: c.estado === 0, estado: c.estado } });
+    options.value.ciudad_destino = responseCiudad.map((c) => { return { label: c.nombre + `${c.estado === 0 ? ' - Inactiva' : ''}`, value: c._id, disable: c.estado === 0, estado: c.estado } });
     models.value.ciudades = responseCiudad
     /*     options.value.bus = responseBus.busPopulate.map((b) => { return { label: b.placa, value: b._id, estado: b.estado } });
         models.value.buses = responseBus.busPopulate */
@@ -135,6 +136,7 @@ const opciones = {
     modal.value = true;
     estado.value = "guardar";
     deshabilitarCiudad('')
+    deshabilitarCiudadDestino('')
   },
   editar: (info) => {
     data.value = {
@@ -146,7 +148,7 @@ const opciones = {
     modal.value = true;
     estado.value = "editar";
     deshabilitarCiudad(data.value.ciudad_origen)
-    deshabilitarCiudad(data.value.ciudad_destino)
+    deshabilitarCiudadDestino(data.value.ciudad_destino)
   },
 };
 
@@ -334,7 +336,8 @@ function notificar(tipo, msg) {
 }) */
 
 const opcionesFiltro = ref({
-  ciudad: options.value.ciudad
+  ciudad_origen: options.value.ciudad_origen,
+  ciudad_destino: options.value.ciudad_destino
 })
 /* function filterFnBus(val, update) {
 
@@ -355,14 +358,28 @@ function filterFnCiudad(val, update) {
   val=val.trim()
   if (val === '') {
     update(() => {
-      opcionesFiltro.value.ciudad = options.value.ciudad
+      opcionesFiltro.value.ciudad_origen = options.value.ciudad_origen
     })
     return
   }
 
   update(() => {
     const needle = val.toLowerCase()
-    opcionesFiltro.value.ciudad = options.value.ciudad.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+    opcionesFiltro.value.ciudad_origen = options.value.ciudad_origen.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
+  })
+}
+function filterFnCiudadDestino(val, update) {
+  val=val.trim()
+  if (val === '') {
+    update(() => {
+      opcionesFiltro.value.ciudad_destino = options.value.ciudad_destino
+    })
+    return
+  }
+
+  update(() => {
+    const needle = val.toLowerCase()
+    opcionesFiltro.value.ciudad_destino = options.value.ciudad_destino.filter(v => v.label.toLowerCase().indexOf(needle) > -1) || []
   })
 }
 
@@ -370,22 +387,49 @@ function deshabilitarCiudad(val) {
 
   console.log(val);
 
-  for (const c of options.value.ciudad) {
+  for (const c of options.value.ciudad_destino) {
     console.log(c);
-    if (c.disable === true && data.value.ciudad_origen.label != c.label && data.value.ciudad_destino.label != c.label && c.estado!=0) {
+    if (c.disable === true && data.value.ciudad_destino.label != c.label && c.estado!=0) {
       c.disable = false
       if (val === null) return
     }
   }
 
+  console.log(opcionesFiltro.value);
 
-  const buscar = options.value.ciudad.findIndex(c => c.label === val.label)
+
+  const buscar = options.value.ciudad_destino.findIndex(c => c.label === val.label)
   console.log(buscar);
   if (buscar < 0) return false
 
-  options.value.ciudad[buscar].disable = true
+  options.value.ciudad_destino[buscar].disable = true
   console.log(options.value.ciudad);
+  
   return true
+}
+
+function deshabilitarCiudadDestino(val) {
+
+console.log(val);
+
+
+console.log(options.value.ciudad);
+for (const c of options.value.ciudad_origen) {
+  console.log(c);
+  if (c.disable === true && data.value.ciudad_origen.label != c.label  && c.estado!=0) {
+    console.log(data.value);
+    c.disable = false
+    if (val === null) return
+  }
+}
+
+const buscar = options.value.ciudad_origen.findIndex(c => c.label === val.label)
+console.log(buscar);
+if (buscar < 0) return false
+
+options.value.ciudad_origen[buscar].disable = true
+
+return true
 }
 
 /* editado */
@@ -406,7 +450,7 @@ function deshabilitarCiudad(val) {
             <!-- <q-select rounded standout v-model="data.ciudad_origen" :options="validarCiudad" label="Ciudad origen"
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
             <q-select outlined v-model:model-value="data.ciudad_origen" use-input input-debounce="0" label="Ciudad origen"
-              :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
+              :options="opcionesFiltro.ciudad_origen" @filter="filterFnCiudad" behavior="menu"
               @update:model-value="deshabilitarCiudad" :loading="selectLoad">
               <template v-slot:no-option>
                 <q-item>
@@ -419,8 +463,8 @@ function deshabilitarCiudad(val) {
             <!-- <q-select rounded standout v-model="data.ciudad_destino" :options="validarCiudad" label="Ciudad destino"
             lazy-rules :rules="[val => val != '' || 'Ingrese una ciudad']" /> -->
             <q-select outlined v-model:model-value="data.ciudad_destino" use-input input-debounce="0"
-              label="Ciudad destino" :options="opcionesFiltro.ciudad" @filter="filterFnCiudad" behavior="menu"
-              @update:model-value="deshabilitarCiudad" :loading="selectLoad">
+              label="Ciudad destino" :options="opcionesFiltro.ciudad_destino" @filter="filterFnCiudadDestino" behavior="menu"
+              @update:model-value="deshabilitarCiudadDestino" :loading="selectLoad">
               <template v-slot:no-option>
                 <q-item>
                   <q-item-section class="text-grey">
