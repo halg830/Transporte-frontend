@@ -113,6 +113,11 @@ const enviarInfo = {
       console.log(response);
       if(!response) return
 
+      if (response.error) {
+        notificar('negative', response.error)
+        return
+      }
+
       rows.value.splice(buscarIndexLocal(response._id), 1, response);
       modal.value = false;
       notificar('positive', 'Editado exitosamente')
