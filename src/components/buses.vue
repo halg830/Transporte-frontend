@@ -344,7 +344,7 @@ function filterFn(val, update) {
 
 
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter"
+      <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter.trim()"
         rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
         loading-label="Cargando..." no-results-label="No hay resultados para la busqueda" wrap-cells="false">
         <template v-slot:top>
