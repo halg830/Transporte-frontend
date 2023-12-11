@@ -118,6 +118,7 @@ const obtenerInfo = async () => {
     if (!tiquete) return;
     if (tiquete.error) {
       notificar('negative', tiquete.error)
+      return
     }
     loadingTable.value = false
     rows.value = tiquete.reverse();

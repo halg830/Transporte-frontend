@@ -78,6 +78,7 @@ const obtenerInfo = async () => {
     if (!vendedor) return
     if (vendedor.error) {
       notificar('negative', vendedor.error)
+      return
     }
     rows.value = vendedor.vendedor.reverse();
   } catch (error) {
@@ -167,6 +168,7 @@ const in_activar = {
       if (!response) return
       if (response.error) {
         notificar('negative', response.error)
+        return
       }
       rows.value.splice(buscarIndexLocal(response._id), 1, response)
 
@@ -181,6 +183,7 @@ const in_activar = {
       if (!response) return
       if (response.error) {
         notificar('negative', response.error)
+        return
       }
       rows.value.splice(buscarIndexLocal(response._id), 1, response)
 
