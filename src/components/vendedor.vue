@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { useQuasar } from "quasar";
+import { Cookies, useQuasar } from "quasar";
 import helpersGeneral from '../helpers/general.js'
 import { useVendedorStore } from '../stores/vendedor.js';
 
@@ -315,7 +315,7 @@ function limitarLongitud(input, maxLength) {
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
               props.row.estado = 'load'; 
-              " :disable="props.row._id==='656b51a1981c8c022fa4ece0'"/>
+              " :disable="props.row._id==='656b51a1981c8c022fa4ece0' || props.row._id===Cookies.get('vendedor')"/>
           </q-td>
         </template>
 
