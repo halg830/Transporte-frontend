@@ -410,6 +410,19 @@ function validar() {
 
 const loadingTicket = ref(false)
 
+function idBus(bus){
+    console.log(bus);
+    if(typeof bus === 'object') return bus.value
+
+    return bus
+}
+function idRuta(ruta){
+    console.log(ruta);
+    if(typeof ruta === 'object') return ruta.value
+
+    return ruta
+}
+
 const valor = ref('')
 
 async function validarCampos() {
@@ -450,11 +463,12 @@ async function validarCampos() {
 
     if (!idVendedor) return
 
+    console.log('1', data.value);
 
     data.value.cliente = dataCliente.value._id
     data.value.vendedor = idVendedor
-    data.value.ruta = data.value.ruta.value
-    data.value.bus = data.value.bus.value
+    data.value.ruta = idRuta(data.value.ruta)
+    data.value.bus = idBus(data.value.bus)
     data.value.valor = valor.value
 
     console.log(data.value);
@@ -499,7 +513,7 @@ function nuevaVenta() {
 }
 
 function formatear() {
-    data.value = { num_asiento: 0, ruta: ticket.value.ruta._id, fecha_salida: ticket.value.fecha_salida }
+    data.value = { num_asiento: 0, ruta: data.value.ruta, bus:data.value.bus, fecha_salida: ticket.value.fecha_salida, valor:'' }
     dataCliente.value = { cedula: "" }
     console.log("f", data.value);
 }
@@ -603,6 +617,8 @@ async function showCustom() {
         }).onOk(() => {
             formatear()
         })
+
+        formatear()
     } catch (error) {
         console.log(error);
     } finally {
@@ -908,7 +924,7 @@ function formatearMoneda(numero) {
 
             <div class="contopciones">
                 <div id="contRegresar">
-                    <q-btn label="Regresar" @click="regresar" class="regresar" color="accent" icon="arrow_back_ios"></q-btn>
+                    <q-btn @click="regresar" class="regresar" color="accent" icon="arrow_back_ios"></q-btn>
                     <div id="info">
                         <span><b>Ruta: </b>{{ informacion.ruta.label }} </span>
                         <span><b>Placa del bus: </b>{{ informacion.bus.placa }} </span>
@@ -963,7 +979,7 @@ function formatearMoneda(numero) {
                                     :rules="[val => val != '' || 'Ingrese una teléfono', val => val.length == 10 || 'Número de teléfono no válido']"
                                     maxlength="10" disable :loading="loadBuscarCliente"></q-input>
                                 <q-input outlined v-model="valor" label="Valor" type="number" lazy-rules
-                                    :rules="[val => val != '' || 'Ingrese un valor']"></q-input>
+                                    :rules="[val => val != '' || 'Ingrese un valor', val=> val >0 || 'Valor no válido']"></q-input>
 
                                 <q-btn label="Confirmar" type="submit" color="secondary" :loading="loadingTicket" />
                                 <q-btn label="" type="reset" color="secondary" icon="delete" />
@@ -1009,7 +1025,7 @@ function formatearMoneda(numero) {
 }
 
 .ocupado {
-    background-color: rgb(255, 188, 188);
+    background-color: #A3F7BF;
 }
 
 .desocupado {
@@ -1017,7 +1033,6 @@ function formatearMoneda(numero) {
 }
 
 .regresar {
-    width: 200px;
     position: relative;
     top: 0px;
     left: 20px;
@@ -1028,7 +1043,7 @@ function formatearMoneda(numero) {
     display: inline-block;
     max-width: 700px;
     margin: auto;
-}
+} 
 
 .asiento {
     padding: 20px;
