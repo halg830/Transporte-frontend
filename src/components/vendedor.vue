@@ -40,12 +40,6 @@ const columns = ref([
     align: "left",
     field: (row) => row.telefono,
   },
-  /* {
-    name: "Usuario",
-    label: "Usuario",
-    align: "left",
-    field: (row) => row.usuario,
-  }, */
   {
     name: "Estado",
     label: "Estado",
@@ -195,21 +189,33 @@ const in_activar = {
 
 function validarCampos() {
   console.log(data.value);
-  const arrData = Object.values(data.value);
+
+
+  const arrData = Object.entries(data.value);
   console.log(arrData);
   for (const d of arrData) {
     console.log(d);
-    if (d === null) {
+    if (d[1] === null) {
       errorCamposVacios();
       return;
     }
-    if (typeof d === "string") {
-      if (d.trim() === "") {
+    if (typeof d[1] === "string") {
+      if (d[1].trim() === "" && d[0] != 'contrasena') {
         errorCamposVacios();
         return;
       }
     }
+    if (d[0] === 'contrasena' && d[1].trim() === '') {
+      notificar('negative', 'No se permiten espacios vacios en la contraseña')
+      return
+    }
+    if (d[0] === 'telefono' && d[1].length < 10) {
+      notificar('negative', 'El número de teléfono debe tener 10 digitos')
+      return
+    }
+
   }
+
   enviarInfo[estado.value]();
 }
 
@@ -230,7 +236,7 @@ function notificar(tipo, msg) {
 }
 
 function limitarLongitud(input, maxLength) {
-  
+
   if (data.value[input] > maxLength) {
     data.value[input] = data.value[input].slice(0, maxLength);
   }
@@ -256,14 +262,15 @@ function limitarLongitud(input, maxLength) {
           <q-input outlined v-model="data.cedula" label="Cedula" type="number" maxlength="10"
             :rules="[val => !!val || 'Ingrese una cédula']" :oninput="limitarLongitud('cedula', 10)"></q-input>
 
-          <q-input outlined v-model="data.telefono" label="Teléfono" type="number" :oninput="limitarLongitud('telefono', 10)"
-            :rules="[val => !!val || 'Ingrese un teléfono', val=>val.length<11 || 'Ingrese menos de 10 digitos']"></q-input>
+          <q-input outlined v-model="data.telefono" label="Teléfono" type="number"
+            :oninput="limitarLongitud('telefono', 10)"
+            :rules="[val => !!val || 'Ingrese un teléfono', val => val.length < 11 || 'Ingrese menos de 10 digitos']"></q-input>
 
-          <q-input v-if="estado==='guardar'" outlined v-model="data.usuario" label="Usuario" type="text"
-            :rules="[val => !!val || 'Ingrese un usuario']"></q-input>
+          <q-input v-if="Cookies.get('vendedor') === '656b51a1981c8c022fa4ece0'" outlined v-model="data.usuario"
+            label="Usuario" type="text" :rules="[val => !!val || 'Ingrese un usuario']"></q-input>
 
-          <q-input v-if="estado==='guardar'" outlined v-model="data.contrasena" label="Contraseña" type="password"
-            :rules="[val => !!val || 'Ingrese una contraseña']" :disable="estado==='editar'"></q-input>
+          <q-input v-if="estado === 'guardar'" outlined v-model="data.contrasena" label="Contraseña" type="password"
+            :rules="[val => !!val || 'Ingrese una contraseña']" :disable="estado === 'editar'"></q-input>
 
           <q-btn @click="validarCampos" :loading="loadingmodal" padding="10px"
             :color="estado == 'editar' ? 'warning' : 'secondary'" :label="estado">
@@ -277,9 +284,10 @@ function limitarLongitud(input, maxLength) {
 
 
     <div class="q-pa-md">
-      <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable" :filter="filter.trim()"
-        rows-per-page-label="Visualización de filas" page="2" :rows-per-page-options="[10, 20, 40, 0]"
-        no-results-label="No hay resultados para la busqueda" wrap-cells="false" loading-label="Cargando...">
+      <q-table :rows="rows" :columns="columns" class="tabla" row-key="name" :loading="loadingTable"
+        :filter="filter.trim()" rows-per-page-label="Visualización de filas" page="2"
+        :rows-per-page-options="[10, 20, 40, 0]" no-results-label="No hay resultados para la busqueda" wrap-cells="false"
+        loading-label="Cargando...">
         <template v-slot:top>
           <h4 class="titulo-cont">
             {{ modelo }}
@@ -287,7 +295,8 @@ function limitarLongitud(input, maxLength) {
               <q-icon name="style" color="white" right />
             </q-btn>
           </h4>
-          <q-input borderless dense debounce="300" color="primary" v-model="filter" class="buscar" placeholder="Buscar cualquier campo">
+          <q-input borderless dense debounce="300" color="primary" v-model="filter" class="buscar"
+            placeholder="Buscar cualquier campo">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -314,8 +323,8 @@ function limitarLongitud(input, maxLength) {
                 props.row.estado === 1
                   ? in_activar.inactivar(props.row._id)
                   : in_activar.activar(props.row._id);
-              props.row.estado = 'load'; 
-              " :disable="props.row._id==='656b51a1981c8c022fa4ece0' || props.row._id===Cookies.get('vendedor')"/>
+              props.row.estado = 'load';
+              " :disable="props.row._id === '656b51a1981c8c022fa4ece0' || props.row._id === Cookies.get('vendedor')" />
           </q-td>
         </template>
 
