@@ -68,6 +68,8 @@ function notificar(tipo, msg) {
     position: "top"
   })
 }
+
+const alert = ref(false)
 </script>
 
 <template>
@@ -92,6 +94,23 @@ function notificar(tipo, msg) {
       <q-btn class="ingresar opcion" @click="validarCampos" :loading="loading" label="Ingresar" />
     </div>
 
+    <q-icon name="info" color="primary" @click="alert = true" id="info" size="xl"/>
+    <q-dialog v-model="alert" class="text-white">
+      <q-card class="bg-primary">
+        <q-card-section>
+          <div class="text-h6 alert">Credenciales para pruebas:</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none alert">
+          <b>Usuario:</b> admin123 <br>
+          <b>Contraseña:</b> 123456789
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="white" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <!-- <q-btn no-caps unelevated color="negative" @click="triggerNegative" label="Trigger 'negative'" /> -->
   </div>
 </template>
@@ -109,8 +128,18 @@ demas componentes  -->
   padding: 0;
 }
 
+#info{
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.alert{
+  user-select: text;
+}
+
 .tittle {
-  margin-top: 20px;
+  margin-top: 40px;
   font-size: 100px;
   font-weight: 700;
   color: #3f497f;
@@ -136,7 +165,7 @@ demas componentes  -->
   font-size: 20px;
   text-align: left;
   padding: 15px 30px;
-  margin-top: 70px;
+  margin-top: 40px;
 }
 
 input::placeholder {
@@ -168,7 +197,7 @@ input::placeholder {
   background-color: #3f497f;
   color: white;
   border-radius: 20px;
-  margin: 90px 0px;
+  margin: 50px 0px;
   border: none;
   transition: transform 0.2s;
 }
@@ -215,6 +244,7 @@ input::placeholder {
   .opcioncont {
     margin-top: 5vh;
   }
+
 }
 
 @media screen and (max-width: 640px) {
@@ -239,5 +269,12 @@ input::placeholder {
   .ingresar {
     font-size: 20px;
   }
+}
+
+@media (max-width: 800px){
+  #info{
+  top: 10px;
+  right: 20px;
+}
 }
 </style>
